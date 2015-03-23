@@ -14,9 +14,6 @@
 #define STATE_CONNECTED 2
 #define STATE_CONNECTFAIL 3
 
-@class IMessage;
-
-
 
 @protocol VOIPObserver <NSObject>
 
