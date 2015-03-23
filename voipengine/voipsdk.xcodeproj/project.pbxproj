@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6D0331831AAB73E3004AA39F /* libvoipsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0331771AAB73E3004AA39F /* libvoipsdk.a */; };
+		6D0331831AAB73E3004AA39F /* libvoipengine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0331771AAB73E3004AA39F /* libvoipengine.a */; };
 		6D0331A21AAB74DD004AA39F /* AVReceiveStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D03319B1AAB74DD004AA39F /* AVReceiveStream.mm */; };
 		6D0331A31AAB74DD004AA39F /* AVSendStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D03319D1AAB74DD004AA39F /* AVSendStream.mm */; };
 		6D0331A41AAB74DD004AA39F /* WebRTC.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D0331A11AAB74DD004AA39F /* WebRTC.mm */; };
@@ -42,7 +42,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6D0331771AAB73E3004AA39F /* libvoipsdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvoipsdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D0331771AAB73E3004AA39F /* libvoipengine.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvoipengine.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voipsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D0331881AAB73E4004AA39F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D03319A1AAB74DD004AA39F /* AVReceiveStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVReceiveStream.h; sourceTree = "<group>"; };
@@ -73,7 +73,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6D0331831AAB73E3004AA39F /* libvoipsdk.a in Frameworks */,
+				6D0331831AAB73E3004AA39F /* libvoipengine.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,7 +93,7 @@
 		6D0331781AAB73E3004AA39F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				6D0331771AAB73E3004AA39F /* libvoipsdk.a */,
+				6D0331771AAB73E3004AA39F /* libvoipengine.a */,
 				6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */,
 			);
 			name = Products;
@@ -151,7 +151,7 @@
 			);
 			name = voipengine;
 			productName = voipsdk;
-			productReference = 6D0331771AAB73E3004AA39F /* libvoipsdk.a */;
+			productReference = 6D0331771AAB73E3004AA39F /* libvoipengine.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		6D0331811AAB73E3004AA39F /* voipsdkTests */ = {
