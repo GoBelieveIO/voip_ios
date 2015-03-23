@@ -8,12 +8,12 @@
 
 #import <Foundation/Foundation.h>
 
-@class AsyncTCP;
-typedef void(^ConnectCB)(AsyncTCP *tcp, int err);
-typedef void(^ReadCB)(AsyncTCP *tcp, NSData *data, int err);
-typedef void(^CloseCB)(AsyncTCP *tcp, int err);
+@class VOIPTCP;
+typedef void(^ConnectCB)(VOIPTCP *tcp, int err);
+typedef void(^ReadCB)(VOIPTCP *tcp, NSData *data, int err);
+typedef void(^CloseCB)(VOIPTCP *tcp, int err);
 
-@interface AsyncTCP : NSObject
+@interface VOIPTCP : NSObject
 -(BOOL)connect:(NSString*)host port:(int)port cb:(ConnectCB)cb;
 -(void)close;
 -(void)write:(NSData*)data;

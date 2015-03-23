@@ -8,14 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		6D401BE11AAC7D2F0041ABC6 /* libvoipsession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D401BD51AAC7D2F0041ABC6 /* libvoipsession.a */; };
-		6D401C001AAC7D470041ABC6 /* AsyncTCP.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BF91AAC7D460041ABC6 /* AsyncTCP.m */; };
-		6D401C011AAC7D470041ABC6 /* IMService.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BFB1AAC7D460041ABC6 /* IMService.m */; };
-		6D401C021AAC7D470041ABC6 /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BFD1AAC7D460041ABC6 /* Message.m */; };
-		6D401C031AAC7D470041ABC6 /* util.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BFE1AAC7D460041ABC6 /* util.c */; };
+		6D401C001AAC7D470041ABC6 /* VOIPTCP.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BF91AAC7D460041ABC6 /* VOIPTCP.m */; };
+		6D401C011AAC7D470041ABC6 /* VOIPService.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BFB1AAC7D460041ABC6 /* VOIPService.m */; };
+		6D401C021AAC7D470041ABC6 /* VOIPMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BFD1AAC7D460041ABC6 /* VOIPMessage.m */; };
+		6D401C031AAC7D470041ABC6 /* VOIPUtil.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BFE1AAC7D460041ABC6 /* VOIPUtil.c */; };
 		6D401C061AAC7D540041ABC6 /* VOIPSession.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C051AAC7D540041ABC6 /* VOIPSession.mm */; };
 		6D401C111AAC7E6F0041ABC6 /* VOIPSession.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401C041AAC7D540041ABC6 /* VOIPSession.h */; };
-		6D401C121AAC7E6F0041ABC6 /* IMService.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401BFA1AAC7D460041ABC6 /* IMService.h */; };
-		6D401C131AAC7E6F0041ABC6 /* Message.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401BFC1AAC7D460041ABC6 /* Message.h */; };
+		6D401C121AAC7E6F0041ABC6 /* VOIPService.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401BFA1AAC7D460041ABC6 /* VOIPService.h */; };
+		6D401C131AAC7E6F0041ABC6 /* VOIPMessage.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401BFC1AAC7D460041ABC6 /* VOIPMessage.h */; };
 		6D401C141AAC7FC80041ABC6 /* stun.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C081AAC7D970041ABC6 /* stun.cxx */; };
 		6D401C151AAC7FCC0041ABC6 /* udp.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C0A1AAC7D970041ABC6 /* udp.cxx */; };
 /* End PBXBuildFile section */
@@ -38,8 +38,8 @@
 			dstSubfolderSpec = 16;
 			files = (
 				6D401C111AAC7E6F0041ABC6 /* VOIPSession.h in CopyFiles */,
-				6D401C121AAC7E6F0041ABC6 /* IMService.h in CopyFiles */,
-				6D401C131AAC7E6F0041ABC6 /* Message.h in CopyFiles */,
+				6D401C121AAC7E6F0041ABC6 /* VOIPService.h in CopyFiles */,
+				6D401C131AAC7E6F0041ABC6 /* VOIPMessage.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,14 +49,14 @@
 		6D401BD51AAC7D2F0041ABC6 /* libvoipsession.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvoipsession.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D401BE01AAC7D2F0041ABC6 /* voipsessionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voipsessionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D401BE61AAC7D2F0041ABC6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		6D401BF81AAC7D460041ABC6 /* AsyncTCP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AsyncTCP.h; sourceTree = "<group>"; };
-		6D401BF91AAC7D460041ABC6 /* AsyncTCP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AsyncTCP.m; sourceTree = "<group>"; };
-		6D401BFA1AAC7D460041ABC6 /* IMService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IMService.h; sourceTree = "<group>"; };
-		6D401BFB1AAC7D460041ABC6 /* IMService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IMService.m; sourceTree = "<group>"; };
-		6D401BFC1AAC7D460041ABC6 /* Message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Message.h; sourceTree = "<group>"; };
-		6D401BFD1AAC7D460041ABC6 /* Message.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Message.m; sourceTree = "<group>"; };
-		6D401BFE1AAC7D460041ABC6 /* util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = util.c; sourceTree = "<group>"; };
-		6D401BFF1AAC7D460041ABC6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+		6D401BF81AAC7D460041ABC6 /* VOIPTCP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPTCP.h; sourceTree = "<group>"; };
+		6D401BF91AAC7D460041ABC6 /* VOIPTCP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPTCP.m; sourceTree = "<group>"; };
+		6D401BFA1AAC7D460041ABC6 /* VOIPService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPService.h; sourceTree = "<group>"; };
+		6D401BFB1AAC7D460041ABC6 /* VOIPService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPService.m; sourceTree = "<group>"; };
+		6D401BFC1AAC7D460041ABC6 /* VOIPMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPMessage.h; sourceTree = "<group>"; };
+		6D401BFD1AAC7D460041ABC6 /* VOIPMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPMessage.m; sourceTree = "<group>"; };
+		6D401BFE1AAC7D460041ABC6 /* VOIPUtil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = VOIPUtil.c; sourceTree = "<group>"; };
+		6D401BFF1AAC7D460041ABC6 /* VOIPUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPUtil.h; sourceTree = "<group>"; };
 		6D401C041AAC7D540041ABC6 /* VOIPSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPSession.h; sourceTree = "<group>"; };
 		6D401C051AAC7D540041ABC6 /* VOIPSession.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VOIPSession.mm; sourceTree = "<group>"; };
 		6D401C081AAC7D970041ABC6 /* stun.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stun.cxx; sourceTree = "<group>"; };
@@ -108,14 +108,14 @@
 				6D401C071AAC7D970041ABC6 /* stund */,
 				6D401C041AAC7D540041ABC6 /* VOIPSession.h */,
 				6D401C051AAC7D540041ABC6 /* VOIPSession.mm */,
-				6D401BF81AAC7D460041ABC6 /* AsyncTCP.h */,
-				6D401BF91AAC7D460041ABC6 /* AsyncTCP.m */,
-				6D401BFA1AAC7D460041ABC6 /* IMService.h */,
-				6D401BFB1AAC7D460041ABC6 /* IMService.m */,
-				6D401BFC1AAC7D460041ABC6 /* Message.h */,
-				6D401BFD1AAC7D460041ABC6 /* Message.m */,
-				6D401BFE1AAC7D460041ABC6 /* util.c */,
-				6D401BFF1AAC7D460041ABC6 /* util.h */,
+				6D401BF81AAC7D460041ABC6 /* VOIPTCP.h */,
+				6D401BF91AAC7D460041ABC6 /* VOIPTCP.m */,
+				6D401BFA1AAC7D460041ABC6 /* VOIPService.h */,
+				6D401BFB1AAC7D460041ABC6 /* VOIPService.m */,
+				6D401BFC1AAC7D460041ABC6 /* VOIPMessage.h */,
+				6D401BFD1AAC7D460041ABC6 /* VOIPMessage.m */,
+				6D401BFE1AAC7D460041ABC6 /* VOIPUtil.c */,
+				6D401BFF1AAC7D460041ABC6 /* VOIPUtil.h */,
 			);
 			path = voipsession;
 			sourceTree = "<group>";
@@ -252,12 +252,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6D401C031AAC7D470041ABC6 /* util.c in Sources */,
-				6D401C001AAC7D470041ABC6 /* AsyncTCP.m in Sources */,
+				6D401C031AAC7D470041ABC6 /* VOIPUtil.c in Sources */,
+				6D401C001AAC7D470041ABC6 /* VOIPTCP.m in Sources */,
 				6D401C151AAC7FCC0041ABC6 /* udp.cxx in Sources */,
-				6D401C021AAC7D470041ABC6 /* Message.m in Sources */,
+				6D401C021AAC7D470041ABC6 /* VOIPMessage.m in Sources */,
 				6D401C061AAC7D540041ABC6 /* VOIPSession.mm in Sources */,
-				6D401C011AAC7D470041ABC6 /* IMService.m in Sources */,
+				6D401C011AAC7D470041ABC6 /* VOIPService.m in Sources */,
 				6D401C141AAC7FC80041ABC6 /* stun.cxx in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

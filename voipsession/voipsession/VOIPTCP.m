@@ -6,10 +6,10 @@
 //  Copyright (c) 2014年 potato. All rights reserved.
 //
 
-#import "AsyncTCP.h"
-#import "util.h"
+#import "VOIPTCP.h"
+#import "VOIPUtil.h"
 #include <netinet/in.h>
-@interface AsyncTCP()
+@interface VOIPTCP()
 @property(nonatomic, strong)ConnectCB connect_cb;
 @property(nonatomic, strong)ReadCB read_cb;
 @property(nonatomic, strong)dispatch_source_t readSource;
@@ -21,7 +21,7 @@
 @property(nonatomic)NSMutableData *data;
 @end
 
-@implementation AsyncTCP
+@implementation VOIPTCP
 
 -(id)init {
     self = [super init];
@@ -43,12 +43,12 @@
 -(BOOL)connect:(NSString*)host port:(int)port cb:(ConnectCB)cb {
     struct sockaddr_in addr;
     //todo nonblock
-    lookupAddr([host UTF8String], port, &addr);
+    voip_lookupAddr([host UTF8String], port, &addr);
     
     int sockfd;
     int r;
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    sock_nonblock(sockfd, 1);
+    voip_sock_nonblock(sockfd, 1);
     do {
     	r = connect(sockfd, (const struct sockaddr*)&addr, sizeof(addr));
     } while (r == -1 && errno == EINTR);
@@ -61,7 +61,7 @@
     
     dispatch_queue_t queue = dispatch_get_main_queue();
     self.writeSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_WRITE, sockfd, 0, queue);
-    __weak AsyncTCP *wself = self;
+    __weak VOIPTCP *wself = self;
     dispatch_source_set_event_handler(self.writeSource, ^{
         [wself onWrite];
     });
@@ -87,7 +87,7 @@
         return;
     }
     const char *p = [self.data bytes];
-    int n = write_data(self.sock, (uint8_t*)p, self.data.length);
+    int n = voip_write_data(self.sock, (uint8_t*)p, self.data.length);
     if (n < 0) {
         NSLog(@"sock write error:%d", errno);
         dispatch_suspend(self.writeSource);
@@ -185,7 +185,7 @@
 -(void)startRead:(ReadCB)cb {
     dispatch_queue_t queue = dispatch_get_main_queue();
     self.readSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, self.sock, 0, queue);
-    __weak AsyncTCP *wself = self;
+    __weak VOIPTCP *wself = self;
     dispatch_source_set_event_handler(self.readSource, ^{
         [wself onRead];
     });

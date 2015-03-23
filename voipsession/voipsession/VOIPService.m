@@ -8,20 +8,20 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#import "IMService.h"
-#import "AsyncTCP.h"
-#import "Message.h"
-#import "util.h"
+#import "VOIPService.h"
+#import "VOIPTCP.h"
+#import "VOIPMessage.h"
+#import "VOIPUtil.h"
 
 
 #define HEARTBEAT (180ull*NSEC_PER_SEC)
 
-@interface IMService()
+@interface VOIPService()
 
 @property(atomic, assign) time_t timestmap;
 
 @property(nonatomic, assign)BOOL stopped;
-@property(nonatomic)AsyncTCP *tcp;
+@property(nonatomic)VOIPTCP *tcp;
 @property(nonatomic, strong)dispatch_source_t connectTimer;
 @property(nonatomic, strong)dispatch_source_t heartbeatTimer;
 @property(nonatomic)int connectFailCount;
@@ -34,13 +34,13 @@
 
 @end
 
-@implementation IMService
-+(IMService*)instance {
-    static IMService *im;
+@implementation VOIPService
++(VOIPService*)instance {
+    static VOIPService *im;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         if (!im) {
-            im = [[IMService alloc] init];
+            im = [[VOIPService alloc] init];
         }
     });
     return im;
@@ -140,12 +140,12 @@
 }
 
 
--(void)handleAuthStatus:(Message*)msg {
+-(void)handleAuthStatus:(VOIPMessage*)msg {
     int status = [(NSNumber*)msg.body intValue];
     NSLog(@"auth status:%d", status);
 }
 
--(void)handleVOIPControl:(Message*)msg {
+-(void)handleVOIPControl:(VOIPMessage*)msg {
     VOIPControl *ctl = (VOIPControl*)msg.body;
     id<VOIPObserver> ob = [self.voipObservers lastObject];
     if (ob) {
@@ -156,12 +156,12 @@
 
 
 -(void)publishConnectState:(int)state {
-    for (id<MessageObserver> ob in self.observers) {
+    for (id<VOIPConnectObserver> ob in self.observers) {
         [ob onConnectState:state];
     }
 }
 
--(void)handleMessage:(Message*)msg {
+-(void)handleMessage:(VOIPMessage*)msg {
     if (msg.cmd == MSG_AUTH_STATUS) {
         [self handleAuthStatus:msg];
     } else if (msg.cmd == MSG_VOIP_CONTROL) {
@@ -177,12 +177,12 @@
         if (self.data.length < pos + 4) {
             break;
         }
-        int len = readInt32(p+pos);
+        int len = voip_readInt32(p+pos);
         if (self.data.length < 4 + 8 + pos + len) {
             break;
         }
         NSData *tmp = [NSData dataWithBytes:p+4+pos length:len + 8];
-        Message *msg = [[Message alloc] init];
+        VOIPMessage *msg = [[VOIPMessage alloc] init];
         if (![msg unpack:tmp]) {
             NSLog(@"unpack message fail");
             return NO;
@@ -276,8 +276,8 @@
     
     self.connectState = STATE_CONNECTING;
     [self publishConnectState:STATE_CONNECTING];
-    self.tcp = [[AsyncTCP alloc] init];
-    BOOL r = [self.tcp connect:self.host port:self.port cb:^(AsyncTCP *tcp, int err) {
+    self.tcp = [[VOIPTCP alloc] init];
+    BOOL r = [self.tcp connect:self.host port:self.port cb:^(VOIPTCP *tcp, int err) {
         if (err) {
             NSLog(@"tcp connect err");
             [self close];
@@ -293,7 +293,7 @@
             self.connectState = STATE_CONNECTED;
             [self publishConnectState:STATE_CONNECTED];
             [self sendAuth];
-            [self.tcp startRead:^(AsyncTCP *tcp, NSData *data, int err) {
+            [self.tcp startRead:^(VOIPTCP *tcp, NSData *data, int err) {
                 [self onRead:data error:err];
             }];
         }
@@ -309,7 +309,7 @@
     }
 }
 
--(BOOL)sendMessage:(Message *)msg {
+-(BOOL)sendMessage:(VOIPMessage *)msg {
     if (!self.tcp || self.connectState != STATE_CONNECTED) return NO;
     self.seq = self.seq + 1;
     msg.seq = self.seq;
@@ -321,7 +321,7 @@
         return NO;
     }
     char b[4];
-    writeInt32(p.length-8, b);
+    voip_writeInt32(p.length-8, b);
     [data appendBytes:(void*)b length:4];
     [data appendData:p];
     [self.tcp write:data];
@@ -330,24 +330,24 @@
 
 -(void)sendHeartbeat {
     NSLog(@"send heartbeat");
-    Message *msg = [[Message alloc] init];
+    VOIPMessage *msg = [[VOIPMessage alloc] init];
     msg.cmd = MSG_HEARTBEAT;
     [self sendMessage:msg];
 }
 
 -(void)sendAuth {
     NSLog(@"send auth");
-    Message *msg = [[Message alloc] init];
+    VOIPMessage *msg = [[VOIPMessage alloc] init];
     msg.cmd = MSG_AUTH;
     msg.body = [NSNumber numberWithLongLong:self.uid];
     [self sendMessage:msg];
 }
 
--(void)addMessageObserver:(id<MessageObserver>)ob {
+-(void)addMessageObserver:(id<VOIPObserver>)ob {
     [self.observers addObject:ob];
 }
 
--(void)removeMessageObserver:(id<MessageObserver>)ob {
+-(void)removeMessageObserver:(id<VOIPObserver>)ob {
     [self.observers removeObject:ob];
 }
 
@@ -367,7 +367,7 @@
 }
 
 -(BOOL)sendVOIPControl:(VOIPControl*)ctl {
-    Message *m = [[Message alloc] init];
+    VOIPMessage *m = [[VOIPMessage alloc] init];
     m.cmd = MSG_VOIP_CONTROL;
     m.body = ctl;
     return [self sendMessage:m];

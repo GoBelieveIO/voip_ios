@@ -7,7 +7,7 @@
 //
 #include <arpa/inet.h>
 #import "VOIPSession.h"
-#import "IMService.h"
+#import "VOIPService.h"
 #import "stun.h"
 
 @interface VOIPSession()
@@ -137,7 +137,7 @@
     ctl.receiver = self.peerUID;
     ctl.cmd = VOIP_COMMAND_DIAL;
     ctl.dialCount = self.dialCount + 1;
-    BOOL r = [[IMService instance] sendVOIPControl:ctl];
+    BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
     if (r) {
         self.dialCount = self.dialCount + 1;
     } else {
@@ -158,7 +158,7 @@
     ctl.sender = self.currentUID;
     ctl.receiver = self.peerUID;
     ctl.cmd = cmd;
-    [[IMService instance] sendVOIPControl:ctl];
+    [[VOIPService instance] sendVOIPControl:ctl];
 }
 
 -(void)sendRefused {
@@ -180,7 +180,7 @@
     ctl.cmd = VOIP_COMMAND_CONNECTED;
     ctl.natMap = self.localNatMap;
     
-    [[IMService instance] sendVOIPControl:ctl];
+    [[VOIPService instance] sendVOIPControl:ctl];
 }
 
 -(void)sendDialAccept {
@@ -190,7 +190,7 @@
     ctl.cmd = VOIP_COMMAND_ACCEPT;
     ctl.natMap = self.localNatMap;
     
-    [[IMService instance] sendVOIPControl:ctl];
+    [[VOIPService instance] sendVOIPControl:ctl];
     
     time_t now = time(NULL);
     if (now - self.acceptTimestamp >= 10) {

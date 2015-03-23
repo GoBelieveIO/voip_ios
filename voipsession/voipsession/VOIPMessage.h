@@ -60,7 +60,7 @@ enum VOIPCommand {
 
 
 
-@interface Message : NSObject
+@interface VOIPMessage : NSObject
 @property(nonatomic, assign)int cmd;
 @property(nonatomic, assign)int seq;
 @property(nonatomic) NSObject *body;

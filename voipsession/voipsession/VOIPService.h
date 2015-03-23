@@ -1,5 +1,5 @@
 //
-//  IMService.h
+//  VOIPService.h
 //  im
 //
 //  Created by houxh on 14-6-26.
@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "Message.h"
+#import "VOIPMessage.h"
 
 #define STATE_UNCONNECTED 0
 #define STATE_CONNECTING 1
@@ -25,14 +25,14 @@
 
 @end
 
-@protocol MessageObserver <NSObject>
+@protocol VOIPConnectObserver <NSObject>
 
 //同IM服务器连接的状态变更通知
 -(void)onConnectState:(int)state;
 
 @end
 
-@interface IMService : NSObject
+@interface VOIPService : NSObject
 
 @property(atomic, copy) NSString *hostIP;
 @property(nonatomic, copy)NSString *host;
@@ -40,13 +40,13 @@
 @property(nonatomic)int voipPort;
 @property(nonatomic, assign)int connectState;
 
-+(IMService*)instance;
++(VOIPService*)instance;
 
 -(void)start:(int64_t)uid;
 -(void)stop;
 
--(void)addMessageObserver:(id<MessageObserver>)ob;
--(void)removeMessageObserver:(id<MessageObserver>)ob;
+-(void)addMessageObserver:(id<VOIPConnectObserver>)ob;
+-(void)removeMessageObserver:(id<VOIPConnectObserver>)ob;
 
 -(void)pushVOIPObserver:(id<VOIPObserver>)ob;
 -(void)popVOIPObserver:(id<VOIPObserver>)ob;
