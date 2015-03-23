@@ -1,0 +1,431 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6D0331831AAB73E3004AA39F /* libvoipsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0331771AAB73E3004AA39F /* libvoipsdk.a */; };
+		6D0331A21AAB74DD004AA39F /* AVReceiveStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D03319B1AAB74DD004AA39F /* AVReceiveStream.mm */; };
+		6D0331A31AAB74DD004AA39F /* AVSendStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D03319D1AAB74DD004AA39F /* AVSendStream.mm */; };
+		6D0331A41AAB74DD004AA39F /* WebRTC.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D0331A11AAB74DD004AA39F /* WebRTC.mm */; };
+		6D0331A61AAB7529004AA39F /* libwebrtc_all.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0331A51AAB7529004AA39F /* libwebrtc_all.a */; };
+		6D401BB21AAC2B470041ABC6 /* VOIPEngine.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */; };
+		6D401BB51AAC2DD80041ABC6 /* util.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BB31AAC2DD80041ABC6 /* util.c */; };
+		6D401BC21AAC2F110041ABC6 /* VOIPEngine.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6D0331841AAB73E3004AA39F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D03316F1AAB73E3004AA39F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6D0331761AAB73E3004AA39F;
+			remoteInfo = voipsdk;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		6D0331751AAB73E3004AA39F /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+				6D401BC21AAC2F110041ABC6 /* VOIPEngine.h in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		6D0331771AAB73E3004AA39F /* libvoipsdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvoipsdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voipsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D0331881AAB73E4004AA39F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6D03319A1AAB74DD004AA39F /* AVReceiveStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVReceiveStream.h; sourceTree = "<group>"; };
+		6D03319B1AAB74DD004AA39F /* AVReceiveStream.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AVReceiveStream.mm; sourceTree = "<group>"; };
+		6D03319C1AAB74DD004AA39F /* AVSendStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVSendStream.h; sourceTree = "<group>"; };
+		6D03319D1AAB74DD004AA39F /* AVSendStream.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AVSendStream.mm; sourceTree = "<group>"; };
+		6D03319E1AAB74DD004AA39F /* AVTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVTransport.h; sourceTree = "<group>"; };
+		6D03319F1AAB74DD004AA39F /* ChannelTransport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ChannelTransport.h; sourceTree = "<group>"; };
+		6D0331A01AAB74DD004AA39F /* WebRTC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebRTC.h; sourceTree = "<group>"; };
+		6D0331A11AAB74DD004AA39F /* WebRTC.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebRTC.mm; sourceTree = "<group>"; };
+		6D0331A51AAB7529004AA39F /* libwebrtc_all.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwebrtc_all.a; sourceTree = "<group>"; };
+		6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPEngine.h; sourceTree = "<group>"; };
+		6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VOIPEngine.mm; sourceTree = "<group>"; };
+		6D401BB31AAC2DD80041ABC6 /* util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = util.c; sourceTree = "<group>"; };
+		6D401BB41AAC2DD80041ABC6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6D0331741AAB73E3004AA39F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D0331A61AAB7529004AA39F /* libwebrtc_all.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6D03317F1AAB73E3004AA39F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D0331831AAB73E3004AA39F /* libvoipsdk.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6D03316E1AAB73E3004AA39F = {
+			isa = PBXGroup;
+			children = (
+				6D0331A51AAB7529004AA39F /* libwebrtc_all.a */,
+				6D0331791AAB73E3004AA39F /* voipsdk */,
+				6D0331861AAB73E4004AA39F /* voipsdkTests */,
+				6D0331781AAB73E3004AA39F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6D0331781AAB73E3004AA39F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6D0331771AAB73E3004AA39F /* libvoipsdk.a */,
+				6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6D0331791AAB73E3004AA39F /* voipsdk */ = {
+			isa = PBXGroup;
+			children = (
+				6D401BB31AAC2DD80041ABC6 /* util.c */,
+				6D401BB41AAC2DD80041ABC6 /* util.h */,
+				6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */,
+				6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */,
+				6D03319A1AAB74DD004AA39F /* AVReceiveStream.h */,
+				6D03319B1AAB74DD004AA39F /* AVReceiveStream.mm */,
+				6D03319C1AAB74DD004AA39F /* AVSendStream.h */,
+				6D03319D1AAB74DD004AA39F /* AVSendStream.mm */,
+				6D03319E1AAB74DD004AA39F /* AVTransport.h */,
+				6D03319F1AAB74DD004AA39F /* ChannelTransport.h */,
+				6D0331A01AAB74DD004AA39F /* WebRTC.h */,
+				6D0331A11AAB74DD004AA39F /* WebRTC.mm */,
+			);
+			path = voipsdk;
+			sourceTree = "<group>";
+		};
+		6D0331861AAB73E4004AA39F /* voipsdkTests */ = {
+			isa = PBXGroup;
+			children = (
+				6D0331871AAB73E4004AA39F /* Supporting Files */,
+			);
+			path = voipsdkTests;
+			sourceTree = "<group>";
+		};
+		6D0331871AAB73E4004AA39F /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				6D0331881AAB73E4004AA39F /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6D0331761AAB73E3004AA39F /* voipengine */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D03318B1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipengine" */;
+			buildPhases = (
+				6D0331731AAB73E3004AA39F /* Sources */,
+				6D0331741AAB73E3004AA39F /* Frameworks */,
+				6D0331751AAB73E3004AA39F /* Copy Files */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = voipengine;
+			productName = voipsdk;
+			productReference = 6D0331771AAB73E3004AA39F /* libvoipsdk.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		6D0331811AAB73E3004AA39F /* voipsdkTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D03318E1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipsdkTests" */;
+			buildPhases = (
+				6D03317E1AAB73E3004AA39F /* Sources */,
+				6D03317F1AAB73E3004AA39F /* Frameworks */,
+				6D0331801AAB73E3004AA39F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6D0331851AAB73E3004AA39F /* PBXTargetDependency */,
+			);
+			name = voipsdkTests;
+			productName = voipsdkTests;
+			productReference = 6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6D03316F1AAB73E3004AA39F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = beetle;
+				TargetAttributes = {
+					6D0331761AAB73E3004AA39F = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+					6D0331811AAB73E3004AA39F = {
+						CreatedOnToolsVersion = 6.1.1;
+					};
+				};
+			};
+			buildConfigurationList = 6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipsdk" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 6D03316E1AAB73E3004AA39F;
+			productRefGroup = 6D0331781AAB73E3004AA39F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				6D0331761AAB73E3004AA39F /* voipengine */,
+				6D0331811AAB73E3004AA39F /* voipsdkTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6D0331801AAB73E3004AA39F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6D0331731AAB73E3004AA39F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D401BB51AAC2DD80041ABC6 /* util.c in Sources */,
+				6D0331A41AAB74DD004AA39F /* WebRTC.mm in Sources */,
+				6D401BB21AAC2B470041ABC6 /* VOIPEngine.mm in Sources */,
+				6D0331A31AAB74DD004AA39F /* AVSendStream.mm in Sources */,
+				6D0331A21AAB74DD004AA39F /* AVReceiveStream.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6D03317E1AAB73E3004AA39F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6D0331851AAB73E3004AA39F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6D0331761AAB73E3004AA39F /* voipengine */;
+			targetProxy = 6D0331841AAB73E3004AA39F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6D0331891AAB73E4004AA39F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+			};
+			name = Debug;
+		};
+		6D03318A1AAB73E4004AA39F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6D03318C1AAB73E4004AA39F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					WEBRTC_IOS,
+					"$(inherited)",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = voipsdk/webrtc/src;
+				VALID_ARCHS = "arm64 armv7";
+			};
+			name = Debug;
+		};
+		6D03318D1AAB73E4004AA39F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = WEBRTC_IOS;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = voipsdk/webrtc/src;
+				VALID_ARCHS = "arm64 armv7";
+			};
+			name = Release;
+		};
+		6D03318F1AAB73E4004AA39F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Zhifeng Zhou (PV548P44SL)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = voipsdkTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		6D0331901AAB73E4004AA39F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Zhifeng Zhou (PV548P44SL)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = voipsdkTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipsdk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D0331891AAB73E4004AA39F /* Debug */,
+				6D03318A1AAB73E4004AA39F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6D03318B1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipengine" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D03318C1AAB73E4004AA39F /* Debug */,
+				6D03318D1AAB73E4004AA39F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6D03318E1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipsdkTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D03318F1AAB73E4004AA39F /* Debug */,
+				6D0331901AAB73E4004AA39F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6D03316F1AAB73E3004AA39F /* Project object */;
+}
