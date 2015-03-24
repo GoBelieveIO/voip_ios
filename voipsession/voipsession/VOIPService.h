@@ -36,7 +36,6 @@
 @property(nonatomic)int port;
 @property(nonatomic, copy) NSString *deviceID;
 @property(nonatomic, copy) NSString *token;
-@property(nonatomic) int64_t uid;
 @property(nonatomic, assign)int connectState;
 
 +(VOIPService*)instance;

@@ -10,6 +10,9 @@
 #import "VOIPService.h"
 #import "stun.h"
 
+#define VOIP_PORT 20001
+#define STUN_SERVER  @"stun.counterpath.net"
+
 @interface VOIPSession()
 
 @property(nonatomic, assign) int dialCount;
@@ -35,6 +38,9 @@
     self = [super init];
     if (self) {
         self.state = VOIP_ACCEPTING;
+        
+        self.voipPort = VOIP_PORT;
+        self.stunServer = STUN_SERVER;
     }
     return self;
 }

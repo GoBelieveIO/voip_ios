@@ -16,6 +16,9 @@
 
 #define HEARTBEAT (180ull*NSEC_PER_SEC)
 
+#define HOST @"voipnode.gobelieve.io"
+#define PORT 20000
+
 @interface VOIPService()
 
 @property(atomic, assign) time_t timestmap;
@@ -73,6 +76,9 @@
         self.suspended = YES;
         self.reachable = YES;
         self.isBackground = NO;
+        
+        self.host = HOST;
+        self.port = PORT;
     }
     return self;
 }
@@ -421,15 +427,12 @@
 -(void)sendAuth {
     NSLog(@"send auth");
     VOIPMessage *msg = [[VOIPMessage alloc] init];
-    msg.cmd = MSG_AUTH;
-    msg.body = [NSNumber numberWithLongLong:self.uid];
-    /*
     msg.cmd = MSG_AUTH_TOKEN;
     VOIPAuthenticationToken *auth = [[VOIPAuthenticationToken alloc] init];
     auth.token = self.token;
     auth.platformID = PLATFORM_IOS;
     auth.deviceID = self.deviceID;
-    msg.body = auth;*/
+    msg.body = auth;
     [self sendMessage:msg];
 }
 
