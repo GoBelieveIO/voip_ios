@@ -34,13 +34,19 @@
 @property(atomic, copy) NSString *hostIP;
 @property(nonatomic, copy)NSString *host;
 @property(nonatomic)int port;
-@property(nonatomic)int voipPort;
+@property(nonatomic, copy) NSString *deviceID;
+@property(nonatomic, copy) NSString *token;
+@property(nonatomic) int64_t uid;
 @property(nonatomic, assign)int connectState;
 
 +(VOIPService*)instance;
 
--(void)start:(int64_t)uid;
+-(void)startRechabilityNotifier;
+
+-(void)start;
 -(void)stop;
+-(void)enterForeground;
+-(void)enterBackground;
 
 -(void)addMessageObserver:(id<VOIPConnectObserver>)ob;
 -(void)removeMessageObserver:(id<VOIPConnectObserver>)ob;

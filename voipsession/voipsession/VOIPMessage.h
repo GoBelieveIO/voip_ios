@@ -20,10 +20,16 @@
 #define MSG_INPUTING 10
 #define MSG_SUBSCRIBE_ONLINE_STATE 11
 #define MSG_ONLINE_STATE 12
+#define MSG_PING 13
+#define MSG_PONG 14
+#define MSG_AUTH_TOKEN 15
+#define MSG_LOGIN_POINT 16
+
 
 #define MSG_VOIP_CONTROL 64
 #define MSG_VOIP_DATA 65
 
+#define PLATFORM_IOS 1
 
 enum VOIPCommand {
     VOIP_COMMAND_DIAL = 1,
@@ -58,7 +64,11 @@ enum VOIPCommand {
 @property(nonatomic) NatPortMap *natMap;//VOIP_COMMAND_ACCEPT，VOIP_COMMAND_CONNECTED
 @end
 
-
+@interface VOIPAuthenticationToken : NSObject
+@property(nonatomic, copy) NSString *token;
+@property(nonatomic, assign) int8_t platformID;
+@property(nonatomic, copy) NSString *deviceID;
+@end
 
 @interface VOIPMessage : NSObject
 @property(nonatomic, assign)int cmd;

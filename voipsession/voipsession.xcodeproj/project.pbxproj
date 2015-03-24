@@ -18,6 +18,7 @@
 		6D401C131AAC7E6F0041ABC6 /* VOIPMessage.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401BFC1AAC7D460041ABC6 /* VOIPMessage.h */; };
 		6D401C141AAC7FC80041ABC6 /* stun.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C081AAC7D970041ABC6 /* stun.cxx */; };
 		6D401C151AAC7FCC0041ABC6 /* udp.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C0A1AAC7D970041ABC6 /* udp.cxx */; };
+		6D5C184E1AC15ADB0047A9A3 /* VOIPReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C184D1AC15ADB0047A9A3 /* VOIPReachability.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,8 @@
 		6D401C091AAC7D970041ABC6 /* stun.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stun.h; sourceTree = "<group>"; };
 		6D401C0A1AAC7D970041ABC6 /* udp.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = udp.cxx; sourceTree = "<group>"; };
 		6D401C0B1AAC7D970041ABC6 /* udp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = udp.h; sourceTree = "<group>"; };
+		6D5C184C1AC15ADB0047A9A3 /* VOIPReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPReachability.h; sourceTree = "<group>"; };
+		6D5C184D1AC15ADB0047A9A3 /* VOIPReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPReachability.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +111,8 @@
 				6D401C071AAC7D970041ABC6 /* stund */,
 				6D401C041AAC7D540041ABC6 /* VOIPSession.h */,
 				6D401C051AAC7D540041ABC6 /* VOIPSession.mm */,
+				6D5C184C1AC15ADB0047A9A3 /* VOIPReachability.h */,
+				6D5C184D1AC15ADB0047A9A3 /* VOIPReachability.m */,
 				6D401BF81AAC7D460041ABC6 /* VOIPTCP.h */,
 				6D401BF91AAC7D460041ABC6 /* VOIPTCP.m */,
 				6D401BFA1AAC7D460041ABC6 /* VOIPService.h */,
@@ -256,6 +261,7 @@
 				6D401C001AAC7D470041ABC6 /* VOIPTCP.m in Sources */,
 				6D401C151AAC7FCC0041ABC6 /* udp.cxx in Sources */,
 				6D401C021AAC7D470041ABC6 /* VOIPMessage.m in Sources */,
+				6D5C184E1AC15ADB0047A9A3 /* VOIPReachability.m in Sources */,
 				6D401C061AAC7D540041ABC6 /* VOIPSession.mm in Sources */,
 				6D401C011AAC7D470041ABC6 /* VOIPService.m in Sources */,
 				6D401C141AAC7FC80041ABC6 /* stun.cxx in Sources */,

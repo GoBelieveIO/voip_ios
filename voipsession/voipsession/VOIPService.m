@@ -12,7 +12,7 @@
 #import "VOIPTCP.h"
 #import "VOIPMessage.h"
 #import "VOIPUtil.h"
-
+#import "VOIPReachability.h"
 
 #define HEARTBEAT (180ull*NSEC_PER_SEC)
 
@@ -20,7 +20,11 @@
 
 @property(atomic, assign) time_t timestmap;
 
+
 @property(nonatomic, assign)BOOL stopped;
+@property(nonatomic, assign)BOOL suspended;
+@property(nonatomic, assign)BOOL isBackground;
+
 @property(nonatomic)VOIPTCP *tcp;
 @property(nonatomic, strong)dispatch_source_t connectTimer;
 @property(nonatomic, strong)dispatch_source_t heartbeatTimer;
@@ -28,9 +32,11 @@
 @property(nonatomic)int seq;
 @property(nonatomic)NSMutableArray *observers;
 @property(nonatomic)NSMutableData *data;
-@property(nonatomic)int64_t uid;
 
 @property(nonatomic)NSMutableArray *voipObservers;
+
+@property(nonatomic)VOIPReachability *reach;
+@property(nonatomic)BOOL reachable;
 
 @end
 
@@ -64,12 +70,59 @@
         self.data = [NSMutableData data];
         self.connectState = STATE_UNCONNECTED;
         self.stopped = YES;
+        self.suspended = YES;
+        self.reachable = YES;
+        self.isBackground = NO;
     }
     return self;
 }
 
 
--(void)start:(int64_t)uid {
+-(void)startRechabilityNotifier {
+    VOIPService *wself = self;
+    self.reach = [VOIPReachability reachabilityForInternetConnection];
+    
+    self.reach.reachableBlock = ^(VOIPReachability*reach) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"internet reachable");
+            wself.reachable = YES;
+            if (wself != nil && !wself.stopped && !wself.isBackground) {
+                [wself resume];
+            }
+        });
+    };
+    
+    self.reach.unreachableBlock = ^(VOIPReachability*reach) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSLog(@"internet unreachable");
+            wself.reachable = NO;
+            if (wself != nil && !wself.stopped) {
+                [wself suspend];
+            }
+        });
+    };
+    
+    [self.reach startNotifier];
+}
+
+-(void)enterForeground {
+    NSLog(@"im service enter foreground");
+    self.isBackground = NO;
+    if (!self.stopped && self.reachable) {
+        [self resume];
+    }
+}
+
+-(void)enterBackground {
+    NSLog(@"im service enter background");
+    self.isBackground = YES;
+    if (!self.stopped) {
+        [self suspend];
+    }
+}
+
+
+-(void)start {
     if (!self.host || !self.port) {
         NSLog(@"should init im server host and port");
         exit(1);
@@ -78,27 +131,32 @@
         return;
     }
     NSLog(@"start im service");
-
-    self.uid = uid;
     self.stopped = NO;
-    dispatch_time_t w = dispatch_walltime(NULL, 0);
-    dispatch_source_set_timer(self.connectTimer, w, DISPATCH_TIME_FOREVER, 0);
-    dispatch_resume(self.connectTimer);
-    
-    w = dispatch_walltime(NULL, HEARTBEAT);
-    dispatch_source_set_timer(self.heartbeatTimer, w, HEARTBEAT, HEARTBEAT/2);
-    dispatch_resume(self.heartbeatTimer);
-
-    [self refreshHostIP];
+    if (self.reachable) {
+        [self resume];
+    }
 }
 
 -(void)stop {
     if (self.stopped) {
         return;
     }
-    
     NSLog(@"stop im service");
     self.stopped = YES;
+    
+    [self suspend];
+}
+
+
+
+-(void)suspend {
+    if (self.suspended) {
+        return;
+    }
+    
+    NSLog(@"suspend im service");
+    self.suspended = YES;
+    
     dispatch_suspend(self.connectTimer);
     dispatch_suspend(self.heartbeatTimer);
     
@@ -107,6 +165,23 @@
     [self close];
 }
 
+-(void)resume {
+    if (!self.suspended) {
+        return;
+    }
+    NSLog(@"resume im service");
+    self.suspended = NO;
+    
+    dispatch_time_t w = dispatch_walltime(NULL, 0);
+    dispatch_source_set_timer(self.connectTimer, w, DISPATCH_TIME_FOREVER, 0);
+    dispatch_resume(self.connectTimer);
+    
+    w = dispatch_walltime(NULL, HEARTBEAT);
+    dispatch_source_set_timer(self.heartbeatTimer, w, HEARTBEAT, HEARTBEAT/2);
+    dispatch_resume(self.heartbeatTimer);
+    
+    [self refreshHostIP];
+}
 
 
 -(void)close {
@@ -143,6 +218,14 @@
 -(void)handleAuthStatus:(VOIPMessage*)msg {
     int status = [(NSNumber*)msg.body intValue];
     NSLog(@"auth status:%d", status);
+    if (status != 0) {
+        //失效的accesstoken,2s后重新连接
+        self.connectFailCount = 2;
+        [self close];
+        [self startConnectTimer];
+        self.connectState = STATE_UNCONNECTED;
+        [self publishConnectState:STATE_UNCONNECTED];
+    }
 }
 
 -(void)handleVOIPControl:(VOIPMessage*)msg {
@@ -152,7 +235,6 @@
         [ob onVOIPControl:ctl];
     }
 }
-
 
 
 -(void)publishConnectState:(int)state {
@@ -335,11 +417,19 @@
     [self sendMessage:msg];
 }
 
+
 -(void)sendAuth {
     NSLog(@"send auth");
     VOIPMessage *msg = [[VOIPMessage alloc] init];
     msg.cmd = MSG_AUTH;
     msg.body = [NSNumber numberWithLongLong:self.uid];
+    /*
+    msg.cmd = MSG_AUTH_TOKEN;
+    VOIPAuthenticationToken *auth = [[VOIPAuthenticationToken alloc] init];
+    auth.token = self.token;
+    auth.platformID = PLATFORM_IOS;
+    auth.deviceID = self.deviceID;
+    msg.body = auth;*/
     [self sendMessage:msg];
 }
 

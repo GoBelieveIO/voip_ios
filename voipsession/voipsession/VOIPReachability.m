@@ -25,10 +25,10 @@
  POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#import "GOReachability.h"
+#import "VOIPReachability.h"
 
 
-@interface GOReachability ()
+@interface VOIPReachability ()
 
 @property (nonatomic, assign) SCNetworkReachabilityRef  reachabilityRef;
 
@@ -70,9 +70,9 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 {
 #pragma unused (target)
 #if __has_feature(objc_arc)
-    GOReachability *reachability = ((__bridge GOReachability*)info);
+    VOIPReachability *reachability = ((__bridge VOIPReachability*)info);
 #else
-    GOReachability *reachability = ((Reachability*)info);
+    VOIPReachability *reachability = ((Reachability*)info);
 #endif
     
     // We probably don't need an autoreleasepool here, as GCD docs state each queue has its own autorelease pool,
@@ -84,7 +84,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 }
 
 
-@implementation GOReachability
+@implementation VOIPReachability
 
 @synthesize reachabilityRef;
 @synthesize reachabilitySerialQueue;
@@ -98,12 +98,12 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 #pragma mark - Class Constructor Methods
 
-+(GOReachability*)reachabilityWithHostName:(NSString*)hostname
++(VOIPReachability*)reachabilityWithHostName:(NSString*)hostname
 {
-    return [GOReachability reachabilityWithHostname:hostname];
+    return [VOIPReachability reachabilityWithHostname:hostname];
 }
 
-+(GOReachability*)reachabilityWithHostname:(NSString*)hostname
++(VOIPReachability*)reachabilityWithHostname:(NSString*)hostname
 {
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithName(NULL, [hostname UTF8String]);
     if (ref) 
@@ -121,7 +121,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return nil;
 }
 
-+(GOReachability *)reachabilityWithAddress:(const struct sockaddr_in *)hostAddress
++(VOIPReachability *)reachabilityWithAddress:(const struct sockaddr_in *)hostAddress
 {
     SCNetworkReachabilityRef ref = SCNetworkReachabilityCreateWithAddress(kCFAllocatorDefault, (const struct sockaddr*)hostAddress);
     if (ref) 
@@ -138,7 +138,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return nil;
 }
 
-+(GOReachability *)reachabilityForInternetConnection
++(VOIPReachability *)reachabilityForInternetConnection
 {   
     struct sockaddr_in zeroAddress;
     bzero(&zeroAddress, sizeof(zeroAddress));
@@ -148,7 +148,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
     return [self reachabilityWithAddress:&zeroAddress];
 }
 
-+(GOReachability*)reachabilityForLocalWiFi
++(VOIPReachability*)reachabilityForLocalWiFi
 {
     struct sockaddr_in localWifiAddress;
     bzero(&localWifiAddress, sizeof(localWifiAddress));
@@ -163,7 +163,7 @@ static void TMReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkRea
 
 // Initialization methods
 
--(GOReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref
+-(VOIPReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref
 {
     self = [super init];
     if (self != nil) 

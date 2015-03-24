@@ -19,6 +19,9 @@
 
 @end
 
+@implementation VOIPAuthenticationToken
+
+@end
 
 
 @implementation VOIPMessage
@@ -37,6 +40,19 @@
         int64_t uid = [(NSNumber*)self.body longLongValue];
         voip_writeInt64(uid, p);
         return [NSData dataWithBytes:buf length:HEAD_SIZE+8];
+    } else if (self.cmd == MSG_AUTH_TOKEN) {
+        VOIPAuthenticationToken *auth = (VOIPAuthenticationToken*)self.body;
+        *p++ = auth.platformID;
+        const char *t;
+        t = [auth.token UTF8String];
+        *p++ = strlen(t);
+        memcpy(p, t, strlen(t));
+        p += strlen(t);
+        t = [auth.deviceID UTF8String];
+        *p++ = strlen(t);
+        memcpy(p, t, strlen(t));
+        p += strlen(t);
+        return [NSData dataWithBytes:buf length:(p-buf)];
     } else if (self.cmd == MSG_VOIP_CONTROL) {
         VOIPControl *ctl = (VOIPControl*)self.body;
         voip_writeInt64(ctl.sender, p);

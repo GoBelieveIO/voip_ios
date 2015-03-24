@@ -63,12 +63,12 @@ typedef NS_ENUM(NSInteger, NetworkStatus) {
     ReachableViaWWAN = 1
 };
 
-@class GOReachability;
+@class VOIPReachability;
 
-typedef void (^NetworkReachable)(GOReachability * reachability);
-typedef void (^NetworkUnreachable)(GOReachability * reachability);
+typedef void (^NetworkReachable)(VOIPReachability * reachability);
+typedef void (^NetworkUnreachable)(VOIPReachability * reachability);
 
-@interface GOReachability : NSObject
+@interface VOIPReachability : NSObject
 
 @property (nonatomic, copy) NetworkReachable    reachableBlock;
 @property (nonatomic, copy) NetworkUnreachable  unreachableBlock;
@@ -76,15 +76,15 @@ typedef void (^NetworkUnreachable)(GOReachability * reachability);
 
 @property (nonatomic, assign) BOOL reachableOnWWAN;
 
-+(GOReachability*)reachabilityWithHostname:(NSString*)hostname;
++(VOIPReachability*)reachabilityWithHostname:(NSString*)hostname;
 // This is identical to the function above, but is here to maintain
 //compatibility with Apples original code. (see .m)
-+(GOReachability*)reachabilityWithHostName:(NSString*)hostname;
-+(GOReachability*)reachabilityForInternetConnection;
-+(GOReachability*)reachabilityWithAddress:(const struct sockaddr_in*)hostAddress;
-+(GOReachability*)reachabilityForLocalWiFi;
++(VOIPReachability*)reachabilityWithHostName:(NSString*)hostname;
++(VOIPReachability*)reachabilityForInternetConnection;
++(VOIPReachability*)reachabilityWithAddress:(const struct sockaddr_in*)hostAddress;
++(VOIPReachability*)reachabilityForLocalWiFi;
 
--(GOReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref;
+-(VOIPReachability *)initWithReachabilityRef:(SCNetworkReachabilityRef)ref;
 
 -(BOOL)startNotifier;
 -(void)stopNotifier;
