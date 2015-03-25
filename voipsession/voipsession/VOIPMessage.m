@@ -66,13 +66,22 @@
             voip_writeInt32(ctl.dialCount, p);
             p += 4;
             return [NSData dataWithBytes:buf length:HEAD_SIZE+24];
-        } else if (ctl.cmd == VOIP_COMMAND_ACCEPT || ctl.cmd == VOIP_COMMAND_CONNECTED) {
+        } else if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
             NSLog(@"nat map ip:%x", ctl.natMap.ip);
             voip_writeInt32(ctl.natMap.ip, p);
             p += 4;
             voip_writeInt16(ctl.natMap.port, p);
             p += 2;
             return [NSData dataWithBytes:buf length:HEAD_SIZE+26];
+        } else if (ctl.cmd == VOIP_COMMAND_CONNECTED) {
+            NSLog(@"nat map ip:%x", ctl.natMap.ip);
+            voip_writeInt32(ctl.natMap.ip, p);
+            p += 4;
+            voip_writeInt16(ctl.natMap.port, p);
+            p += 2;
+            voip_writeInt32(ctl.relayIP, p);
+            p += 4;
+            return [NSData dataWithBytes:buf length:HEAD_SIZE+30];
         } else {
             return [NSData dataWithBytes:buf length:HEAD_SIZE+20];
         }
@@ -103,13 +112,25 @@
         p += 4;
         if (ctl.cmd == VOIP_COMMAND_DIAL) {
             ctl.dialCount = voip_readInt32(p);
-        } else if (ctl.cmd == VOIP_COMMAND_ACCEPT || ctl.cmd == VOIP_COMMAND_CONNECTED) {
+        } else if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
             if (data.length >= HEAD_SIZE + 26) {
                 ctl.natMap = [[NatPortMap alloc] init];
                 ctl.natMap.ip = voip_readInt32(p);
                 p += 4;
                 ctl.natMap.port = voip_readInt16(p);
                 p += 2;
+            }
+        } else if (ctl.cmd == VOIP_COMMAND_CONNECTED) {
+            if (data.length >= HEAD_SIZE + 26) {
+                ctl.natMap = [[NatPortMap alloc] init];
+                ctl.natMap.ip = voip_readInt32(p);
+                p += 4;
+                ctl.natMap.port = voip_readInt16(p);
+                p += 2;
+            }
+            if (data.length >= HEAD_SIZE + 30) {
+                ctl.relayIP = voip_readInt32(p);
+                p += 4;
             }
         }
         self.body = ctl;

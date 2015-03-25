@@ -25,7 +25,6 @@
 @property(nonatomic, assign) time_t refuseTimestamp;
 @property(nonatomic) NSTimer *refuseTimer;
 
-
 @property(atomic, assign) StunAddress4 mappedAddr;
 @property(atomic, assign) NatType natType;
 @property(nonatomic) BOOL hairpin;
@@ -190,6 +189,11 @@
     ctl.cmd = VOIP_COMMAND_CONNECTED;
     ctl.natMap = self.localNatMap;
     
+    if (self.relayIP.length > 0) {
+        in_addr_t addr = inet_addr([self.relayIP UTF8String]);
+        ctl.relayIP = ntohl(addr);
+    }
+    
     [[VOIPService instance] sendVOIPControl:ctl];
 }
 
@@ -250,11 +254,15 @@
                 self.localNatMap = [[NatPortMap alloc] init];
             }
             
+            if (self.relayIP == nil) {
+                self.relayIP = [VOIPService instance].hostIP;
+            }
+            
             [self sendConnected];
             voip.state = VOIP_CONNECTED;
             [self.dialTimer invalidate];
             self.dialTimer = nil;
-            
+
             //onconnected
             [self.delegate onConnected];
         } else if (ctl.cmd == VOIP_COMMAND_REFUSE) {
@@ -287,6 +295,15 @@
             NSLog(@"called voip connected");
 
             self.peerNatMap = ctl.natMap;
+            if (ctl.relayIP > 0) {
+                in_addr addr;
+                addr.s_addr = htonl(ctl.relayIP);
+                char buff[64] = {0};
+                const char *str = inet_ntop(AF_INET, &addr, buff, 64);
+                self.relayIP = [NSString stringWithUTF8String:str];
+            } else {
+                self.relayIP = [VOIPService instance].hostIP;
+            }
             
             [self.acceptTimer invalidate];
             voip.state = VOIP_CONNECTED;

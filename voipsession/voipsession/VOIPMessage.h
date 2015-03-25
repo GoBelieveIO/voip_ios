@@ -62,6 +62,7 @@ enum VOIPCommand {
 @property(nonatomic, assign) int32_t cmd;
 @property(nonatomic, assign) int32_t dialCount;//只对VOIP_COMMAND_DIAL有意义
 @property(nonatomic) NatPortMap *natMap;//VOIP_COMMAND_ACCEPT，VOIP_COMMAND_CONNECTED
+@property(nonatomic) int32_t relayIP;//VOIP_COMMAND_CONNECTED, 中转服务器ip地址
 @end
 
 @interface VOIPAuthenticationToken : NSObject
