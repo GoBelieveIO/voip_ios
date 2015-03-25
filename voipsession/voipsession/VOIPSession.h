@@ -19,13 +19,14 @@ enum VOIPState {
     VOIP_REFUSING,//来电被拒
     VOIP_REFUSED,//(来/去)电已被拒
     VOIP_HANGED_UP,//通话被挂断
-    VOIP_RESETED,//通话连接被重置
+    VOIP_SHUTDOWN,//对方正在通话中，连接被终止
 };
 
 @protocol VOIPSessionDelegate <NSObject>
+@required
 -(void)onRefuse;
 -(void)onHangUp;
--(void)onReset;
+-(void)onTalking;
 
 -(void)onDialTimeout;
 -(void)onAcceptTimeout;

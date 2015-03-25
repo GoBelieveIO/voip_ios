@@ -171,8 +171,12 @@
     [self sendControlCommand:VOIP_COMMAND_REFUSED];
 }
 
--(void)sendTalking {
-    [self sendControlCommand:VOIP_COMMAND_TALKING];
+-(void)sendTalking:(int64_t)receiver {
+    VOIPControl *ctl = [[VOIPControl alloc] init];
+    ctl.sender = self.currentUID;
+    ctl.receiver = receiver;
+    ctl.cmd = VOIP_COMMAND_TALKING;
+    [[VOIPService instance] sendVOIPControl:ctl];
 }
 
 -(void)sendReset {
@@ -233,7 +237,7 @@
     VOIPSession *voip = self;
     
     if (ctl.sender != self.peerUID) {
-        [self sendTalking];
+        [self sendTalking:ctl.sender];
         return;
     }
     NSLog(@"voip state:%d command:%d", voip.state, ctl.cmd);
@@ -264,25 +268,13 @@
             //onrefuse
             [self.delegate onRefuse];
             
-        } else if (ctl.cmd == VOIP_COMMAND_DIAL) {
-            //simultaneous open
+        } else if (ctl.cmd == VOIP_COMMAND_TALKING) {
+            voip.state = VOIP_SHUTDOWN;
+            
             [self.dialTimer invalidate];
             self.dialTimer = nil;
-
             
-            voip.state = VOIP_ACCEPTED;
-            
-            if (self.localNatMap == nil) {
-                self.localNatMap = [[NatPortMap alloc] init];
-            }
-            
-            self.acceptTimestamp = time(NULL);
-            self.acceptTimer = [NSTimer scheduledTimerWithTimeInterval: 1
-                                                                target:self
-                                                              selector:@selector(sendDialAccept)
-                                                              userInfo:nil
-                                                               repeats:YES];
-            [self sendDialAccept];
+            [self.delegate onTalking];
         }
     } else if (voip.state == VOIP_ACCEPTING) {
         if (ctl.cmd == VOIP_COMMAND_HANG_UP) {
@@ -302,16 +294,6 @@
             //onconnected
             [self.delegate onConnected];
 
-        } else if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
-            //simultaneous open
-            NSLog(@"simultaneous voip connected");
-            self.peerNatMap = ctl.natMap;
-            
-            [self.acceptTimer invalidate];
-            voip.state = VOIP_CONNECTED;
-            //onconnected
-            [self.delegate onConnected];
-       
         }
     } else if (voip.state == VOIP_CONNECTED) {
         if (ctl.cmd == VOIP_COMMAND_HANG_UP) {
@@ -319,10 +301,6 @@
 
             //onhangup
             [self.delegate onHangUp];
-        } else if (ctl.cmd == VOIP_COMMAND_RESET) {
-            voip.state = VOIP_RESETED;
-            //onreset
-            [self.delegate onReset];
         } else if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
             [self sendConnected];
         }
