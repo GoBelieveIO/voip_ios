@@ -771,16 +771,16 @@ stunCreateUserName(const StunAddress4& source, StunAtrString* username)
    char buffer[1024];
    sprintf(buffer,
            "%08x:%08x:%08x:", 
-           UInt32(source.addr),
-           UInt32(stunRand()),
-           UInt32(lotime));
+           (unsigned int)(source.addr),
+           (unsigned int)(stunRand()),
+           (unsigned int)(lotime));
    assert( strlen(buffer) < 1024 );
 	
    assert(strlen(buffer) + 41 < STUN_MAX_STRING);
 	
    char hmac[20];
    char key[] = "Jason";
-   computeHmac(hmac, buffer, strlen(buffer), key, strlen(key) );
+   computeHmac(hmac, buffer, (int)strlen(buffer), key, (int)strlen(key) );
    char hmacHex[41];
    toHex(hmac, 20, hmacHex );
    hmacHex[40] =0;

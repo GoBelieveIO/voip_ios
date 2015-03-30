@@ -129,7 +129,7 @@
     int channel = self.recvStream.voiceChannel;
     
     const void *packet = [data.content bytes];
-    int packet_length = [data.content length];
+    NSInteger packet_length = [data.content length];
     
     WebRTC *rtc = [WebRTC sharedWebRTC];
     
@@ -140,12 +140,12 @@
     
     if (data.isRTP) {
         if (data.type == VOIP_AUDIO) {
-            NSLog(@"audio data:%d content:%d", packet_length, data.content.length);
+            NSLog(@"audio data:%zd content:%zd", packet_length, data.content.length);
             rtc.voe_network->ReceivedRTPPacket(channel, packet, packet_length);
         }
     } else {
         if (data.type == VOIP_AUDIO) {
-            NSLog(@"audio rtcp data:%d", packet_length);
+            NSLog(@"audio rtcp data:%zd", packet_length);
             rtc.voe_network->ReceivedRTCPPacket(channel, packet, packet_length);
         }
     }
@@ -225,7 +225,7 @@
     }
     
     const void *src = [data.content bytes];
-    int len = [data.content length];
+    NSInteger len = [data.content length];
     
     memcpy(p, src, len);
     

@@ -93,7 +93,7 @@
     self.voiceChannelTransport = new VoiceChannelTransport(rtc.voe_network,
                                                            self.voiceChannel,
                                                            self.voiceTransport, YES);
-    NSLog(@"transport:0x%x", self.voiceChannelTransport);
+    NSLog(@"transport:0x%p", self.voiceChannelTransport);
     
     int error = 0;
     int audio_capture_device_index = 0;

@@ -116,7 +116,7 @@ int voip_sock_nonblock(int fd, int set) {
 }
 
 int voip_write_data(int fd, uint8_t *bytes, int len) {
-    int n = 0;
+    ssize_t n = 0;
     
     do {
         n = send(fd, bytes, len, 0);
@@ -127,7 +127,7 @@ int voip_write_data(int fd, uint8_t *bytes, int len) {
         }
         return 0;
     } else {
-        return n;
+        return (int)n;
     }
 }
 

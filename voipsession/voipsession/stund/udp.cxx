@@ -143,7 +143,7 @@ getMessage( Socket fd, char* buf, int* len,
     }
     
     
-   *len = recvfrom(fd,
+   *len = (int)recvfrom(fd,
                    buf,
                    originalSize,
                    0,
@@ -212,7 +212,7 @@ sendMessage( Socket fd, char* buf, int l,
       // sending on a connected port 
       assert( dstIp == 0 );
 		
-      s = send(fd,buf,l,0);
+      s = (int)send(fd,buf,l,0);
    }
    else
    {
@@ -227,7 +227,7 @@ sendMessage( Socket fd, char* buf, int l,
       to.sin_port = htons(dstPort);
       to.sin_addr.s_addr = htonl(dstIp);
         
-      s = sendto(fd, buf, l, 0,(sockaddr*)&to, toLen);
+      s = (int)sendto(fd, buf, l, 0,(sockaddr*)&to, toLen);
    }
     
    if ( s == SOCKET_ERROR )

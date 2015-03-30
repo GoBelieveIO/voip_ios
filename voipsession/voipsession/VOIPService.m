@@ -409,7 +409,7 @@
         return NO;
     }
     char b[4];
-    voip_writeInt32(p.length-8, b);
+    voip_writeInt32((int)(p.length-8), b);
     [data appendBytes:(void*)b length:4];
     [data appendData:p];
     [self.tcp write:data];
@@ -449,7 +449,7 @@
 }
 
 -(void)popVOIPObserver:(id<VOIPObserver>)ob {
-    int count = [self.voipObservers count];
+    NSInteger count = [self.voipObservers count];
     if (count == 0) {
         return;
     }
