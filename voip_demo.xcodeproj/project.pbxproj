@@ -1,0 +1,705 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6D5C189F1AC8FDB70047A9A3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C189E1AC8FDB70047A9A3 /* main.m */; };
+		6D5C18A21AC8FDB70047A9A3 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18A11AC8FDB70047A9A3 /* AppDelegate.m */; };
+		6D5C18A51AC8FDB70047A9A3 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18A41AC8FDB70047A9A3 /* ViewController.m */; };
+		6D5C18A81AC8FDB70047A9A3 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18A61AC8FDB70047A9A3 /* Main.storyboard */; };
+		6D5C18AA1AC8FDB70047A9A3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */; };
+		6D5C18AD1AC8FDB70047A9A3 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */; };
+		6D5C18B91AC8FDB70047A9A3 /* demoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18B81AC8FDB70047A9A3 /* demoTests.m */; };
+		6D5C18DF1AC904150047A9A3 /* libvoipengine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C18CF1AC903EE0047A9A3 /* libvoipengine.a */; };
+		6D5C18E01AC904150047A9A3 /* libvoipsession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C18D81AC903F70047A9A3 /* libvoipsession.a */; };
+		6D5C19021AC9296E0047A9A3 /* VOIPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */; };
+		6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */; };
+		6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19401AC92A440047A9A3 /* ReflectionView.m */; };
+		6D5C19451AC92A560047A9A3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19441AC92A560047A9A3 /* UIView+Toast.m */; };
+		6D5C19491AC92A860047A9A3 /* VWWWaterView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19481AC92A860047A9A3 /* VWWWaterView.m */; };
+		6D5C194B1AC92DB40047A9A3 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C194A1AC92DB40047A9A3 /* libsqlite3.dylib */; };
+		6D5C194D1AC92DD00047A9A3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C194C1AC92DD00047A9A3 /* UIKit.framework */; };
+		6D5C194F1AC92DD60047A9A3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C194E1AC92DD60047A9A3 /* Foundation.framework */; };
+		6D5C19511AC92DDB0047A9A3 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C19501AC92DDA0047A9A3 /* AVFoundation.framework */; };
+		6D5C19531AC9305E0047A9A3 /* libstdc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C19521AC9305E0047A9A3 /* libstdc++.dylib */; };
+		6D5C19551AC9306A0047A9A3 /* GLKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C19541AC9306A0047A9A3 /* GLKit.framework */; };
+		6D5C195C1AC935360047A9A3 /* apns.caf in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C19581AC935360047A9A3 /* apns.caf */; };
+		6D5C195D1AC935360047A9A3 /* CallConnected.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C19591AC935360047A9A3 /* CallConnected.mp3 */; };
+		6D5C195E1AC935360047A9A3 /* end.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195A1AC935360047A9A3 /* end.mp3 */; };
+		6D5C195F1AC935360047A9A3 /* start.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195B1AC935360047A9A3 /* start.mp3 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6D5C18B31AC8FDB70047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18911AC8FDB70047A9A3 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6D5C18981AC8FDB70047A9A3;
+			remoteInfo = demo;
+		};
+		6D5C18CE1AC903EE0047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D0331771AAB73E3004AA39F;
+			remoteInfo = voipengine;
+		};
+		6D5C18D01AC903EE0047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D0331821AAB73E3004AA39F;
+			remoteInfo = voipsdkTests;
+		};
+		6D5C18D71AC903F70047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D401BD51AAC7D2F0041ABC6;
+			remoteInfo = voipsession;
+		};
+		6D5C18D91AC903F70047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D401BE01AAC7D2F0041ABC6;
+			remoteInfo = voipsessionTests;
+		};
+		6D5C18DB1AC9040F0047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 6D401BD41AAC7D2F0041ABC6;
+			remoteInfo = voipsession;
+		};
+		6D5C18DD1AC9040F0047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 6D0331761AAB73E3004AA39F;
+			remoteInfo = voipengine;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		6D5C18991AC8FDB70047A9A3 /* voip_demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = voip_demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D5C189D1AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6D5C189E1AC8FDB70047A9A3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		6D5C18A01AC8FDB70047A9A3 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		6D5C18A11AC8FDB70047A9A3 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		6D5C18A31AC8FDB70047A9A3 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		6D5C18A41AC8FDB70047A9A3 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		6D5C18A71AC8FDB70047A9A3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		6D5C18AC1AC8FDB70047A9A3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		6D5C18B21AC8FDB70047A9A3 /* voip_demoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voip_demoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D5C18B71AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		6D5C18B81AC8FDB70047A9A3 /* demoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = demoTests.m; sourceTree = "<group>"; };
+		6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipsdk.xcodeproj; path = voipengine/voipsdk.xcodeproj; sourceTree = "<group>"; };
+		6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipsession.xcodeproj; path = voipsession/voipsession.xcodeproj; sourceTree = "<group>"; };
+		6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPViewController.h; sourceTree = "<group>"; };
+		6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPViewController.m; sourceTree = "<group>"; };
+		6D5C193B1AC92A330047A9A3 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
+		6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
+		6D5C193F1AC92A440047A9A3 /* ReflectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReflectionView.h; sourceTree = "<group>"; };
+		6D5C19401AC92A440047A9A3 /* ReflectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReflectionView.m; sourceTree = "<group>"; };
+		6D5C19431AC92A560047A9A3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
+		6D5C19441AC92A560047A9A3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
+		6D5C19471AC92A860047A9A3 /* VWWWaterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VWWWaterView.h; sourceTree = "<group>"; };
+		6D5C19481AC92A860047A9A3 /* VWWWaterView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VWWWaterView.m; sourceTree = "<group>"; };
+		6D5C194A1AC92DB40047A9A3 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		6D5C194C1AC92DD00047A9A3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		6D5C194E1AC92DD60047A9A3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		6D5C19501AC92DDA0047A9A3 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		6D5C19521AC9305E0047A9A3 /* libstdc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libstdc++.dylib"; path = "usr/lib/libstdc++.dylib"; sourceTree = SDKROOT; };
+		6D5C19541AC9306A0047A9A3 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = System/Library/Frameworks/GLKit.framework; sourceTree = SDKROOT; };
+		6D5C19581AC935360047A9A3 /* apns.caf */ = {isa = PBXFileReference; lastKnownFileType = file; path = apns.caf; sourceTree = "<group>"; };
+		6D5C19591AC935360047A9A3 /* CallConnected.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = CallConnected.mp3; sourceTree = "<group>"; };
+		6D5C195A1AC935360047A9A3 /* end.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = end.mp3; sourceTree = "<group>"; };
+		6D5C195B1AC935360047A9A3 /* start.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = start.mp3; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6D5C18961AC8FDB70047A9A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D5C19551AC9306A0047A9A3 /* GLKit.framework in Frameworks */,
+				6D5C19531AC9305E0047A9A3 /* libstdc++.dylib in Frameworks */,
+				6D5C19511AC92DDB0047A9A3 /* AVFoundation.framework in Frameworks */,
+				6D5C194F1AC92DD60047A9A3 /* Foundation.framework in Frameworks */,
+				6D5C194D1AC92DD00047A9A3 /* UIKit.framework in Frameworks */,
+				6D5C194B1AC92DB40047A9A3 /* libsqlite3.dylib in Frameworks */,
+				6D5C18DF1AC904150047A9A3 /* libvoipengine.a in Frameworks */,
+				6D5C18E01AC904150047A9A3 /* libvoipsession.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6D5C18AF1AC8FDB70047A9A3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6D5C18901AC8FDB70047A9A3 = {
+			isa = PBXGroup;
+			children = (
+				6D5C19561AC931B30047A9A3 /* Frameworks */,
+				6D5C18C81AC903DD0047A9A3 /* Projects */,
+				6D5C189B1AC8FDB70047A9A3 /* demo */,
+				6D5C18B51AC8FDB70047A9A3 /* demoTests */,
+				6D5C189A1AC8FDB70047A9A3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6D5C189A1AC8FDB70047A9A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C18991AC8FDB70047A9A3 /* voip_demo.app */,
+				6D5C18B21AC8FDB70047A9A3 /* voip_demoTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6D5C189B1AC8FDB70047A9A3 /* demo */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C19571AC935360047A9A3 /* sound */,
+				6D5C19071AC92A180047A9A3 /* third_party */,
+				6D5C18A01AC8FDB70047A9A3 /* AppDelegate.h */,
+				6D5C18A11AC8FDB70047A9A3 /* AppDelegate.m */,
+				6D5C18A31AC8FDB70047A9A3 /* ViewController.h */,
+				6D5C18A41AC8FDB70047A9A3 /* ViewController.m */,
+				6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */,
+				6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */,
+				6D5C18A61AC8FDB70047A9A3 /* Main.storyboard */,
+				6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */,
+				6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */,
+				6D5C189C1AC8FDB70047A9A3 /* Supporting Files */,
+			);
+			path = demo;
+			sourceTree = "<group>";
+		};
+		6D5C189C1AC8FDB70047A9A3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C189D1AC8FDB70047A9A3 /* Info.plist */,
+				6D5C189E1AC8FDB70047A9A3 /* main.m */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		6D5C18B51AC8FDB70047A9A3 /* demoTests */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C18B81AC8FDB70047A9A3 /* demoTests.m */,
+				6D5C18B61AC8FDB70047A9A3 /* Supporting Files */,
+			);
+			path = demoTests;
+			sourceTree = "<group>";
+		};
+		6D5C18B61AC8FDB70047A9A3 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C18B71AC8FDB70047A9A3 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		6D5C18C81AC903DD0047A9A3 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */,
+				6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */,
+			);
+			name = Projects;
+			sourceTree = "<group>";
+		};
+		6D5C18CA1AC903ED0047A9A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C18CF1AC903EE0047A9A3 /* libvoipengine.a */,
+				6D5C18D11AC903EE0047A9A3 /* voipsdkTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6D5C18D31AC903F70047A9A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C18D81AC903F70047A9A3 /* libvoipsession.a */,
+				6D5C18DA1AC903F70047A9A3 /* voipsessionTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6D5C19071AC92A180047A9A3 /* third_party */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C19461AC92A860047A9A3 /* water_wave */,
+				6D5C19421AC92A560047A9A3 /* Toast */,
+				6D5C193E1AC92A440047A9A3 /* ReflectionView */,
+				6D5C193A1AC92A330047A9A3 /* MBProgressHUD */,
+			);
+			path = third_party;
+			sourceTree = "<group>";
+		};
+		6D5C193A1AC92A330047A9A3 /* MBProgressHUD */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C193B1AC92A330047A9A3 /* MBProgressHUD.h */,
+				6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */,
+			);
+			path = MBProgressHUD;
+			sourceTree = "<group>";
+		};
+		6D5C193E1AC92A440047A9A3 /* ReflectionView */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C193F1AC92A440047A9A3 /* ReflectionView.h */,
+				6D5C19401AC92A440047A9A3 /* ReflectionView.m */,
+			);
+			path = ReflectionView;
+			sourceTree = "<group>";
+		};
+		6D5C19421AC92A560047A9A3 /* Toast */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C19431AC92A560047A9A3 /* UIView+Toast.h */,
+				6D5C19441AC92A560047A9A3 /* UIView+Toast.m */,
+			);
+			path = Toast;
+			sourceTree = "<group>";
+		};
+		6D5C19461AC92A860047A9A3 /* water_wave */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C19471AC92A860047A9A3 /* VWWWaterView.h */,
+				6D5C19481AC92A860047A9A3 /* VWWWaterView.m */,
+			);
+			path = water_wave;
+			sourceTree = "<group>";
+		};
+		6D5C19561AC931B30047A9A3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C19541AC9306A0047A9A3 /* GLKit.framework */,
+				6D5C19521AC9305E0047A9A3 /* libstdc++.dylib */,
+				6D5C19501AC92DDA0047A9A3 /* AVFoundation.framework */,
+				6D5C194E1AC92DD60047A9A3 /* Foundation.framework */,
+				6D5C194C1AC92DD00047A9A3 /* UIKit.framework */,
+				6D5C194A1AC92DB40047A9A3 /* libsqlite3.dylib */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		6D5C19571AC935360047A9A3 /* sound */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C19581AC935360047A9A3 /* apns.caf */,
+				6D5C19591AC935360047A9A3 /* CallConnected.mp3 */,
+				6D5C195A1AC935360047A9A3 /* end.mp3 */,
+				6D5C195B1AC935360047A9A3 /* start.mp3 */,
+			);
+			path = sound;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6D5C18981AC8FDB70047A9A3 /* voip_demo */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D5C18BC1AC8FDB70047A9A3 /* Build configuration list for PBXNativeTarget "voip_demo" */;
+			buildPhases = (
+				6D5C18951AC8FDB70047A9A3 /* Sources */,
+				6D5C18961AC8FDB70047A9A3 /* Frameworks */,
+				6D5C18971AC8FDB70047A9A3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6D5C18DC1AC9040F0047A9A3 /* PBXTargetDependency */,
+				6D5C18DE1AC9040F0047A9A3 /* PBXTargetDependency */,
+			);
+			name = voip_demo;
+			productName = demo;
+			productReference = 6D5C18991AC8FDB70047A9A3 /* voip_demo.app */;
+			productType = "com.apple.product-type.application";
+		};
+		6D5C18B11AC8FDB70047A9A3 /* voip_demoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6D5C18BF1AC8FDB70047A9A3 /* Build configuration list for PBXNativeTarget "voip_demoTests" */;
+			buildPhases = (
+				6D5C18AE1AC8FDB70047A9A3 /* Sources */,
+				6D5C18AF1AC8FDB70047A9A3 /* Frameworks */,
+				6D5C18B01AC8FDB70047A9A3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6D5C18B41AC8FDB70047A9A3 /* PBXTargetDependency */,
+			);
+			name = voip_demoTests;
+			productName = demoTests;
+			productReference = 6D5C18B21AC8FDB70047A9A3 /* voip_demoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6D5C18911AC8FDB70047A9A3 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0620;
+				ORGANIZATIONNAME = beetle;
+				TargetAttributes = {
+					6D5C18981AC8FDB70047A9A3 = {
+						CreatedOnToolsVersion = 6.2;
+					};
+					6D5C18B11AC8FDB70047A9A3 = {
+						CreatedOnToolsVersion = 6.2;
+						TestTargetID = 6D5C18981AC8FDB70047A9A3;
+					};
+				};
+			};
+			buildConfigurationList = 6D5C18941AC8FDB70047A9A3 /* Build configuration list for PBXProject "voip_demo" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6D5C18901AC8FDB70047A9A3;
+			productRefGroup = 6D5C189A1AC8FDB70047A9A3 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 6D5C18CA1AC903ED0047A9A3 /* Products */;
+					ProjectRef = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
+				},
+				{
+					ProductGroup = 6D5C18D31AC903F70047A9A3 /* Products */;
+					ProjectRef = 6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				6D5C18981AC8FDB70047A9A3 /* voip_demo */,
+				6D5C18B11AC8FDB70047A9A3 /* voip_demoTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		6D5C18CF1AC903EE0047A9A3 /* libvoipengine.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvoipengine.a;
+			remoteRef = 6D5C18CE1AC903EE0047A9A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6D5C18D11AC903EE0047A9A3 /* voipsdkTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = voipsdkTests.xctest;
+			remoteRef = 6D5C18D01AC903EE0047A9A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6D5C18D81AC903F70047A9A3 /* libvoipsession.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvoipsession.a;
+			remoteRef = 6D5C18D71AC903F70047A9A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6D5C18DA1AC903F70047A9A3 /* voipsessionTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = voipsessionTests.xctest;
+			remoteRef = 6D5C18D91AC903F70047A9A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6D5C18971AC8FDB70047A9A3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D5C195E1AC935360047A9A3 /* end.mp3 in Resources */,
+				6D5C18A81AC8FDB70047A9A3 /* Main.storyboard in Resources */,
+				6D5C18AD1AC8FDB70047A9A3 /* LaunchScreen.xib in Resources */,
+				6D5C195F1AC935360047A9A3 /* start.mp3 in Resources */,
+				6D5C195C1AC935360047A9A3 /* apns.caf in Resources */,
+				6D5C195D1AC935360047A9A3 /* CallConnected.mp3 in Resources */,
+				6D5C18AA1AC8FDB70047A9A3 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6D5C18B01AC8FDB70047A9A3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		6D5C18951AC8FDB70047A9A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D5C18A51AC8FDB70047A9A3 /* ViewController.m in Sources */,
+				6D5C18A21AC8FDB70047A9A3 /* AppDelegate.m in Sources */,
+				6D5C19451AC92A560047A9A3 /* UIView+Toast.m in Sources */,
+				6D5C189F1AC8FDB70047A9A3 /* main.m in Sources */,
+				6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */,
+				6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */,
+				6D5C19491AC92A860047A9A3 /* VWWWaterView.m in Sources */,
+				6D5C19021AC9296E0047A9A3 /* VOIPViewController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6D5C18AE1AC8FDB70047A9A3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6D5C18B91AC8FDB70047A9A3 /* demoTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6D5C18B41AC8FDB70047A9A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6D5C18981AC8FDB70047A9A3 /* voip_demo */;
+			targetProxy = 6D5C18B31AC8FDB70047A9A3 /* PBXContainerItemProxy */;
+		};
+		6D5C18DC1AC9040F0047A9A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = voipsession;
+			targetProxy = 6D5C18DB1AC9040F0047A9A3 /* PBXContainerItemProxy */;
+		};
+		6D5C18DE1AC9040F0047A9A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = voipengine;
+			targetProxy = 6D5C18DD1AC9040F0047A9A3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		6D5C18A61AC8FDB70047A9A3 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6D5C18A71AC8FDB70047A9A3 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6D5C18AC1AC8FDB70047A9A3 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		6D5C18BA1AC8FDB70047A9A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		6D5C18BB1AC8FDB70047A9A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		6D5C18BD1AC8FDB70047A9A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = demo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = voip_demo;
+				VALID_ARCHS = "armv7 arm64";
+			};
+			name = Debug;
+		};
+		6D5C18BE1AC8FDB70047A9A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				INFOPLIST_FILE = demo/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = voip_demo;
+				VALID_ARCHS = "armv7 arm64";
+			};
+			name = Release;
+		};
+		6D5C18C01AC8FDB70047A9A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = demoTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = voip_demoTests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/voip_demo.app/voip_demo";
+				USER_HEADER_SEARCH_PATHS = "third_party/**";
+			};
+			name = Debug;
+		};
+		6D5C18C11AC8FDB70047A9A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "compiler-default";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = demoTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = voip_demoTests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/voip_demo.app/voip_demo";
+				USER_HEADER_SEARCH_PATHS = "third_party/**";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6D5C18941AC8FDB70047A9A3 /* Build configuration list for PBXProject "voip_demo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D5C18BA1AC8FDB70047A9A3 /* Debug */,
+				6D5C18BB1AC8FDB70047A9A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6D5C18BC1AC8FDB70047A9A3 /* Build configuration list for PBXNativeTarget "voip_demo" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D5C18BD1AC8FDB70047A9A3 /* Debug */,
+				6D5C18BE1AC8FDB70047A9A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6D5C18BF1AC8FDB70047A9A3 /* Build configuration list for PBXNativeTarget "voip_demoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D5C18C01AC8FDB70047A9A3 /* Debug */,
+				6D5C18C11AC8FDB70047A9A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6D5C18911AC8FDB70047A9A3 /* Project object */;
+}

@@ -6,6 +6,20 @@
 	objectVersion = 46;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		6D5C18E91AC91E020047A9A3 /* universal */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 6D5C18EC1AC91E020047A9A3 /* Build configuration list for PBXAggregateTarget "universal" */;
+			buildPhases = (
+				6D5C18ED1AC91E080047A9A3 /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = universal;
+			productName = universal;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		6D0331831AAB73E3004AA39F /* libvoipengine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0331771AAB73E3004AA39F /* libvoipengine.a */; };
 		6D0331A21AAB74DD004AA39F /* AVReceiveStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D03319B1AAB74DD004AA39F /* AVReceiveStream.mm */; };
@@ -187,6 +201,9 @@
 					6D0331811AAB73E3004AA39F = {
 						CreatedOnToolsVersion = 6.1.1;
 					};
+					6D5C18E91AC91E020047A9A3 = {
+						CreatedOnToolsVersion = 6.2;
+					};
 				};
 			};
 			buildConfigurationList = 6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipsdk" */;
@@ -203,6 +220,7 @@
 			targets = (
 				6D0331761AAB73E3004AA39F /* voipengine */,
 				6D0331811AAB73E3004AA39F /* voipsdkTests */,
+				6D5C18E91AC91E020047A9A3 /* universal */,
 			);
 		};
 /* End PBXProject section */
@@ -216,6 +234,22 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		6D5C18ED1AC91E080047A9A3 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# define output folder environment variable\nUNIVERSAL_OUTPUTFOLDER=${BUILD_DIR}/${CONFIGURATION}-universal\n\n\n# Step 1. Build Device and Simulator versions\nxcodebuild -target voipengine ONLY_ACTIVE_ARCH=NO -configuration ${CONFIGURATION} -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\"\n\n\n# make sure the output directory exists\nmkdir -p \"${UNIVERSAL_OUTPUTFOLDER}\"\n\n# Step 2. Create universal binary file using lipo\nlipo -create -output \"${UNIVERSAL_OUTPUTFOLDER}/libvoipengine.a\" \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/libvoipengine.a\"\n\n# Last touch. copy the header files. Just for convenience\ncp -R \"${BUILD_DIR}/${CONFIGURATION}-iphoneos/include\" \"${UNIVERSAL_OUTPUTFOLDER}/\"";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		6D0331731AAB73E3004AA39F /* Sources */ = {
@@ -395,6 +429,20 @@
 			};
 			name = Release;
 		};
+		6D5C18EA1AC91E020047A9A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		6D5C18EB1AC91E020047A9A3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -424,6 +472,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		6D5C18EC1AC91E020047A9A3 /* Build configuration list for PBXAggregateTarget "universal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D5C18EA1AC91E020047A9A3 /* Debug */,
+				6D5C18EB1AC91E020047A9A3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
