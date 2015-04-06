@@ -10,7 +10,7 @@
 #import "VOIPService.h"
 #import "stun.h"
 
-#define VOIP_PORT 20001
+#define VOIP_PORT 20002
 #define STUN_SERVER  @"stun.counterpath.net"
 
 @interface VOIPSession()

@@ -13,6 +13,7 @@
 @property(nonatomic) int64_t currentUID;
 @property(nonatomic) int64_t peerUID;
 @property(nonatomic, copy) NSString *peerName;
+@property(nonatomic, copy) NSString *token;
 //当前用户是否是主动呼叫方
 @property(nonatomic) BOOL isCaller;
 @end

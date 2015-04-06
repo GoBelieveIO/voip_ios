@@ -21,6 +21,7 @@
 @property(nonatomic) MBProgressHUD *hud;
 @property(nonatomic) int64_t myUID;
 @property(nonatomic) int64_t peerUID;
+@property(nonatomic, copy) NSString *token;
 
 @end
 
@@ -28,7 +29,11 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
+
+    //app可以单独部署服务器，给予第三方应用更多的灵活性
+    //在开发阶段也可以配置成测试环境的地址 "sandbox.voipnode.gobelieve.io"
+    [VOIPService instance].host = @"voipnode.gobelieve.io";
     [VOIPService instance].deviceID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     [[VOIPService instance] startRechabilityNotifier];
 }
@@ -54,12 +59,14 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [VOIPService instance].token = token;
             [[VOIPService instance] start];
+            self.token = token;
             [self.hud hide:NO];
             
             VOIPViewController *controller = [[VOIPViewController alloc] init];
             controller.currentUID = self.myUID;
             controller.peerUID = self.peerUID;
             controller.peerName = @"测试";
+            controller.token = self.token;
             controller.isCaller = YES;
             
             [self presentViewController:controller animated:YES completion:nil];
@@ -90,7 +97,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [VOIPService instance].token = token;
             [[VOIPService instance] start];
-            
+            self.token = token;
             
             self.hud.labelText = @"等待中...";
             //等待呼叫
@@ -115,6 +122,7 @@
             controller.currentUID = self.myUID;
             controller.peerUID = self.peerUID;
             controller.peerName = @"测试";
+            controller.token = self.token;
             controller.isCaller = NO;
             
             [self presentViewController:controller animated:YES completion:nil];
@@ -125,7 +133,6 @@
 -(NSString*)login:(long long)uid {
     //调用app自身的登陆接口获取im服务必须的access token
     NSString *url = @"http://demo.im.gobelieve.io/auth/token";
-    
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]
                                                               cachePolicy:NSURLRequestUseProtocolCachePolicy
                                                           timeoutInterval:60];

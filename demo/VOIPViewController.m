@@ -325,12 +325,14 @@
     self.engine.voipPort = self.voip.voipPort;
     self.engine.caller = self.currentUID;
     self.engine.callee = self.peerUID;
+    self.engine.token = self.token;
     if (self.isP2P) {
         self.engine.calleeIP = self.voip.peerNatMap.ip;
         self.engine.calleePort = self.voip.peerNatMap.port;
     }
+    self.engine.isHeadphone = isHeadphone;
     
-    [self.engine startStream:isHeadphone];
+    [self.engine startStream];
     
     self.refreshTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(refreshDuration) userInfo:nil repeats:YES];
     [self.refreshTimer fire];

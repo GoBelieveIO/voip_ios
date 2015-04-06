@@ -15,11 +15,20 @@
 #import "WebRTC.h"
 #include "webrtc/voice_engine/include/voe_network.h"
 
+//兼容没有消息头的旧版本协议
+#define COMPATIBLE
+
+
 #define VOIP_AUDIO 1
 #define VOIP_VIDEO 2
 
 #define VOIP_RTP 1
 #define VOIP_RTCP 2
+
+
+#define VOIP_AUTH 1
+#define VOIP_AUTH_STATUS 2
+#define VOIP_DATA 3
 
 @interface VOIPData : NSObject
 @property(nonatomic, assign)int64_t sender;
@@ -41,7 +50,8 @@
 
 @property(nonatomic, assign)int udpFD;
 @property(nonatomic, strong)dispatch_source_t readSource;
-
+@property(nonatomic, getter=isAuth) BOOL auth;
+@property(nonatomic) BOOL isPeerNoHeader;
 @end
 
 
@@ -76,26 +86,14 @@
     dispatch_resume(self.readSource);
 }
 
-
--(void)handleRead {
-    char buf[64*1024];
-    struct sockaddr_in addr;
-    socklen_t len = sizeof(addr);
-    size_t n = recvfrom(self.udpFD, buf, 64*1024, 0, (struct sockaddr*)&addr, &len);
-    if (n <= 0) {
-        NSLog(@"recv udp error:%d, %s", errno, strerror(errno));
-        [self closeUDP];
-        [self listenVOIP];
-        return;
-    }
-    
-    if (n <= 16) {
-        NSLog(@"invalid voip data length");
+-(void)handleVOIPData:(const char*)buf length:(size_t)len addr:(struct sockaddr_in*)addr {
+    if (len <= 18) {
+        NSLog(@"no audio data");
         return;
     }
     
     VOIPData *vdata = [[VOIPData alloc] init];
-    char *p = buf;
+    const char *p = buf;
     
     vdata.sender = voip_readInt64(p);
     p += 8;
@@ -109,12 +107,53 @@
     }
     p++;
     
-    vdata.content = [NSData dataWithBytes:p length:n-18];
+    vdata.content = [NSData dataWithBytes:p length:len-18];
     
-    int ip = ntohl(addr.sin_addr.s_addr);
-    int port = ntohs(addr.sin_port);
+    int ip = ntohl(addr->sin_addr.s_addr);
+    int port = ntohs(addr->sin_port);
     [self onVOIPData:vdata ip:ip port:port];
 
+}
+
+-(void)handleAuthStatus:(const char*)buf length:(size_t)len {
+    if (len == 0) {
+        return;
+    }
+    int status = *buf;
+    if (status == 0) {
+        self.auth = YES;
+    }
+    NSLog(@"voip tunnel auth status:%d", status);
+}
+
+-(void)handleRead {
+    char buf[64*1024] = {0};
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+    size_t n = recvfrom(self.udpFD, buf, 64*1024, 0, (struct sockaddr*)&addr, &len);
+    if (n <= 0) {
+        NSLog(@"recv udp error:%d, %s", errno, strerror(errno));
+        [self closeUDP];
+        [self listenVOIP];
+        return;
+    }
+
+    int cmd = buf[0] & 0x0f;
+    if (cmd == VOIP_AUTH_STATUS) {
+        [self handleAuthStatus:buf+1 length:n-1];
+    } else if (cmd == VOIP_DATA) {
+        [self handleVOIPData:buf+1 length:n-1 addr:&addr];
+    }
+
+#ifdef COMPATIBLE
+    if (buf[0] == 0) {
+        [self handleVOIPData:buf length:n addr:&addr];
+        if (!self.isPeerNoHeader) {
+            self.isPeerNoHeader = YES;
+            NSLog(@"voip data has't header from peer");
+        }
+    }
+#endif
 }
 
 -(void)onVOIPData:(VOIPData*)data ip:(int)ip port:(int)port {
@@ -140,12 +179,12 @@
     
     if (data.isRTP) {
         if (data.type == VOIP_AUDIO) {
-            NSLog(@"audio data:%zd content:%zd", packet_length, data.content.length);
+            //NSLog(@"audio data:%zd content:%zd", packet_length, data.content.length);
             rtc.voe_network->ReceivedRTPPacket(channel, packet, packet_length);
         }
     } else {
         if (data.type == VOIP_AUDIO) {
-            NSLog(@"audio rtcp data:%zd", packet_length);
+            //NSLog(@"audio rtcp data:%zd", packet_length);
             rtc.voe_network->ReceivedRTCPPacket(channel, packet, packet_length);
         }
     }
@@ -153,7 +192,7 @@
 
 
 
--(void)startStream:(BOOL)isHeadphone {
+-(void)startStream {
     if (self.sendStream || self.recvStream) return;
     
     self.sendStream = [[AudioSendStream alloc] init];
@@ -162,7 +201,7 @@
     
     self.recvStream = [[AudioReceiveStream alloc] init];
     self.recvStream.voiceTransport = self;
-    self.recvStream.isHeadphone = isHeadphone;
+    self.recvStream.isHeadphone = self.isHeadphone;
     self.recvStream.isLoudspeaker = NO;
     
     [self.recvStream start];
@@ -201,8 +240,7 @@
     return NO;
 }
 
-
--(BOOL)sendVOIPData:(VOIPData*)data ip:(int)ip port:(short)port {
+-(BOOL)sendVOIPData:(VOIPData*)data ip:(int)ip port:(short)port withHeader:(BOOL)withHeader {
     if (self.udpFD == -1) {
         return NO;
     }
@@ -212,6 +250,11 @@
     
     char buff[64*1024];
     char *p = buff;
+    if (withHeader) {
+        *p = (char)VOIP_DATA;
+        p++;
+    }
+    
     voip_writeInt64(data.sender, p);
     p += 8;
     voip_writeInt64(data.receiver, p);
@@ -236,22 +279,68 @@
     addr.sin_addr.s_addr=htonl(ip);
     addr.sin_port=htons(port);
     
-    size_t r = sendto(self.udpFD, buff, len + 18, 0, (struct sockaddr*)&addr, sizeof(addr));
+    NSInteger bufLen = 0;
+    if (withHeader) {
+        bufLen = len + 19;
+    } else {
+        bufLen = len + 18;
+    }
+    
+    size_t r = sendto(self.udpFD, buff, bufLen, 0, (struct sockaddr*)&addr, sizeof(addr));
     if (r == -1) {
         NSLog(@"send voip data error:%s", strerror(errno));
     }
+    
     return YES;
+}
+
+-(void)sendAuth {
+    if (self.token.length == 0) {
+        NSLog(@"token is empty");
+        return;
+    }
+    char buff[64*1024] = {0};
+    char *p = buff;
+    *p = (char)VOIP_AUTH;
+    p++;
+    const char *t = [self.token UTF8String];
+    size_t len = strlen(t);
+    voip_writeInt16(len, p);
+    p+=2;
+    memcpy(p, t, len);
+    p += len;
+    
+
+    int ip = inet_addr([self.serverIP UTF8String]);
+    ip = ntohl(ip);
+    short port = self.voipPort;
+    
+    struct sockaddr_in addr;
+    bzero(&addr, sizeof(addr));
+    
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr=htonl(ip);
+    addr.sin_port=htons(port);
+    
+    size_t r = sendto(self.udpFD, buff, len + 3, 0, (struct sockaddr*)&addr, sizeof(addr));
+    if (r == -1) {
+        NSLog(@"send voip data error:%s", strerror(errno));
+    }
 }
 
 -(BOOL)sendVOIPDataToServer:(VOIPData*)data {
     if (self.serverIP.length == 0) {
         return NO;
     }
+    if (!self.isAuth) {
+        [self sendAuth];
+    }
+
+    NSLog(@"send voip data to server");
     int ip = inet_addr([self.serverIP UTF8String]);
     ip = ntohl(ip);
-    return [self sendVOIPData:data ip:ip port:self.voipPort];
+    return [self sendVOIPData:data ip:ip port:self.voipPort withHeader:YES];
 }
-
 
 #pragma mark VoiceTransport
 -(void)sendVOIPData:(VOIPData*)vData {
@@ -260,11 +349,12 @@
     //2s内还未接受到对端的数据，转而使用服务器中转
     if (isP2P && !self.isPeerConnected && [self.beginDate timeIntervalSinceNow]*1000 < -2000) {
         isP2P = NO;
+        NSLog(@"can't use p2p connection");
     }
     
     BOOL r = NO;
     if (isP2P) {
-        r = [self sendVOIPData:vData ip:self.calleeIP port:self.calleePort];
+        r = [self sendVOIPData:vData ip:self.calleeIP port:self.calleePort withHeader:!self.isPeerNoHeader];
     } else {
         r = [self sendVOIPDataToServer:vData];
     }
