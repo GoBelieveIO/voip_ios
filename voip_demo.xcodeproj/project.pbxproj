@@ -14,7 +14,6 @@
 		6D5C18AA1AC8FDB70047A9A3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */; };
 		6D5C18AD1AC8FDB70047A9A3 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */; };
 		6D5C18B91AC8FDB70047A9A3 /* demoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18B81AC8FDB70047A9A3 /* demoTests.m */; };
-		6D5C18DF1AC904150047A9A3 /* libvoipengine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C18CF1AC903EE0047A9A3 /* libvoipengine.a */; };
 		6D5C18E01AC904150047A9A3 /* libvoipsession.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C18D81AC903F70047A9A3 /* libvoipsession.a */; };
 		6D5C19021AC9296E0047A9A3 /* VOIPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */; };
 		6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */; };
@@ -31,6 +30,7 @@
 		6D5C195D1AC935360047A9A3 /* CallConnected.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C19591AC935360047A9A3 /* CallConnected.mp3 */; };
 		6D5C195E1AC935360047A9A3 /* end.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195A1AC935360047A9A3 /* end.mp3 */; };
 		6D5C195F1AC935360047A9A3 /* start.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195B1AC935360047A9A3 /* start.mp3 */; };
+		6D5C19641AD2B79B0047A9A3 /* libvoipengine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C19631AD2B79B0047A9A3 /* libvoipengine.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,20 +40,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 6D5C18981AC8FDB70047A9A3;
 			remoteInfo = demo;
-		};
-		6D5C18CE1AC903EE0047A9A3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 6D0331771AAB73E3004AA39F;
-			remoteInfo = voipengine;
-		};
-		6D5C18D01AC903EE0047A9A3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 6D0331821AAB73E3004AA39F;
-			remoteInfo = voipsdkTests;
 		};
 		6D5C18D71AC903F70047A9A3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -76,9 +62,23 @@
 			remoteGlobalIDString = 6D401BD41AAC7D2F0041ABC6;
 			remoteInfo = voipsession;
 		};
-		6D5C18DD1AC9040F0047A9A3 /* PBXContainerItemProxy */ = {
+		6D5C196B1AD2B8530047A9A3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
+			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D0331771AAB73E3004AA39F;
+			remoteInfo = voipengine;
+		};
+		6D5C196D1AD2B8530047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6D0331821AAB73E3004AA39F;
+			remoteInfo = voipengineTests;
+		};
+		6D5C19711AD2B85B0047A9A3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = 6D0331761AAB73E3004AA39F;
 			remoteInfo = voipengine;
@@ -99,7 +99,7 @@
 		6D5C18B21AC8FDB70047A9A3 /* voip_demoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voip_demoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D5C18B71AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D5C18B81AC8FDB70047A9A3 /* demoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = demoTests.m; sourceTree = "<group>"; };
-		6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipsdk.xcodeproj; path = voipengine/voipsdk.xcodeproj; sourceTree = "<group>"; };
+		6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipengine.xcodeproj; path = voipengine/voipengine.xcodeproj; sourceTree = "<group>"; };
 		6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipsession.xcodeproj; path = voipsession/voipsession.xcodeproj; sourceTree = "<group>"; };
 		6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPViewController.h; sourceTree = "<group>"; };
 		6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPViewController.m; sourceTree = "<group>"; };
@@ -121,6 +121,7 @@
 		6D5C19591AC935360047A9A3 /* CallConnected.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = CallConnected.mp3; sourceTree = "<group>"; };
 		6D5C195A1AC935360047A9A3 /* end.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = end.mp3; sourceTree = "<group>"; };
 		6D5C195B1AC935360047A9A3 /* start.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = start.mp3; sourceTree = "<group>"; };
+		6D5C19631AD2B79B0047A9A3 /* libvoipengine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvoipengine.a; path = "../../../Library/Developer/Xcode/DerivedData/voip_demo-ghegouphrmfjtsbdqtgolwbghldy/Build/Products/Debug-iphoneos/libvoipengine.a"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,13 +129,13 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6D5C19641AD2B79B0047A9A3 /* libvoipengine.a in Frameworks */,
 				6D5C19551AC9306A0047A9A3 /* GLKit.framework in Frameworks */,
 				6D5C19531AC9305E0047A9A3 /* libstdc++.dylib in Frameworks */,
 				6D5C19511AC92DDB0047A9A3 /* AVFoundation.framework in Frameworks */,
 				6D5C194F1AC92DD60047A9A3 /* Foundation.framework in Frameworks */,
 				6D5C194D1AC92DD00047A9A3 /* UIKit.framework in Frameworks */,
 				6D5C194B1AC92DB40047A9A3 /* libsqlite3.dylib in Frameworks */,
-				6D5C18DF1AC904150047A9A3 /* libvoipengine.a in Frameworks */,
 				6D5C18E01AC904150047A9A3 /* libvoipsession.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -218,18 +219,9 @@
 			isa = PBXGroup;
 			children = (
 				6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */,
-				6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */,
+				6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */,
 			);
 			name = Projects;
-			sourceTree = "<group>";
-		};
-		6D5C18CA1AC903ED0047A9A3 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				6D5C18CF1AC903EE0047A9A3 /* libvoipengine.a */,
-				6D5C18D11AC903EE0047A9A3 /* voipsdkTests.xctest */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 		6D5C18D31AC903F70047A9A3 /* Products */ = {
@@ -291,6 +283,7 @@
 		6D5C19561AC931B30047A9A3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6D5C19631AD2B79B0047A9A3 /* libvoipengine.a */,
 				6D5C19541AC9306A0047A9A3 /* GLKit.framework */,
 				6D5C19521AC9305E0047A9A3 /* libstdc++.dylib */,
 				6D5C19501AC92DDA0047A9A3 /* AVFoundation.framework */,
@@ -312,6 +305,15 @@
 			path = sound;
 			sourceTree = "<group>";
 		};
+		6D5C19661AD2B8530047A9A3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				6D5C196C1AD2B8530047A9A3 /* libvoipengine.a */,
+				6D5C196E1AD2B8530047A9A3 /* voipengineTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -326,8 +328,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				6D5C19721AD2B85B0047A9A3 /* PBXTargetDependency */,
 				6D5C18DC1AC9040F0047A9A3 /* PBXTargetDependency */,
-				6D5C18DE1AC9040F0047A9A3 /* PBXTargetDependency */,
 			);
 			name = voip_demo;
 			productName = demo;
@@ -383,8 +385,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 6D5C18CA1AC903ED0047A9A3 /* Products */;
-					ProjectRef = 6D5C18C91AC903ED0047A9A3 /* voipsdk.xcodeproj */;
+					ProductGroup = 6D5C19661AD2B8530047A9A3 /* Products */;
+					ProjectRef = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
 				},
 				{
 					ProductGroup = 6D5C18D31AC903F70047A9A3 /* Products */;
@@ -400,20 +402,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		6D5C18CF1AC903EE0047A9A3 /* libvoipengine.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libvoipengine.a;
-			remoteRef = 6D5C18CE1AC903EE0047A9A3 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		6D5C18D11AC903EE0047A9A3 /* voipsdkTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = voipsdkTests.xctest;
-			remoteRef = 6D5C18D01AC903EE0047A9A3 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		6D5C18D81AC903F70047A9A3 /* libvoipsession.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -426,6 +414,20 @@
 			fileType = wrapper.cfbundle;
 			path = voipsessionTests.xctest;
 			remoteRef = 6D5C18D91AC903F70047A9A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6D5C196C1AD2B8530047A9A3 /* libvoipengine.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvoipengine.a;
+			remoteRef = 6D5C196B1AD2B8530047A9A3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6D5C196E1AD2B8530047A9A3 /* voipengineTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = voipengineTests.xctest;
+			remoteRef = 6D5C196D1AD2B8530047A9A3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -491,10 +493,10 @@
 			name = voipsession;
 			targetProxy = 6D5C18DB1AC9040F0047A9A3 /* PBXContainerItemProxy */;
 		};
-		6D5C18DE1AC9040F0047A9A3 /* PBXTargetDependency */ = {
+		6D5C19721AD2B85B0047A9A3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = voipengine;
-			targetProxy = 6D5C18DD1AC9040F0047A9A3 /* PBXContainerItemProxy */;
+			targetProxy = 6D5C19711AD2B85B0047A9A3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -607,6 +609,10 @@
 				INFOPLIST_FILE = demo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/voip_demo-ghegouphrmfjtsbdqtgolwbghldy/Build/Products/Debug-iphoneos",
+				);
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = voip_demo;
@@ -623,6 +629,10 @@
 				INFOPLIST_FILE = demo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/voip_demo-ghegouphrmfjtsbdqtgolwbghldy/Build/Products/Debug-iphoneos",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = voip_demo;
 				VALID_ARCHS = "armv7 arm64";

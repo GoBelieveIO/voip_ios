@@ -57,7 +57,7 @@
 
 /* Begin PBXFileReference section */
 		6D0331771AAB73E3004AA39F /* libvoipengine.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvoipengine.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voipsdkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D0331821AAB73E3004AA39F /* voipengineTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voipengineTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D0331881AAB73E4004AA39F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D03319A1AAB74DD004AA39F /* AVReceiveStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVReceiveStream.h; sourceTree = "<group>"; };
 		6D03319B1AAB74DD004AA39F /* AVReceiveStream.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AVReceiveStream.mm; sourceTree = "<group>"; };
@@ -108,7 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				6D0331771AAB73E3004AA39F /* libvoipengine.a */,
-				6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */,
+				6D0331821AAB73E3004AA39F /* voipengineTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -168,9 +168,9 @@
 			productReference = 6D0331771AAB73E3004AA39F /* libvoipengine.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		6D0331811AAB73E3004AA39F /* voipsdkTests */ = {
+		6D0331811AAB73E3004AA39F /* voipengineTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6D03318E1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipsdkTests" */;
+			buildConfigurationList = 6D03318E1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipengineTests" */;
 			buildPhases = (
 				6D03317E1AAB73E3004AA39F /* Sources */,
 				6D03317F1AAB73E3004AA39F /* Frameworks */,
@@ -181,9 +181,9 @@
 			dependencies = (
 				6D0331851AAB73E3004AA39F /* PBXTargetDependency */,
 			);
-			name = voipsdkTests;
+			name = voipengineTests;
 			productName = voipsdkTests;
-			productReference = 6D0331821AAB73E3004AA39F /* voipsdkTests.xctest */;
+			productReference = 6D0331821AAB73E3004AA39F /* voipengineTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -206,7 +206,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipsdk" */;
+			buildConfigurationList = 6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipengine" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
@@ -219,7 +219,7 @@
 			projectRoot = "";
 			targets = (
 				6D0331761AAB73E3004AA39F /* voipengine */,
-				6D0331811AAB73E3004AA39F /* voipsdkTests */,
+				6D0331811AAB73E3004AA39F /* voipengineTests */,
 				6D5C18E91AC91E020047A9A3 /* universal */,
 			);
 		};
@@ -411,7 +411,7 @@
 				);
 				INFOPLIST_FILE = voipsdkTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = voipengineTests;
 			};
 			name = Debug;
 		};
@@ -425,7 +425,7 @@
 				);
 				INFOPLIST_FILE = voipsdkTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = voipengineTests;
 			};
 			name = Release;
 		};
@@ -446,7 +446,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipsdk" */ = {
+		6D0331721AAB73E3004AA39F /* Build configuration list for PBXProject "voipengine" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6D0331891AAB73E4004AA39F /* Debug */,
@@ -464,7 +464,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6D03318E1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipsdkTests" */ = {
+		6D03318E1AAB73E4004AA39F /* Build configuration list for PBXNativeTarget "voipengineTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6D03318F1AAB73E4004AA39F /* Debug */,
@@ -480,6 +480,7 @@
 				6D5C18EB1AC91E020047A9A3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
