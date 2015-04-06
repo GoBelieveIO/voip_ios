@@ -1,0 +1,68 @@
+/*
+ * Copyright 2011 Google Inc.
+ *
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#ifndef GrDefaultPathRenderer_DEFINED
+#define GrDefaultPathRenderer_DEFINED
+
+#include "GrPathRenderer.h"
+#include "SkTemplates.h"
+
+/**
+ *  Subclass that renders the path using the stencil buffer to resolve fill rules
+ * (e.g. winding, even-odd)
+ */
+class SK_API GrDefaultPathRenderer : public GrPathRenderer {
+public:
+    GrDefaultPathRenderer(bool separateStencilSupport, bool stencilWrapOpsSupport);
+
+    virtual bool canDrawPath(const GrDrawTarget*,
+                             const GrDrawState*,
+                             const SkPath&,
+                             const SkStrokeRec&,
+                             bool antiAlias) const SK_OVERRIDE;
+
+private:
+
+    virtual StencilSupport onGetStencilSupport(const GrDrawTarget*,
+                                               const GrDrawState*,
+                                               const SkPath&,
+                                               const SkStrokeRec&) const SK_OVERRIDE;
+
+    virtual bool onDrawPath(GrDrawTarget*,
+                            GrDrawState*,
+                            const SkPath&,
+                            const SkStrokeRec&,
+                            bool antiAlias) SK_OVERRIDE;
+
+    virtual void onStencilPath(GrDrawTarget*,
+                               GrDrawState*,
+                               const SkPath&,
+                               const SkStrokeRec&) SK_OVERRIDE;
+
+    bool internalDrawPath(GrDrawTarget*,
+                          GrDrawState*,
+                          const SkPath&,
+                          const SkStrokeRec&,
+                          bool stencilOnly);
+
+    bool createGeom(GrDrawTarget*,
+                    GrDrawState*,
+                    GrPrimitiveType*,
+                    int* vertexCnt,
+                    int* indexCnt,
+                    GrDrawTarget::AutoReleaseGeometry*,
+                    const SkPath&,
+                    const SkStrokeRec&,
+                    SkScalar srcSpaceTol);
+
+    bool    fSeparateStencil;
+    bool    fStencilWrapOps;
+
+    typedef GrPathRenderer INHERITED;
+};
+
+#endif

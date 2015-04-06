@@ -1,0 +1,72 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
+#define REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "remoting/protocol/input_stub.h"
+
+namespace pp {
+class InputEvent;
+}  // namespace pp
+
+namespace remoting {
+
+namespace protocol {
+class InputStub;
+} // namespace protocol
+
+class PepperInputHandler {
+ public:
+  PepperInputHandler();
+
+  // Sets the input stub to which processed events will be passed.
+  void set_input_stub(protocol::InputStub* input_stub) {
+    input_stub_ = input_stub;
+  }
+
+  // Enable or disable sending mouse input when the plugin does not have input
+  // focus.
+  void set_send_mouse_input_when_unfocused(bool send) {
+    send_mouse_input_when_unfocused_ = send;
+  }
+
+  void set_send_mouse_move_deltas(bool enable) {
+    send_mouse_move_deltas_ = enable;
+  }
+
+  // Processes PPAPI events and dispatches them to |input_stub_|.
+  bool HandleInputEvent(const pp::InputEvent& event);
+
+  // Must be called when the plugin receives or loses focus.
+  void DidChangeFocus(bool has_focus);
+
+ private:
+  // Receives input events generated from PPAPI input.
+  protocol::InputStub* input_stub_;
+
+  // True if the plugin has focus.
+  bool has_focus_;
+
+  // True if the plugin should respond to mouse input even if it does not have
+  // keyboard focus.
+  bool send_mouse_input_when_unfocused_;
+
+  // True if the plugin should include mouse move deltas, in addition to
+  // absolute position information, in mouse events.
+  bool send_mouse_move_deltas_;
+
+  // Accumulated sub-pixel and sub-tick deltas from wheel events.
+  float wheel_delta_x_;
+  float wheel_delta_y_;
+  float wheel_ticks_x_;
+  float wheel_ticks_y_;
+
+  DISALLOW_COPY_AND_ASSIGN(PepperInputHandler);
+};
+
+}  // namespace remoting
+
+#endif  // REMOTING_CLIENT_PLUGIN_PEPPER_INPUT_HANDLER_H_
