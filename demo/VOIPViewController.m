@@ -321,7 +321,7 @@
     
     self.engine = [[VOIPEngine alloc] init];
     NSLog(@"relay ip:%@", self.voip.relayIP);
-    self.engine.serverIP = self.voip.relayIP;
+    self.engine.relayIP = self.voip.relayIP;
     self.engine.voipPort = self.voip.voipPort;
     self.engine.caller = self.currentUID;
     self.engine.callee = self.peerUID;

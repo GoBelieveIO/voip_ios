@@ -11,7 +11,7 @@
 @interface VOIPEngine : NSObject
 @property(nonatomic)int voipPort;
 
-@property(nonatomic, copy) NSString *serverIP;
+@property(nonatomic, copy) NSString *relayIP;
 @property(nonatomic, copy) NSString *token;
 
 

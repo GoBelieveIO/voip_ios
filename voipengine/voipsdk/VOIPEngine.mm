@@ -311,7 +311,7 @@
     p += len;
     
 
-    int ip = inet_addr([self.serverIP UTF8String]);
+    int ip = inet_addr([self.relayIP UTF8String]);
     ip = ntohl(ip);
     short port = self.voipPort;
     
@@ -329,7 +329,7 @@
 }
 
 -(BOOL)sendVOIPDataToServer:(VOIPData*)data {
-    if (self.serverIP.length == 0) {
+    if (self.relayIP.length == 0) {
         return NO;
     }
     if (!self.isAuth) {
@@ -337,7 +337,7 @@
     }
 
     NSLog(@"send voip data to server");
-    int ip = inet_addr([self.serverIP UTF8String]);
+    int ip = inet_addr([self.relayIP UTF8String]);
     ip = ntohl(ip);
     return [self sendVOIPData:data ip:ip port:self.voipPort withHeader:YES];
 }
