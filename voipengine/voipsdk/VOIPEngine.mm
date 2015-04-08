@@ -336,7 +336,6 @@
         [self sendAuth];
     }
 
-    NSLog(@"send voip data to server");
     int ip = inet_addr([self.relayIP UTF8String]);
     ip = ntohl(ip);
     return [self sendVOIPData:data ip:ip port:self.voipPort withHeader:YES];

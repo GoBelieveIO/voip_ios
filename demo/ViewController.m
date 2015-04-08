@@ -131,8 +131,9 @@
 }
 
 -(NSString*)login:(long long)uid {
-    //调用app自身的登陆接口获取im服务必须的access token
-    NSString *url = @"http://demo.im.gobelieve.io/auth/token";
+    //调用app自身的登陆接口获取voip服务必须的access token
+    //sandbox地址："http://sandbox.demo.gobelieve.io/auth/token"
+    NSString *url = @"http://demo.gobelieve.io/auth/token";
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]
                                                               cachePolicy:NSURLRequestUseProtocolCachePolicy
                                                           timeoutInterval:60];
