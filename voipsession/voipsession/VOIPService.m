@@ -21,6 +21,9 @@
 
 @interface VOIPService()
 
+@property(atomic, copy) NSString *hostIP;
+@property(nonatomic, assign) int port;
+
 @property(atomic, assign) time_t timestmap;
 
 
@@ -220,11 +223,25 @@
     [self startConnectTimer];
 }
 
+-(NSString*)IP2String:(struct in_addr)addr {
+    char buf[64] = {0};
+    const char *p = inet_ntop(AF_INET, &addr, buf, 64);
+    if (p) {
+        return [NSString stringWithUTF8String:p];
+    }
+    return nil;
+
+}
 
 -(void)handleAuthStatus:(VOIPMessage*)msg {
-    int status = [(NSNumber*)msg.body intValue];
-    NSLog(@"auth status:%d", status);
-    if (status != 0) {
+    VOIPAuthenticationStatus *status = (VOIPAuthenticationStatus*)msg.body;
+    
+    struct in_addr addr;
+    addr.s_addr = htonl(status.ip);
+    self.relayIP = [self IP2String:addr];
+    
+    NSLog(@"auth status:%d, ip:%@", status.status, self.relayIP);
+    if (status.status != 0) {
         //失效的accesstoken,2s后重新连接
         self.connectFailCount = 2;
         [self close];
@@ -318,11 +335,10 @@
         return nil;
     }
     NSString *ip = nil;
-    for (rp = result; rp != NULL; rp = rp->ai_next) {
+    rp = result;
+    if (rp != NULL) {
         struct sockaddr_in *addr = (struct sockaddr_in*)rp->ai_addr;
-        const char *str = inet_ntoa(addr->sin_addr);
-        ip = [NSString stringWithUTF8String:str];
-        break;
+        ip = [self IP2String:addr->sin_addr];
     }
     
     freeaddrinfo(result);
@@ -333,6 +349,7 @@
     NSLog(@"refresh host ip...");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
         NSString *ip = [self resolveIP:self.host];
+        NSLog(@"host ip:%@", ip);
         if ([ip length] > 0) {
             self.hostIP = ip;
             self.timestmap = time(NULL);

@@ -31,12 +31,12 @@
 
 @interface VOIPService : NSObject
 
-@property(atomic, copy) NSString *hostIP;
-@property(nonatomic, copy)NSString *host;
-@property(nonatomic)int port;
+@property(nonatomic, copy) NSString* relayIP;
+@property(nonatomic, copy) NSString *host;
+
 @property(nonatomic, copy) NSString *deviceID;
 @property(nonatomic, copy) NSString *token;
-@property(nonatomic, assign)int connectState;
+@property(nonatomic, assign) int connectState;
 
 +(VOIPService*)instance;
 

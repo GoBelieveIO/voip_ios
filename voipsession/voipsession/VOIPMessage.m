@@ -23,6 +23,9 @@
 
 @end
 
+@implementation VOIPAuthenticationStatus
+
+@end
 
 @implementation VOIPMessage
 -(NSData*)pack {
@@ -99,8 +102,11 @@
     if (self.cmd == MSG_RST) {
         return YES;
     } else if (self.cmd == MSG_AUTH_STATUS) {
-        int status = voip_readInt32(p);
-        self.body = [NSNumber numberWithInt:status];
+        VOIPAuthenticationStatus *status = [[VOIPAuthenticationStatus alloc] init];
+        status.status = voip_readInt32(p);
+        p += 4;
+        status.ip = voip_readInt32(p);
+        self.body = status;
         return YES;
     } else if (self.cmd == MSG_VOIP_CONTROL) {
         VOIPControl *ctl = [[VOIPControl alloc] init];

@@ -71,6 +71,11 @@ enum VOIPCommand {
 @property(nonatomic, copy) NSString *deviceID;
 @end
 
+@interface VOIPAuthenticationStatus : NSObject
+@property(nonatomic, assign) int32_t status;
+@property(nonatomic, assign) int32_t ip;
+@end
+
 @interface VOIPMessage : NSObject
 @property(nonatomic, assign)int cmd;
 @property(nonatomic, assign)int seq;

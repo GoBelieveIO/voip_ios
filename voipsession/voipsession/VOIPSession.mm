@@ -255,7 +255,7 @@
             }
             
             if (self.relayIP == nil) {
-                self.relayIP = [VOIPService instance].hostIP;
+                self.relayIP = [VOIPService instance].relayIP;
             }
             
             [self sendConnected];
@@ -302,7 +302,7 @@
                 const char *str = inet_ntop(AF_INET, &addr, buff, 64);
                 self.relayIP = [NSString stringWithUTF8String:str];
             } else {
-                self.relayIP = [VOIPService instance].hostIP;
+                self.relayIP = [VOIPService instance].relayIP;
             }
             
             [self.acceptTimer invalidate];
