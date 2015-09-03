@@ -17,7 +17,6 @@
 
 namespace webrtc {
 class AudioMixerOutputReceiver;
-class AudioMixerStatusReceiver;
 class MixerParticipant;
 class Trace;
 
@@ -40,20 +39,13 @@ public:
     virtual ~AudioConferenceMixer() {}
 
     // Module functions
-    virtual int32_t ChangeUniqueId(const int32_t id) OVERRIDE = 0;
-    virtual int32_t TimeUntilNextProcess() OVERRIDE = 0;
-    virtual int32_t Process() OVERRIDE = 0;
+    int64_t TimeUntilNextProcess() override = 0;
+    int32_t Process() override = 0;
 
     // Register/unregister a callback class for receiving the mixed audio.
     virtual int32_t RegisterMixedStreamCallback(
         AudioMixerOutputReceiver& receiver) = 0;
     virtual int32_t UnRegisterMixedStreamCallback() = 0;
-
-    // Register/unregister a callback class for receiving status information.
-    virtual int32_t RegisterMixerStatusCallback(
-        AudioMixerStatusReceiver& mixerStatusCallback,
-        const uint32_t amountOf10MsBetweenCallbacks) = 0;
-    virtual int32_t UnRegisterMixerStatusCallback() = 0;
 
     // Add/remove participants as candidates for mixing.
     virtual int32_t SetMixabilityStatus(MixerParticipant& participant,

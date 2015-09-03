@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+@class VOIPRenderView;
 
 @interface VOIPEngine : NSObject
 @property(nonatomic)int voipPort;
@@ -21,6 +22,10 @@
 @property(nonatomic)int32_t calleeIP;
 @property(nonatomic)int calleePort;
 @property(nonatomic)BOOL isHeadphone;
+//当前用户是呼叫方
+@property(nonatomic)BOOL isCaller;
+
+@property(nonatomic)VOIPRenderView *render;
 -(void)startStream;
 -(void)stopStream;
 @end

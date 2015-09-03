@@ -28,6 +28,8 @@ struct CodecInst;
 struct WebRtcRTPHeader;
 class AudioFrame;
 class RTPFragmentationHeader;
+class AudioEncoderMutable;
+class AudioDecoder;
 
 #define WEBRTC_10MS_PCM_AUDIO 960  // 16 bits super wideband 48 kHz
 
@@ -58,7 +60,7 @@ class ACMVADCallback {
  public:
   virtual ~ACMVADCallback() {}
 
-  virtual int32_t InFrameType(int16_t frameType) = 0;
+  virtual int32_t InFrameType(FrameType frame_type) = 0;
 };
 
 // Callback class used for reporting receiver statistics
@@ -74,7 +76,7 @@ class ACMVQMonCallback {
       const uint16_t delayMS) = 0;  // average delay in ms
 };
 
-class AudioCodingModule: public Module {
+class AudioCodingModule {
  protected:
   AudioCodingModule() {}
 
@@ -99,7 +101,8 @@ class AudioCodingModule: public Module {
   //
   static AudioCodingModule* Create(int id);
   static AudioCodingModule* Create(int id, Clock* clock);
-  virtual ~AudioCodingModule() {};
+  static AudioCodingModule* Create(const Config& config);
+  virtual ~AudioCodingModule() = default;
 
   ///////////////////////////////////////////////////////////////////////////
   //   Utility functions
@@ -191,31 +194,6 @@ class AudioCodingModule: public Module {
   //
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t InitializeSender()
-  // Any encoder-related state of ACM will be initialized to the
-  // same state when ACM is created. This will not interrupt or
-  // effect decoding functionality of ACM. ACM will lose all the
-  // encoding-related settings by calling this function.
-  // For instance, a send codec has to be registered again.
-  //
-  // Return value:
-  //   -1 if failed to initialize,
-  //    0 if succeeded.
-  //
-  virtual int32_t InitializeSender() = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int32_t ResetEncoder()
-  // This API resets the states of encoder. All the encoder settings, such as
-  // send-codec or VAD/DTX, will be preserved.
-  //
-  // Return value:
-  //   -1 if failed to initialize,
-  //    0 if succeeded.
-  //
-  virtual int32_t ResetEncoder() = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   // int32_t RegisterSendCodec()
   // Registers a codec, specified by |send_codec|, as sending codec.
   // This API can be called multiple of times to register Codec. The last codec
@@ -244,32 +222,10 @@ class AudioCodingModule: public Module {
   //
   virtual int32_t RegisterSendCodec(const CodecInst& send_codec) = 0;
 
-  ///////////////////////////////////////////////////////////////////////////
-  // int RegisterSecondarySendCodec()
-  // Register a secondary encoder to enable dual-streaming. If a secondary
-  // codec is already registered, it will be removed before the new one is
-  // registered.
-  //
-  // Note: The secondary encoder will be unregistered if a primary codec
-  // is set with a sampling rate which does not match that of the existing
-  // secondary codec.
-  //
-  // Input:
-  //   -send_codec         : Parameters of the codec to be registered, c.f.
-  //                         common_types.h for the definition of
-  //                         CodecInst.
-  //
-  // Return value:
-  //   -1 if failed to register,
-  //    0 if succeeded.
-  //
-  virtual int RegisterSecondarySendCodec(const CodecInst& send_codec) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // void UnregisterSecondarySendCodec()
-  // Unregister the secondary encoder to disable dual-streaming.
-  //
-  virtual void UnregisterSecondarySendCodec() = 0;
+  // Registers |external_speech_encoder| as encoder. The new encoder will
+  // replace any previously registered speech encoder (internal or external).
+  virtual void RegisterExternalSendCodec(
+      AudioEncoderMutable* external_speech_encoder) = 0;
 
   ///////////////////////////////////////////////////////////////////////////
   // int32_t SendCodec()
@@ -285,19 +241,6 @@ class AudioCodingModule: public Module {
   virtual int32_t SendCodec(CodecInst* current_send_codec) const = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  // int SecondarySendCodec()
-  // Get the codec parameters for the current secondary send codec.
-  //
-  // Output:
-  //   -secondary_codec          : parameters of the secondary send codec.
-  //
-  // Return value:
-  //   -1 if failed to get send codec,
-  //    0 if succeeded.
-  //
-  virtual int SecondarySendCodec(CodecInst* secondary_codec) const = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   // int32_t SendFrequency()
   // Get the sampling frequency of the current encoder in Hertz.
   //
@@ -308,33 +251,10 @@ class AudioCodingModule: public Module {
   virtual int32_t SendFrequency() const = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t Bitrate()
-  // Get encoding bit-rate in bits per second.
-  //
-  // Return value:
-  //   positive; encoding rate in bits/sec,
-  //   -1 if an error is happened.
-  //
-  virtual int32_t SendBitrate() const = 0;
+  // Sets the bitrate to the specified value in bits/sec. If the value is not
+  // supported by the codec, it will choose another appropriate value.
+  virtual void SetBitRate(int bitrate_bps) = 0;
 
-  ///////////////////////////////////////////////////////////////////////////
-  // int32_t SetReceivedEstimatedBandwidth()
-  // Set available bandwidth [bits/sec] of the up-link channel.
-  // This information is used for traffic shaping, and is currently only
-  // supported if iSAC is the send codec.
-  //
-  // Input:
-  //   -bw                 : bandwidth in bits/sec estimated for
-  //                         up-link.
-  // Return value
-  //   -1 if error occurred in setting the bandwidth,
-  //    0 bandwidth is set successfully.
-  //
-  // TODO(henrik.lundin) Unused. Remove?
-  virtual int32_t SetReceivedEstimatedBandwidth(
-      const int32_t bw) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   // int32_t RegisterTransportCallback()
   // Register a transport callback which will be called to deliver
   // the encoded buffers whenever Process() is called and a
@@ -355,9 +275,12 @@ class AudioCodingModule: public Module {
 
   ///////////////////////////////////////////////////////////////////////////
   // int32_t Add10MsData()
-  // Add 10MS of raw (PCM) audio data to the encoder. If the sampling
+  // Add 10MS of raw (PCM) audio data and encode it. If the sampling
   // frequency of the audio does not match the sampling frequency of the
-  // current encoder ACM will resample the audio.
+  // current encoder ACM will resample the audio. If an encoded packet was
+  // produced, it will be delivered via the callback object registered using
+  // RegisterTransportCallback, and the return value from this function will
+  // be the number of bytes encoded.
   //
   // Input:
   //   -audio_frame        : the input audio frame, containing raw audio
@@ -366,10 +289,8 @@ class AudioCodingModule: public Module {
   //                         AudioFrame.
   //
   // Return value:
-  //      0   successfully added the frame.
-  //     -1   some error occurred and data is not added.
-  //   < -1   to add the frame to the buffer n samples had to be
-  //          overwritten, -n is the return value in this case.
+  //   >= 0   number of bytes encoded.
+  //     -1   some error occurred.
   //
   virtual int32_t Add10MsData(const AudioFrame& audio_frame) = 0;
 
@@ -506,40 +427,6 @@ class AudioCodingModule: public Module {
                             ACMVADMode* vad_mode) const = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t ReplaceInternalDTXWithWebRtc()
-  // Used to replace codec internal DTX scheme with WebRtc. This is only
-  // supported for G729, where this call replaces AnnexB with WebRtc DTX.
-  //
-  // Input:
-  //   -use_webrtc_dtx     : if false (default) the codec built-in DTX/VAD
-  //                         scheme is used, otherwise the internal DTX is
-  //                         replaced with WebRtc DTX/VAD.
-  //
-  // Return value:
-  //   -1 if failed to replace codec internal DTX with WebRtc,
-  //    0 if succeeded.
-  //
-  virtual int32_t ReplaceInternalDTXWithWebRtc(
-      const bool use_webrtc_dtx = false) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int32_t IsInternalDTXReplacedWithWebRtc()
-  // Get status if the codec internal DTX (when such exists) is replaced with
-  // WebRtc DTX. This is only supported for G729.
-  //
-  // Output:
-  //   -uses_webrtc_dtx    : is set to true if the codec internal DTX is
-  //                         replaced with WebRtc DTX/VAD, otherwise it is set
-  //                         to false.
-  //
-  // Return value:
-  //   -1 if failed to determine if codec internal DTX is replaced with WebRtc,
-  //    0 if succeeded.
-  //
-  virtual int32_t IsInternalDTXReplacedWithWebRtc(
-      bool* uses_webrtc_dtx) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   // int32_t RegisterVADCallback()
   // Call this method to register a callback function which is called
   // any time that ACM encounters an empty frame. That is a frame which is
@@ -575,17 +462,6 @@ class AudioCodingModule: public Module {
   virtual int32_t InitializeReceiver() = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t ResetDecoder()
-  // This API resets the states of decoders. ACM will not lose any
-  // decoder-related settings, such as registered codecs.
-  //
-  // Return value:
-  //   -1 if failed to initialize,
-  //    0 if succeeded.
-  //
-  virtual int32_t ResetDecoder() = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   // int32_t ReceiveFrequency()
   // Get sampling frequency of the last received payload.
   //
@@ -618,8 +494,12 @@ class AudioCodingModule: public Module {
   //   -1 if failed to register the codec
   //    0 if the codec registered successfully.
   //
-  virtual int32_t RegisterReceiveCodec(
-      const CodecInst& receive_codec) = 0;
+  virtual int RegisterReceiveCodec(const CodecInst& receive_codec) = 0;
+
+  virtual int RegisterExternalReceiveCodec(int rtp_payload_type,
+                                           AudioDecoder* external_decoder,
+                                           int sample_rate_hz,
+                                           int num_channels) = 0;
 
   ///////////////////////////////////////////////////////////////////////////
   // int32_t UnregisterReceiveCodec()
@@ -776,19 +656,6 @@ class AudioCodingModule: public Module {
   virtual int32_t PlayoutTimestamp(uint32_t* timestamp) = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t DecoderEstimatedBandwidth()
-  // Get the estimate of the Bandwidth, in bits/second, based on the incoming
-  // stream. This API is useful in one-way communication scenarios, where
-  // the bandwidth information is sent in an out-of-band fashion.
-  // Currently only supported if iSAC is registered as a receiver.
-  //
-  // Return value:
-  //   >0 bandwidth in bits/second.
-  //   -1 if failed to get a bandwidth estimate.
-  //
-  virtual int32_t DecoderEstimatedBandwidth() const = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   // int32_t SetPlayoutMode()
   // Call this API to set the playout mode. Playout mode could be optimized
   // for i) voice, ii) FAX or iii) streaming. In Voice mode, NetEQ is
@@ -887,33 +754,20 @@ class AudioCodingModule: public Module {
   virtual int SetISACMaxPayloadSize(int max_payload_len_bytes) = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t ConfigISACBandwidthEstimator()
-  // Call this function to configure the bandwidth estimator of ISAC.
-  // During the adaptation of bit-rate, iSAC automatically adjusts the
-  // frame-size (either 30 or 60 ms) to save on RTP header. The initial
-  // frame-size can be specified by the first argument. The configuration also
-  // regards the initial estimate of bandwidths. The estimator starts from
-  // this point and converges to the actual bottleneck. This is given by the
-  // second parameter. Furthermore, it is also possible to control the
-  // adaptation of frame-size. This is specified by the last parameter.
+  // int SetOpusApplication()
+  // Sets the intended application if current send codec is Opus. Opus uses this
+  // to optimize the encoding for applications like VOIP and music. Currently,
+  // two modes are supported: kVoip and kAudio.
   //
   // Input:
-  //   -init_frame_size_ms : initial frame-size in milliseconds. For iSAC-wb
-  //                         30 ms and 60 ms (default) are acceptable values,
-  //                         and for iSAC-swb 30 ms is the only acceptable
-  //                         value. Zero indicates default value.
-  //   -init_rate_bps      : initial estimate of the bandwidth. Values
-  //                         between 10000 and 58000 are acceptable.
-  //   -enforce_srame_size : if true, the frame-size will not be adapted.
+  //   - application            : intended application.
   //
   // Return value:
-  //   -1 if failed to configure the bandwidth estimator,
-  //    0 if the configuration was successfully applied.
+  //   -1 if current send codec is not Opus or error occurred in setting the
+  //      Opus application mode.
+  //    0 if the Opus application mode is successfully set.
   //
-  virtual int32_t ConfigISACBandwidthEstimator(
-      int init_frame_size_ms,
-      int init_rate_bps,
-      bool enforce_frame_size = false) = 0;
+  virtual int SetOpusApplication(OpusApplicationMode application) = 0;
 
   ///////////////////////////////////////////////////////////////////////////
   // int SetOpusMaxPlaybackRate()
@@ -927,16 +781,37 @@ class AudioCodingModule: public Module {
   // Return value:
   //   -1 if current send codec is not Opus or
   //      error occurred in setting the maximum playback rate,
-  //    0 maximum bandwidth is set successfully.
+  //    0 if maximum bandwidth is set successfully.
   //
   virtual int SetOpusMaxPlaybackRate(int frequency_hz) = 0;
+
+  ///////////////////////////////////////////////////////////////////////////
+  // EnableOpusDtx()
+  // Enable the DTX, if current send codec is Opus.
+  //
+  // Return value:
+  //   -1 if current send codec is not Opus or error occurred in enabling the
+  //      Opus DTX.
+  //    0 if Opus DTX is enabled successfully.
+  //
+  virtual int EnableOpusDtx() = 0;
+
+  ///////////////////////////////////////////////////////////////////////////
+  // int DisableOpusDtx()
+  // If current send codec is Opus, disables its internal DTX.
+  //
+  // Return value:
+  //   -1 if current send codec is not Opus or error occurred in disabling DTX.
+  //    0 if Opus DTX is disabled successfully.
+  //
+  virtual int DisableOpusDtx() = 0;
 
   ///////////////////////////////////////////////////////////////////////////
   //   statistics
   //
 
   ///////////////////////////////////////////////////////////////////////////
-  // int32_t  NetworkStatistics()
+  // int32_t  GetNetworkStatistics()
   // Get network statistics. Note that the internal statistics of NetEq are
   // reset by this call.
   //
@@ -947,8 +822,8 @@ class AudioCodingModule: public Module {
   //   -1 if failed to set the network statistics,
   //    0 if statistics are set successfully.
   //
-  virtual int32_t NetworkStatistics(
-      ACMNetworkStatistics* network_statistics) = 0;
+  virtual int32_t GetNetworkStatistics(
+      NetworkStatistics* network_statistics) = 0;
 
   //
   // Set an initial delay for playout.
@@ -992,7 +867,8 @@ class AudioCodingModule: public Module {
   // Negative |round_trip_time_ms| results is an error message and empty list
   // is returned.
   //
-  virtual std::vector<uint16_t> GetNackList(int round_trip_time_ms) const = 0;
+  virtual std::vector<uint16_t> GetNackList(
+      int64_t round_trip_time_ms) const = 0;
 
   virtual void GetDecodingCallStatistics(
       AudioDecodingCallStats* call_stats) const = 0;
@@ -1004,15 +880,7 @@ class ReceiverInfo;
 class AudioCoding {
  public:
   struct Config {
-    Config()
-        : neteq_config(),
-          clock(Clock::GetRealTimeClock()),
-          transport(NULL),
-          vad_callback(NULL),
-          play_dtmf(true),
-          initial_playout_delay_ms(0),
-          playout_channels(1),
-          playout_frequency_hz(32000) {}
+    Config();
 
     AudioCodingModule::Config ToOldConfig() const {
       AudioCodingModule::Config old_config;
@@ -1133,7 +1001,7 @@ class AudioCoding {
 
   // Returns the network statistics. Note that the internal statistics of NetEq
   // are reset by this call. Returns true if successful, false otherwise.
-  virtual bool NetworkStatistics(ACMNetworkStatistics* network_statistics) = 0;
+  virtual bool GetNetworkStatistics(NetworkStatistics* network_statistics) = 0;
 
   // Enables NACK and sets the maximum size of the NACK list. If NACK is already
   // enabled then the maximum NACK list size is modified accordingly. Returns

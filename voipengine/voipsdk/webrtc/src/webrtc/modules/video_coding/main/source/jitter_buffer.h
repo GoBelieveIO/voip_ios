@@ -54,8 +54,8 @@ struct VCMJitterSample {
 
 class TimestampLessThan {
  public:
-  bool operator() (const uint32_t& timestamp1,
-                   const uint32_t& timestamp2) const {
+  bool operator() (uint32_t timestamp1,
+                   uint32_t timestamp2) const {
     return IsNewerTimestamp(timestamp2, timestamp1);
   }
 };
@@ -76,9 +76,9 @@ class FrameList
 
 class VCMJitterBuffer {
  public:
-  VCMJitterBuffer(Clock* clock,
-                  EventFactory* event_factory);
-  virtual ~VCMJitterBuffer();
+  VCMJitterBuffer(Clock* clock, rtc::scoped_ptr<EventWrapper> event);
+
+  ~VCMJitterBuffer();
 
   // Initializes and starts jitter buffer.
   void Start();
@@ -94,7 +94,7 @@ class VCMJitterBuffer {
 
   // Get the number of received frames, by type, since the jitter buffer
   // was started.
-  std::map<FrameType, uint32_t> FrameStatistics() const;
+  FrameCounts FrameStatistics() const;
 
   // The number of packets discarded by the jitter buffer because the decoder
   // won't be able to decode them.
@@ -153,16 +153,16 @@ class VCMJitterBuffer {
   uint32_t EstimatedJitterMs();
 
   // Updates the round-trip time estimate.
-  void UpdateRtt(uint32_t rtt_ms);
+  void UpdateRtt(int64_t rtt_ms);
 
-  // Set the NACK mode. |highRttNackThreshold| is an RTT threshold in ms above
-  // which NACK will be disabled if the NACK mode is |kNackHybrid|, -1 meaning
-  // that NACK is always enabled in the hybrid mode.
-  // |lowRttNackThreshold| is an RTT threshold in ms below which we expect to
-  // rely on NACK only, and therefore are using larger buffers to have time to
-  // wait for retransmissions.
-  void SetNackMode(VCMNackMode mode, int low_rtt_nack_threshold_ms,
-                   int high_rtt_nack_threshold_ms);
+  // Set the NACK mode. |high_rtt_nack_threshold_ms| is an RTT threshold in ms
+  // above which NACK will be disabled if the NACK mode is |kNack|, -1 meaning
+  // that NACK is always enabled in the |kNack| mode.
+  // |low_rtt_nack_threshold_ms| is an RTT threshold in ms below which we expect
+  // to rely on NACK only, and therefore are using larger buffers to have time
+  // to wait for retransmissions.
+  void SetNackMode(VCMNackMode mode, int64_t low_rtt_nack_threshold_ms,
+                   int64_t high_rtt_nack_threshold_ms);
 
   void SetNackSettings(size_t max_nack_list_size,
                        int max_packet_age_to_nack,
@@ -172,7 +172,7 @@ class VCMJitterBuffer {
   VCMNackMode nack_mode() const;
 
   // Returns a list of the sequence numbers currently missing.
-  uint16_t* GetNackList(uint16_t* nack_list_size, bool* request_key_frame);
+  std::vector<uint16_t> GetNackList(bool* request_key_frame);
 
   // Set decode error mode - Should not be changed in the middle of the
   // session. Changes will not influence frames already in the buffer.
@@ -183,6 +183,8 @@ class VCMJitterBuffer {
   // Used to compute time of complete continuous frames. Returns the timestamps
   // corresponding to the start and end of the continuous complete buffer.
   void RenderBufferSize(uint32_t* timestamp_start, uint32_t* timestamp_end);
+
+  void RegisterStatsCallback(VCMReceiveStatisticsCallback* callback);
 
  private:
   class SequenceNumberLessThan {
@@ -211,6 +213,12 @@ class VCMJitterBuffer {
   // Returns true if |frame| is continuous in the |last_decoded_state_|, taking
   // all decodable frames into account.
   bool IsContinuous(const VCMFrameBuffer& frame) const
+      EXCLUSIVE_LOCKS_REQUIRED(crit_sect_);
+  // Looks for frames in |incomplete_frames_| which are continuous in the
+  // provided |decoded_state|. Starts the search from the timestamp of
+  // |decoded_state|.
+  void FindAndInsertContinuousFramesWithState(
+      const VCMDecodingState& decoded_state)
       EXCLUSIVE_LOCKS_REQUIRED(crit_sect_);
   // Looks for frames in |incomplete_frames_| which are continuous in
   // |last_decoded_state_| taking all decodable frames into account. Starts
@@ -254,7 +262,8 @@ class VCMJitterBuffer {
   // Updates the frame statistics.
   // Counts only complete frames, so decodable incomplete frames will not be
   // counted.
-  void CountFrame(const VCMFrameBuffer& frame);
+  void CountFrame(const VCMFrameBuffer& frame)
+      EXCLUSIVE_LOCKS_REQUIRED(crit_sect_);
 
   // Update rolling average of packets per frame.
   void UpdateAveragePacketsPerFrame(int current_number_packets_);
@@ -290,7 +299,7 @@ class VCMJitterBuffer {
   bool running_;
   CriticalSectionWrapper* crit_sect_;
   // Event to signal when we have a frame ready for decoder.
-  scoped_ptr<EventWrapper> frame_event_;
+  rtc::scoped_ptr<EventWrapper> frame_event_;
   // Number of allocated frames.
   int max_number_of_frames_;
   UnorderedFrameList free_frames_ GUARDED_BY(crit_sect_);
@@ -298,10 +307,15 @@ class VCMJitterBuffer {
   FrameList incomplete_frames_ GUARDED_BY(crit_sect_);
   VCMDecodingState last_decoded_state_ GUARDED_BY(crit_sect_);
   bool first_packet_since_reset_;
+  // Contains last received frame's temporal information for non-flexible mode.
+  GofInfoVP9 last_gof_;
+  uint32_t last_gof_timestamp_;
+  bool last_gof_valid_;
 
   // Statistics.
+  VCMReceiveStatisticsCallback* stats_callback_ GUARDED_BY(crit_sect_);
   // Frame counts for each type (key, delta, ...)
-  std::map<FrameType, uint32_t> receive_statistics_;
+  FrameCounts receive_statistics_;
   // Latest calculated frame rates of incoming stream.
   unsigned int incoming_frame_rate_;
   unsigned int incoming_frame_count_;
@@ -327,16 +341,15 @@ class VCMJitterBuffer {
   // Calculates network delays used for jitter calculations.
   VCMInterFrameDelay inter_frame_delay_;
   VCMJitterSample waiting_for_completion_;
-  uint32_t rtt_ms_;
+  int64_t rtt_ms_;
 
   // NACK and retransmissions.
   VCMNackMode nack_mode_;
-  int low_rtt_nack_threshold_ms_;
-  int high_rtt_nack_threshold_ms_;
+  int64_t low_rtt_nack_threshold_ms_;
+  int64_t high_rtt_nack_threshold_ms_;
   // Holds the internal NACK list (the missing sequence numbers).
   SequenceNumberSet missing_sequence_numbers_;
   uint16_t latest_received_sequence_number_;
-  std::vector<uint16_t> nack_seq_nums_;
   size_t max_nack_list_size_;
   int max_packet_age_to_nack_;  // Measured in sequence numbers.
   int max_incomplete_time_ms_;

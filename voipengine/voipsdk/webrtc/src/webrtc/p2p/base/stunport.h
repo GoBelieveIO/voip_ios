@@ -33,9 +33,12 @@ class UDPPort : public Port {
                          rtc::Network* network,
                          rtc::AsyncPacketSocket* socket,
                          const std::string& username,
-                         const std::string& password) {
-    UDPPort* port =
-        new UDPPort(thread, factory, network, socket, username, password);
+                         const std::string& password,
+                         const std::string& origin,
+                         bool emit_localhost_for_anyaddress) {
+    UDPPort* port = new UDPPort(thread, factory, network, socket,
+                                username, password, origin,
+                                emit_localhost_for_anyaddress);
     if (!port->Init()) {
       delete port;
       port = NULL;
@@ -50,15 +53,20 @@ class UDPPort : public Port {
                          uint16 min_port,
                          uint16 max_port,
                          const std::string& username,
-                         const std::string& password) {
-    UDPPort* port = new UDPPort(thread, factory, network, ip, min_port,
-                                max_port, username, password);
+                         const std::string& password,
+                         const std::string& origin,
+                         bool emit_localhost_for_anyaddress) {
+    UDPPort* port = new UDPPort(thread, factory, network,
+                                ip, min_port, max_port,
+                                username, password, origin,
+                                emit_localhost_for_anyaddress);
     if (!port->Init()) {
       delete port;
       port = NULL;
     }
     return port;
   }
+
   virtual ~UDPPort();
 
   rtc::SocketAddress GetLocalAddress() const {
@@ -105,14 +113,18 @@ class UDPPort : public Port {
           uint16 min_port,
           uint16 max_port,
           const std::string& username,
-          const std::string& password);
+          const std::string& password,
+          const std::string& origin,
+          bool emit_localhost_for_anyaddress);
 
   UDPPort(rtc::Thread* thread,
           rtc::PacketSocketFactory* factory,
           rtc::Network* network,
           rtc::AsyncPacketSocket* socket,
           const std::string& username,
-          const std::string& password);
+          const std::string& password,
+          const std::string& origin,
+          bool emit_localhost_for_anyaddress);
 
   bool Init();
 
@@ -196,6 +208,9 @@ class UDPPort : public Port {
   bool ready_;
   int stun_keepalive_delay_;
 
+  // This is true when PORTALLOCATOR_ENABLE_LOCALHOST_CANDIDATE is specified.
+  bool emit_localhost_for_anyaddress_;
+
   friend class StunBindingRequest;
 };
 
@@ -208,9 +223,12 @@ class StunPort : public UDPPort {
                           uint16 min_port, uint16 max_port,
                           const std::string& username,
                           const std::string& password,
-                          const ServerAddresses& servers) {
-    StunPort* port = new StunPort(thread, factory, network, ip, min_port,
-                                  max_port, username, password, servers);
+                          const ServerAddresses& servers,
+                          const std::string& origin) {
+    StunPort* port = new StunPort(thread, factory, network,
+                                  ip, min_port, max_port,
+                                  username, password, servers,
+                                  origin);
     if (!port->Init()) {
       delete port;
       port = NULL;
@@ -233,9 +251,10 @@ class StunPort : public UDPPort {
            uint16 max_port,
            const std::string& username,
            const std::string& password,
-           const ServerAddresses& servers)
+           const ServerAddresses& servers,
+           const std::string& origin)
      : UDPPort(thread, factory, network, ip, min_port, max_port, username,
-               password) {
+               password, origin, false) {
     // UDPPort will set these to local udp, updating these to STUN.
     set_type(STUN_PORT_TYPE);
     set_server_addresses(servers);

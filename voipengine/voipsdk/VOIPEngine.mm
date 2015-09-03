@@ -14,6 +14,10 @@
 #import "util.h"
 #import "WebRTC.h"
 #include "webrtc/voice_engine/include/voe_network.h"
+#include "webrtc/voice_engine/include/voe_audio_processing.h"
+#include "webrtc/voice_engine/include/voe_hardware.h"
+
+#include "webrtc/call.h"
 
 //兼容没有消息头的旧版本协议
 #define COMPATIBLE
@@ -30,6 +34,15 @@
 #define VOIP_AUTH_STATUS 2
 #define VOIP_DATA 3
 
+const int kMinVideoBitrate = 30;
+const int kStartVideoBitrate = 300;
+const int kMaxVideoBitrate = 2000;
+
+const int kMinBandwidthBps = 30000;
+const int kStartBandwidthBps = 300000;
+const int kMaxBandwidthBps = 2000000;
+
+
 @interface VOIPData : NSObject
 @property(nonatomic, assign)int64_t sender;
 @property(nonatomic, assign)int64_t receiver;
@@ -42,20 +55,72 @@
 
 @end
 
-@interface VOIPEngine()<VoiceTransport>
+
+class AVEngine;
+
+@interface VOIPEngine()<VoiceTransport, VideoTransport> {
+    webrtc::Call *call_;
+    AVEngine *engine_;
+}
 @property(nonatomic) NSDate *beginDate;
 @property(nonatomic) BOOL isPeerConnected;
+#if 0
 @property(strong, nonatomic) AudioSendStream *sendStream;
 @property(strong, nonatomic) AudioReceiveStream *recvStream;
+#else
+@property(strong, nonatomic) AVSendStream *sendStream;
+@property(strong, nonatomic) AVReceiveStream *recvStream;
+#endif
 
 @property(nonatomic, assign)int udpFD;
 @property(nonatomic, strong)dispatch_source_t readSource;
 @property(nonatomic, getter=isAuth) BOOL auth;
 @property(nonatomic) BOOL isPeerNoHeader;
+
+-(BOOL)sendVideoRTP:(const void*)data length:(size_t)len;
+
+-(BOOL)sendVideoRTCP:(const void*)data length:(size_t)len;
+
 @end
 
 
+
+class AVEngine : public webrtc::newapi::Transport, public webrtc::LoadObserver {
+public:
+    AVEngine(VOIPEngine *e):e_(e) {}
+    
+    virtual bool SendRtp(const uint8_t* data, size_t len) {
+        NSLog(@"send rtp:%ld", len);
+        return [e_ sendVideoRTP:data length:len];
+    }
+    virtual bool SendRtcp(const uint8_t* data, size_t len) {
+        NSLog(@"send rtcp:%ld", len);
+        return [e_ sendVideoRTCP:data length:len];
+    }
+    
+    void OnLoadUpdate(Load load) {
+        NSLog(@"cpu load:%d", load);
+    }
+    
+private:
+    __weak VOIPEngine *e_;
+};
+
+
+
 @implementation VOIPEngine
+-(id)init {
+    self = [super init];
+    if (self) {
+        engine_ = new AVEngine(self);
+
+    }
+    return self;
+}
+
+-(void)dealloc {
+    delete engine_;
+}
 
 -(void)listenVOIP {
     if (self.readSource) {
@@ -180,12 +245,19 @@
     if (data.isRTP) {
         if (data.type == VOIP_AUDIO) {
             //NSLog(@"audio data:%zd content:%zd", packet_length, data.content.length);
+            //call_->Receiver()->DeliverPacket(webrtc::MediaType::AUDIO, (const uint8_t*)packet, packet_length);
             rtc.voe_network->ReceivedRTPPacket(channel, packet, packet_length);
+        } else if (data.type == VOIP_VIDEO) {
+            NSLog(@"video data:%zd content:%zd", packet_length, data.content.length);
+            call_->Receiver()->DeliverPacket(webrtc::MediaType::VIDEO, (const uint8_t*)packet, packet_length);
         }
     } else {
         if (data.type == VOIP_AUDIO) {
             //NSLog(@"audio rtcp data:%zd", packet_length);
             rtc.voe_network->ReceivedRTCPPacket(channel, packet, packet_length);
+        } else if (data.type == VOIP_VIDEO) {
+            NSLog(@"video rtcp data:%zd", packet_length);
+            call_->Receiver()->DeliverPacket(webrtc::MediaType::VIDEO, (const uint8_t*)packet, packet_length);
         }
     }
 }
@@ -195,6 +267,42 @@
 -(void)startStream {
     if (self.sendStream || self.recvStream) return;
     
+    NSLog(@"engine start stream");
+    WebRTC *rtc = [WebRTC sharedWebRTC];
+    
+    int error;
+    int audio_playback_device_index = 0;
+    error = rtc.voe_hardware->SetPlayoutDevice(audio_playback_device_index);
+
+    int audio_capture_device_index = 0;
+    error = rtc.voe_hardware->SetRecordingDevice(audio_capture_device_index);
+    
+    
+//    error = rtc.voe_apm->SetAgcStatus(true, webrtc::kAgcDefault);
+    error = rtc.voe_apm->SetNsStatus(true, webrtc::kNsHighSuppression);
+    error = rtc.voe_apm->SetEcStatus(true);
+    
+
+    webrtc::Call::Config config(engine_);
+    config.overuse_callback = engine_;
+    config.voice_engine = rtc.voice_engine;
+
+
+
+    
+    config.bitrate_config.min_bitrate_bps = kMinBandwidthBps;
+    config.bitrate_config.start_bitrate_bps = kStartBandwidthBps;
+    config.bitrate_config.max_bitrate_bps = kMaxBandwidthBps;
+    call_ = webrtc::Call::Create(config);
+    
+    
+//    if (voice_channel_) {
+//        voice_channel_->SetCall(call_.get());
+//    }
+
+    
+
+#if 0
     self.sendStream = [[AudioSendStream alloc] init];
     self.sendStream.voiceTransport = self;
     [self.sendStream start];
@@ -205,6 +313,38 @@
     self.recvStream.isLoudspeaker = NO;
     
     [self.recvStream start];
+#else
+    self.sendStream = [[AVSendStream alloc] init];
+    self.sendStream.voiceTransport = self;
+    self.sendStream.call = call_;
+    
+    //caller(1:3)
+    //callee(2:4)
+    if (self.isCaller) {
+        self.sendStream.ssrc = 1;
+    } else {
+        self.sendStream.ssrc = 2;
+    }
+
+    [self.sendStream start];
+
+
+    self.recvStream = [[AVReceiveStream alloc] init];
+    self.recvStream.voiceTransport = self;
+    self.recvStream.render = self.render;
+    self.recvStream.call = call_;
+    if (self.isCaller) {
+        self.recvStream.localSSRC = 3;
+        self.recvStream.remoteSSRC = 2;
+    } else {
+        self.recvStream.localSSRC = 4;
+        self.recvStream.remoteSSRC = 1;
+    }
+    
+    [self.recvStream start];
+    
+#endif
+    
     
     [self listenVOIP];
     self.beginDate = [NSDate date];
@@ -212,9 +352,18 @@
 
 -(void)stopStream {
     if (!self.sendStream && !self.recvStream) return;
-    NSLog(@"stop stream");
+    NSLog(@"engine stop stream");
+
+
     [self.sendStream stop];
+
     [self.recvStream stop];
+    
+    self.sendStream = NULL;
+    self.recvStream = NULL;
+    
+    delete call_;
+    call_ = NULL;
     
     [self closeUDP];
 }
@@ -394,5 +543,71 @@
     return length;
 }
 
+-(int)sendRTPPacketV:(const void*)data length:(int)length {
+    VOIPData *vData = [[VOIPData alloc] init];
+    
+    vData.sender = self.caller;
+    vData.receiver = self.callee;
+    vData.type = VOIP_VIDEO;
+    vData.rtp = YES;
+    vData.content = [NSData dataWithBytes:data length:length];
+    //NSLog(@"send rtp package:%d", length);
+    
+    [self sendVOIPData:vData];
+    return length;
+}
+
+-(int)sendRTCPPacketV:(const void*)data length:(int)length STOR:(BOOL)STOR {
+    if (!STOR) {
+        return 0;
+    }
+    
+    //NSLog(@"send rtcp package:%d", length);
+    VOIPData *vData = [[VOIPData alloc] init];
+    
+    vData.sender = self.caller;
+    vData.receiver = self.callee;
+    vData.rtp = NO;
+    vData.type = VOIP_VIDEO;
+    vData.content = [NSData dataWithBytes:data length:length];
+    
+    [self sendVOIPData:vData];
+    return length;
+}
+
+-(BOOL)sendVideoRTP:(const void*)data length:(size_t)len {
+    if (len < 12) {
+        return NO;
+    }
+    const char *p = (const char*)data;
+    int32_t ssrc = voip_readInt32(p+8);
+    NSLog(@"rtp ssrc:%d", ssrc);
+    
+    VOIPData *vData = [[VOIPData alloc] init];
+    
+    vData.sender = self.caller;
+    vData.receiver = self.callee;
+    vData.type = VOIP_VIDEO;
+    vData.rtp = YES;
+    vData.content = [NSData dataWithBytes:data length:len];
+    //NSLog(@"send rtp package:%d", length);
+    
+    [self sendVOIPData:vData];
+    return YES;
+}
+
+-(BOOL)sendVideoRTCP:(const void*)data length:(size_t)len {
+    VOIPData *vData = [[VOIPData alloc] init];
+    
+    vData.sender = self.caller;
+    vData.receiver = self.callee;
+    vData.rtp = NO;
+    vData.type = VOIP_VIDEO;
+    vData.content = [NSData dataWithBytes:data length:len];
+    
+    [self sendVOIPData:vData];
+    
+    return YES;
+}
 
 @end

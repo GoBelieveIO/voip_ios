@@ -22,6 +22,8 @@ namespace webrtc {
 // on being protected by the caller.
 class BitrateProber {
  public:
+  static const size_t kMinProbePacketSize;
+
   BitrateProber();
 
   void SetEnabled(bool enable);
@@ -37,6 +39,10 @@ class BitrateProber {
   // Returns the number of milliseconds until the next packet should be sent to
   // get accurate probing.
   int TimeUntilNextProbe(int64_t now_ms);
+
+  // Returns the number of bytes that the prober recommends for the next probe
+  // packet.
+  size_t RecommendedPacketSize() const;
 
   // Called to report to the prober that a packet has been sent, which helps the
   // prober know when to move to the next packet in a probe.

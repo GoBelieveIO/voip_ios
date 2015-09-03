@@ -11,6 +11,8 @@
 #ifndef WEBRTC_MODULES_AUDIO_CODING_CODECS_OPUS_INTERFACE_OPUS_INTERFACE_H_
 #define WEBRTC_MODULES_AUDIO_CODING_CODECS_OPUS_INTERFACE_OPUS_INTERFACE_H_
 
+#include <stddef.h>
+
 #include "webrtc/typedefs.h"
 
 #ifdef __cplusplus
@@ -21,7 +23,29 @@ extern "C" {
 typedef struct WebRtcOpusEncInst OpusEncInst;
 typedef struct WebRtcOpusDecInst OpusDecInst;
 
-int16_t WebRtcOpus_EncoderCreate(OpusEncInst** inst, int32_t channels);
+/****************************************************************************
+ * WebRtcOpus_EncoderCreate(...)
+ *
+ * This function create an Opus encoder.
+ *
+ * Input:
+ *      - channels           : number of channels.
+ *      - application        : 0 - VOIP applications.
+ *                                 Favor speech intelligibility.
+ *                             1 - Audio applications.
+ *                                 Favor faithfulness to the original input.
+ *
+ * Output:
+ *      - inst               : a pointer to Encoder context that is created
+ *                             if success.
+ *
+ * Return value              : 0 - Success
+ *                            -1 - Error
+ */
+int16_t WebRtcOpus_EncoderCreate(OpusEncInst** inst,
+                                 int32_t channels,
+                                 int32_t application);
+
 int16_t WebRtcOpus_EncoderFree(OpusEncInst* inst);
 
 /****************************************************************************
@@ -39,14 +63,14 @@ int16_t WebRtcOpus_EncoderFree(OpusEncInst* inst);
  * Output:
  *      - encoded               : Output compressed data buffer
  *
- * Return value                 : >0 - Length (in bytes) of coded data
+ * Return value                 : >=0 - Length (in bytes) of coded data
  *                                -1 - Error
  */
-int16_t WebRtcOpus_Encode(OpusEncInst* inst,
-                          const int16_t* audio_in,
-                          int16_t samples,
-                          int16_t length_encoded_buffer,
-                          uint8_t* encoded);
+int WebRtcOpus_Encode(OpusEncInst* inst,
+                      const int16_t* audio_in,
+                      size_t samples,
+                      size_t length_encoded_buffer,
+                      uint8_t* encoded);
 
 /****************************************************************************
  * WebRtcOpus_SetBitRate(...)
@@ -130,6 +154,32 @@ int16_t WebRtcOpus_EnableFec(OpusEncInst* inst);
  */
 int16_t WebRtcOpus_DisableFec(OpusEncInst* inst);
 
+/****************************************************************************
+ * WebRtcOpus_EnableDtx()
+ *
+ * This function enables Opus internal DTX for encoding.
+ *
+ * Input:
+ *      - inst               : Encoder context
+ *
+ * Return value              :  0 - Success
+ *                             -1 - Error
+ */
+int16_t WebRtcOpus_EnableDtx(OpusEncInst* inst);
+
+/****************************************************************************
+ * WebRtcOpus_DisableDtx()
+ *
+ * This function disables Opus internal DTX for encoding.
+ *
+ * Input:
+ *      - inst               : Encoder context
+ *
+ * Return value              :  0 - Success
+ *                             -1 - Error
+ */
+int16_t WebRtcOpus_DisableDtx(OpusEncInst* inst);
+
 /*
  * WebRtcOpus_SetComplexity(...)
  *
@@ -162,13 +212,8 @@ int WebRtcOpus_DecoderChannels(OpusDecInst* inst);
  *
  * Input:
  *      - inst               : Decoder context
- *
- * Return value              :  0 - Success
- *                             -1 - Error
  */
-int16_t WebRtcOpus_DecoderInitNew(OpusDecInst* inst);
-int16_t WebRtcOpus_DecoderInit(OpusDecInst* inst);
-int16_t WebRtcOpus_DecoderInitSlave(OpusDecInst* inst);
+void WebRtcOpus_DecoderInit(OpusDecInst* inst);
 
 /****************************************************************************
  * WebRtcOpus_Decode(...)
@@ -190,21 +235,12 @@ int16_t WebRtcOpus_DecoderInitSlave(OpusDecInst* inst);
  * Return value              : >0 - Samples per channel in decoded vector
  *                             -1 - Error
  */
-int16_t WebRtcOpus_DecodeNew(OpusDecInst* inst, const uint8_t* encoded,
-                             int16_t encoded_bytes, int16_t* decoded,
-                             int16_t* audio_type);
-int16_t WebRtcOpus_Decode(OpusDecInst* inst, const uint8_t* encoded,
-                          int16_t encoded_bytes, int16_t* decoded,
-                          int16_t* audio_type);
-int16_t WebRtcOpus_DecodeSlave(OpusDecInst* inst, const uint8_t* encoded,
-                               int16_t encoded_bytes, int16_t* decoded,
-                               int16_t* audio_type);
+int WebRtcOpus_Decode(OpusDecInst* inst, const uint8_t* encoded,
+                      size_t encoded_bytes, int16_t* decoded,
+                      int16_t* audio_type);
 
 /****************************************************************************
  * WebRtcOpus_DecodePlc(...)
- * TODO(tlegrand): Remove master and slave functions when NetEq4 is in place.
- * WebRtcOpus_DecodePlcMaster(...)
- * WebRtcOpus_DecodePlcSlave(...)
  *
  * This function processes PLC for opus frame(s).
  * Input:
@@ -217,12 +253,8 @@ int16_t WebRtcOpus_DecodeSlave(OpusDecInst* inst, const uint8_t* encoded,
  * Return value                   : >0 - number of samples in decoded PLC vector
  *                                  -1 - Error
  */
-int16_t WebRtcOpus_DecodePlc(OpusDecInst* inst, int16_t* decoded,
-                             int16_t number_of_lost_frames);
-int16_t WebRtcOpus_DecodePlcMaster(OpusDecInst* inst, int16_t* decoded,
-                                   int16_t number_of_lost_frames);
-int16_t WebRtcOpus_DecodePlcSlave(OpusDecInst* inst, int16_t* decoded,
-                                  int16_t number_of_lost_frames);
+int WebRtcOpus_DecodePlc(OpusDecInst* inst, int16_t* decoded,
+                         int number_of_lost_frames);
 
 /****************************************************************************
  * WebRtcOpus_DecodeFec(...)
@@ -242,9 +274,9 @@ int16_t WebRtcOpus_DecodePlcSlave(OpusDecInst* inst, int16_t* decoded,
  *                              0 - No FEC data in the packet
  *                             -1 - Error
  */
-int16_t WebRtcOpus_DecodeFec(OpusDecInst* inst, const uint8_t* encoded,
-                             int16_t encoded_bytes, int16_t* decoded,
-                             int16_t* audio_type);
+int WebRtcOpus_DecodeFec(OpusDecInst* inst, const uint8_t* encoded,
+                         size_t encoded_bytes, int16_t* decoded,
+                         int16_t* audio_type);
 
 /****************************************************************************
  * WebRtcOpus_DurationEst(...)
@@ -255,11 +287,12 @@ int16_t WebRtcOpus_DecodeFec(OpusDecInst* inst, const uint8_t* encoded,
  *        - payload              : Encoded data pointer
  *        - payload_length_bytes : Bytes of encoded data
  *
- * Return value                  : The duration of the packet, in samples.
+ * Return value                  : The duration of the packet, in samples per
+ *                                 channel.
  */
 int WebRtcOpus_DurationEst(OpusDecInst* inst,
                            const uint8_t* payload,
-                           int payload_length_bytes);
+                           size_t payload_length_bytes);
 
 /* TODO(minyue): Check whether it is needed to add a decoder context to the
  * arguments, like WebRtcOpus_DurationEst(...). In fact, the packet itself tells
@@ -275,11 +308,11 @@ int WebRtcOpus_DurationEst(OpusDecInst* inst,
  *        - payload_length_bytes : Bytes of encoded data
  *
  * Return value                  : >0 - The duration of the FEC data in the
- *                                 packet in samples.
+ *                                 packet in samples per channel.
  *                                  0 - No FEC data in the packet.
  */
 int WebRtcOpus_FecDurationEst(const uint8_t* payload,
-                              int payload_length_bytes);
+                              size_t payload_length_bytes);
 
 /****************************************************************************
  * WebRtcOpus_PacketHasFec(...)
@@ -293,7 +326,7 @@ int WebRtcOpus_FecDurationEst(const uint8_t* payload,
  *                                 1 - the packet contains FEC.
  */
 int WebRtcOpus_PacketHasFec(const uint8_t* payload,
-                            int payload_length_bytes);
+                            size_t payload_length_bytes);
 
 #ifdef __cplusplus
 }  // extern "C"

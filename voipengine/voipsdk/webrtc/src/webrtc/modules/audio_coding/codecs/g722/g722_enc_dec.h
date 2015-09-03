@@ -91,7 +91,7 @@ typedef struct
     int in_bits;
     unsigned int out_buffer;
     int out_bits;
-} g722_encode_state_t;
+} G722EncoderState;
 
 typedef struct
 {
@@ -129,29 +129,29 @@ typedef struct
     int in_bits;
     unsigned int out_buffer;
     int out_bits;
-} g722_decode_state_t;
+} G722DecoderState;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-g722_encode_state_t *WebRtc_g722_encode_init(g722_encode_state_t *s,
-                                             int rate,
-                                             int options);
-int WebRtc_g722_encode_release(g722_encode_state_t *s);
-int WebRtc_g722_encode(g722_encode_state_t *s,
-                       uint8_t g722_data[],
-                       const int16_t amp[],
-                       int len);
+G722EncoderState* WebRtc_g722_encode_init(G722EncoderState* s,
+                                          int rate,
+                                          int options);
+int WebRtc_g722_encode_release(G722EncoderState *s);
+size_t WebRtc_g722_encode(G722EncoderState *s,
+                          uint8_t g722_data[],
+                          const int16_t amp[],
+                          size_t len);
 
-g722_decode_state_t *WebRtc_g722_decode_init(g722_decode_state_t *s,
-                                             int rate,
-                                             int options);
-int WebRtc_g722_decode_release(g722_decode_state_t *s);
-int WebRtc_g722_decode(g722_decode_state_t *s,
-                       int16_t amp[],
-                       const uint8_t g722_data[],
-                       int len);
+G722DecoderState* WebRtc_g722_decode_init(G722DecoderState* s,
+                                          int rate,
+                                          int options);
+int WebRtc_g722_decode_release(G722DecoderState *s);
+size_t WebRtc_g722_decode(G722DecoderState *s,
+                          int16_t amp[],
+                          const uint8_t g722_data[],
+                          size_t len);
 
 #ifdef __cplusplus
 }

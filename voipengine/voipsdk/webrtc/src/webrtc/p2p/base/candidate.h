@@ -14,12 +14,15 @@
 #include <limits.h>
 #include <math.h>
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <string>
 
 #include "webrtc/p2p/base/constants.h"
 #include "webrtc/base/basictypes.h"
+#include "webrtc/base/helpers.h"
+#include "webrtc/base/network.h"
 #include "webrtc/base/socketaddress.h"
 
 namespace cricket {
@@ -30,17 +33,33 @@ class Candidate {
  public:
   // TODO: Match the ordering and param list as per RFC 5245
   // candidate-attribute syntax. http://tools.ietf.org/html/rfc5245#section-15.1
-  Candidate() : component_(0), priority_(0), generation_(0) {}
-  Candidate(const std::string& id, int component, const std::string& protocol,
-            const rtc::SocketAddress& address, uint32 priority,
-            const std::string& username, const std::string& password,
-            const std::string& type, const std::string& network_name,
-            uint32 generation, const std::string& foundation)
-      : id_(id), component_(component), protocol_(protocol), address_(address),
-        priority_(priority), username_(username), password_(password),
-        type_(type), network_name_(network_name), generation_(generation),
-        foundation_(foundation) {
-  }
+  Candidate()
+      : id_(rtc::CreateRandomString(8)),
+        component_(0),
+        priority_(0),
+        network_type_(rtc::ADAPTER_TYPE_UNKNOWN),
+        generation_(0) {}
+
+  Candidate(int component,
+            const std::string& protocol,
+            const rtc::SocketAddress& address,
+            uint32 priority,
+            const std::string& username,
+            const std::string& password,
+            const std::string& type,
+            uint32 generation,
+            const std::string& foundation)
+      : id_(rtc::CreateRandomString(8)),
+        component_(component),
+        protocol_(protocol),
+        address_(address),
+        priority_(priority),
+        username_(username),
+        password_(password),
+        type_(type),
+        network_type_(rtc::ADAPTER_TYPE_UNKNOWN),
+        generation_(generation),
+        foundation_(foundation) {}
 
   const std::string & id() const { return id_; }
   void set_id(const std::string & id) { id_ = id; }
@@ -51,6 +70,12 @@ class Candidate {
   const std::string & protocol() const { return protocol_; }
   void set_protocol(const std::string & protocol) { protocol_ = protocol; }
 
+  // The protocol used to talk to relay.
+  const std::string& relay_protocol() const { return relay_protocol_; }
+  void set_relay_protocol(const std::string& protocol) {
+    relay_protocol_ = protocol;
+  }
+
   const rtc::SocketAddress & address() const { return address_; }
   void set_address(const rtc::SocketAddress & address) {
     address_ = address;
@@ -59,10 +84,8 @@ class Candidate {
   uint32 priority() const { return priority_; }
   void set_priority(const uint32 priority) { priority_ = priority; }
 
-//  void set_type_preference(uint32 type_preference) {
-//    priority_ = GetPriority(type_preference);
-//  }
-
+  // TODO(pthatcher): Remove once Chromium's jingle/glue/utils.cc
+  // doesn't use it.
   // Maps old preference (which was 0.0-1.0) to match priority (which
   // is 0-2^32-1) to to match RFC 5245, section 4.1.2.1.  Also see
   // https://docs.google.com/a/google.com/document/d/
@@ -72,12 +95,14 @@ class Candidate {
     return static_cast<float>(((priority_ >> 24) * 100 / 127) / 100.0);
   }
 
+  // TODO(pthatcher): Remove once Chromium's jingle/glue/utils.cc
+  // doesn't use it.
   void set_preference(float preference) {
     // Limiting priority to UINT_MAX when value exceeds uint32 max.
     // This can happen for e.g. when preference = 3.
     uint64 prio_val = static_cast<uint64>(preference * 127) << 24;
-    priority_ = static_cast<uint32>(
-      rtc::_min(prio_val, static_cast<uint64>(UINT_MAX)));
+    priority_ =
+        static_cast<uint32>(std::min(prio_val, static_cast<uint64>(UINT_MAX)));
   }
 
   const std::string & username() const { return username_; }
@@ -92,6 +117,11 @@ class Candidate {
   const std::string & network_name() const { return network_name_; }
   void set_network_name(const std::string & network_name) {
     network_name_ = network_name;
+  }
+
+  rtc::AdapterType network_type() const { return network_type_; }
+  void set_network_type(rtc::AdapterType network_type) {
+    network_type_ = network_type;
   }
 
   // Candidates in a new generation replace those in the old generation.
@@ -132,15 +162,10 @@ class Candidate {
     // We ignore the network name, since that is just debug information, and
     // the priority, since that should be the same if the rest is (and it's
     // a float so equality checking is always worrisome).
-    return (id_ == c.id_) &&
-           (component_ == c.component_) &&
-           (protocol_ == c.protocol_) &&
-           (address_ == c.address_) &&
-           (username_ == c.username_) &&
-           (password_ == c.password_) &&
-           (type_ == c.type_) &&
-           (generation_ == c.generation_) &&
-           (foundation_ == c.foundation_) &&
+    return (component_ == c.component_) && (protocol_ == c.protocol_) &&
+           (address_ == c.address_) && (username_ == c.username_) &&
+           (password_ == c.password_) && (type_ == c.type_) &&
+           (generation_ == c.generation_) && (foundation_ == c.foundation_) &&
            (related_address_ == c.related_address_);
   }
 
@@ -195,16 +220,30 @@ class Candidate {
   std::string id_;
   int component_;
   std::string protocol_;
+  std::string relay_protocol_;
   rtc::SocketAddress address_;
   uint32 priority_;
   std::string username_;
   std::string password_;
   std::string type_;
   std::string network_name_;
+  rtc::AdapterType network_type_;
   uint32 generation_;
   std::string foundation_;
   rtc::SocketAddress related_address_;
   std::string tcptype_;
+};
+
+// Used during parsing and writing to map component to channel name
+// and back.  This is primarily for converting old G-ICE candidate
+// signalling to new ICE candidate classes.
+class CandidateTranslator {
+ public:
+  virtual ~CandidateTranslator() {}
+  virtual bool GetChannelNameFromComponent(
+      int component, std::string* channel_name) const = 0;
+  virtual bool GetComponentFromChannelName(
+      const std::string& channel_name, int* component) const = 0;
 };
 
 }  // namespace cricket

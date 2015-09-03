@@ -127,16 +127,6 @@ class Port : public PortInterface, public rtc::MessageHandler,
   virtual const std::string& Type() const { return type_; }
   virtual rtc::Network* Network() const { return network_; }
 
-  // This method will set the flag which enables standard ICE/STUN procedures
-  // in STUN connectivity checks. Currently this method does
-  // 1. Add / Verify MI attribute in STUN binding requests.
-  // 2. Username attribute in STUN binding request will be RFRAF:LFRAG,
-  // as opposed to RFRAGLFRAG.
-  virtual void SetIceProtocolType(IceProtocolType protocol) {
-    ice_protocol_ = protocol;
-  }
-  virtual IceProtocolType IceProtocol() const { return ice_protocol_; }
-
   // Methods to set/get ICE role and tiebreaker values.
   IceRole GetIceRole() const { return ice_role_; }
   void SetIceRole(IceRole role) { ice_role_ = role; }
@@ -262,7 +252,7 @@ class Port : public PortInterface, public rtc::MessageHandler,
 
   // Debugging description of this port
   virtual std::string ToString() const;
-  rtc::IPAddress& ip() { return ip_; }
+  const rtc::IPAddress& ip() const { return ip_; }
   uint16 min_port() { return min_port_; }
   uint16 max_port() { return max_port_; }
 
@@ -273,8 +263,7 @@ class Port : public PortInterface, public rtc::MessageHandler,
   // stun username attribute if present.
   bool ParseStunUsername(const StunMessage* stun_msg,
                          std::string* local_username,
-                         std::string* remote_username,
-                         IceProtocolType* remote_protocol_type) const;
+                         std::string* remote_username) const;
   void CreateStunUsername(const std::string& remote_username,
                           std::string* stun_username_attr_str) const;
 
@@ -288,15 +277,6 @@ class Port : public PortInterface, public rtc::MessageHandler,
   // Called when the Connection discovers a local peer reflexive candidate.
   // Returns the index of the new local candidate.
   size_t AddPrflxCandidate(const Candidate& local);
-
-  // Returns if RFC 5245 ICE protocol is used.
-  bool IsStandardIce() const;
-
-  // Returns if Google ICE protocol is used.
-  bool IsGoogleIce() const;
-
-  // Returns if Hybrid ICE protocol is used.
-  bool IsHybridIce() const;
 
   void set_candidate_filter(uint32 candidate_filter) {
     candidate_filter_ = candidate_filter;
@@ -313,9 +293,13 @@ class Port : public PortInterface, public rtc::MessageHandler,
   void AddAddress(const rtc::SocketAddress& address,
                   const rtc::SocketAddress& base_address,
                   const rtc::SocketAddress& related_address,
-                  const std::string& protocol, const std::string& tcptype,
-                  const std::string& type, uint32 type_preference,
-                  uint32 relay_preference, bool final);
+                  const std::string& protocol,
+                  const std::string& relay_protocol,
+                  const std::string& tcptype,
+                  const std::string& type,
+                  uint32 type_preference,
+                  uint32 relay_preference,
+                  bool final);
 
   // Adds the given connection to the list.  (Deleting removes them.)
   void AddConnection(Connection* conn);
@@ -380,7 +364,6 @@ class Port : public PortInterface, public rtc::MessageHandler,
   AddressMap connections_;
   int timeout_delay_;
   bool enable_port_packets_;
-  IceProtocolType ice_protocol_;
   IceRole ice_role_;
   uint64 tiebreaker_;
   bool shared_socket_;
@@ -402,6 +385,15 @@ class Port : public PortInterface, public rtc::MessageHandler,
 class Connection : public rtc::MessageHandler,
     public sigslot::has_slots<> {
  public:
+  struct SentPing {
+    SentPing(const std::string id, uint32 sent_time)
+        : id(id),
+          sent_time(sent_time) {}
+
+    std::string id;
+    uint32 sent_time;
+  };
+
   // States are from RFC 5245. http://tools.ietf.org/html/rfc5245#section-5.7.4
   enum State {
     STATE_WAITING = 0,  // Check has not been performed, Waiting pair on CL.
@@ -496,6 +488,9 @@ class Connection : public rtc::MessageHandler,
   bool use_candidate_attr() const { return use_candidate_attr_; }
   void set_use_candidate_attr(bool enable);
 
+  bool nominated() const { return nominated_; }
+  void set_nominated(bool nominated) { nominated_ = nominated; }
+
   void set_remote_ice_mode(IceMode mode) {
     remote_ice_mode_ = mode;
   }
@@ -510,6 +505,7 @@ class Connection : public rtc::MessageHandler,
   // Called when this connection should try checking writability again.
   uint32 last_ping_sent() const { return last_ping_sent_; }
   void Ping(uint32 now);
+  void ReceivedPingResponse();
 
   // Called whenever a valid ping is received on this connection.  This is
   // public because the connection intercepts the first ping for us.
@@ -517,16 +513,19 @@ class Connection : public rtc::MessageHandler,
   void ReceivedPing();
 
   // Debugging description of this connection
+  std::string ToDebugId() const;
   std::string ToString() const;
   std::string ToSensitiveString() const;
+  // Prints pings_since_last_response_ into a string.
+  void PrintPingsSinceLastResponse(std::string* pings, size_t max);
 
   bool reported() const { return reported_; }
   void set_reported(bool reported) { reported_ = reported;}
 
-  // This flag will be set if this connection is the chosen one for media
-  // transmission. This connection will send STUN ping with USE-CANDIDATE
-  // attribute.
-  sigslot::signal1<Connection*> SignalUseCandidate;
+  // This signal will be fired if this connection is nominated by the
+  // controlling side.
+  sigslot::signal1<Connection*> SignalNominated;
+
   // Invoked when Connection receives STUN error response with 487 code.
   void HandleRoleConflictFromPeer();
 
@@ -534,7 +533,23 @@ class Connection : public rtc::MessageHandler,
 
   IceMode remote_ice_mode() const { return remote_ice_mode_; }
 
+  // Update the ICE password of the remote candidate if |ice_ufrag| matches
+  // the candidate's ufrag, and the candidate's passwrod has not been set.
+  void MaybeSetRemoteIceCredentials(const std::string& ice_ufrag,
+                                    const std::string& ice_pwd);
+
+  // If |remote_candidate_| is peer reflexive and is equivalent to
+  // |new_candidate| except the type, update |remote_candidate_| to
+  // |new_candidate|.
+  void MaybeUpdatePeerReflexiveCandidate(const Candidate& new_candidate);
+
+  // Returns the last received time of any data, stun request, or stun
+  // response in milliseconds
+  uint32 last_received();
+
  protected:
+  enum { MSG_DELETE = 0, MSG_FIRST_AVAILABLE };
+
   // Constructs a new connection to the given remote port.
   Connection(Port* port, size_t index, const Candidate& candidate);
 
@@ -542,11 +557,12 @@ class Connection : public rtc::MessageHandler,
   void OnSendStunPacket(const void* data, size_t size, StunRequest* req);
 
   // Callbacks from ConnectionRequest
-  void OnConnectionRequestResponse(ConnectionRequest* req,
-                                   StunMessage* response);
+  virtual void OnConnectionRequestResponse(ConnectionRequest* req,
+                                           StunMessage* response);
   void OnConnectionRequestErrorResponse(ConnectionRequest* req,
                                         StunMessage* response);
   void OnConnectionRequestTimeout(ConnectionRequest* req);
+  void OnConnectionRequestSent(ConnectionRequest* req);
 
   // Changes the state and signals if necessary.
   void set_read_state(ReadState value);
@@ -567,10 +583,13 @@ class Connection : public rtc::MessageHandler,
   bool connected_;
   bool pruned_;
   // By default |use_candidate_attr_| flag will be true,
-  // as we will be using agrressive nomination.
+  // as we will be using aggressive nomination.
   // But when peer is ice-lite, this flag "must" be initialized to false and
   // turn on when connection becomes "best connection".
   bool use_candidate_attr_;
+  // Whether this connection has been nominated by the controlling side via
+  // the use_candidate attribute.
+  bool nominated_;
   IceMode remote_ice_mode_;
   StunRequestManager requests_;
   uint32 rtt_;
@@ -579,7 +598,7 @@ class Connection : public rtc::MessageHandler,
                                // side
   uint32 last_data_received_;
   uint32 last_ping_response_received_;
-  std::vector<uint32> pings_since_last_response_;
+  std::vector<SentPing> pings_since_last_response_;
 
   rtc::RateTracker recv_rate_tracker_;
   rtc::RateTracker send_rate_tracker_;

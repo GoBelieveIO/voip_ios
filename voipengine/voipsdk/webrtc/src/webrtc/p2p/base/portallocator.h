@@ -28,16 +28,31 @@ namespace cricket {
 // what kinds of ports are allocated.
 
 enum {
+  // Disable local UDP ports. This doesn't impact how we connect to relay
+  // servers.
   PORTALLOCATOR_DISABLE_UDP = 0x01,
   PORTALLOCATOR_DISABLE_STUN = 0x02,
   PORTALLOCATOR_DISABLE_RELAY = 0x04,
+  // Disable local TCP ports. This doesn't impact how we connect to relay
+  // servers.
   PORTALLOCATOR_DISABLE_TCP = 0x08,
   PORTALLOCATOR_ENABLE_SHAKER = 0x10,
-  PORTALLOCATOR_ENABLE_BUNDLE = 0x20,
   PORTALLOCATOR_ENABLE_IPV6 = 0x40,
+  // TODO(pthatcher): Remove this once it's no longer used in:
+  // remoting/client/plugin/pepper_port_allocator.cc
+  // remoting/protocol/chromium_port_allocator.cc
+  // remoting/test/fake_port_allocator.cc
+  // It's a no-op and is no longer needed.
   PORTALLOCATOR_ENABLE_SHARED_UFRAG = 0x80,
   PORTALLOCATOR_ENABLE_SHARED_SOCKET = 0x100,
   PORTALLOCATOR_ENABLE_STUN_RETRANSMIT_ATTRIBUTE = 0x200,
+  PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION = 0x400,
+  // When specified, a loopback candidate will be generated if
+  // PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION is specified.
+  PORTALLOCATOR_ENABLE_LOCALHOST_CANDIDATE = 0x800,
+  // Disallow use of UDP when connecting to a relay server. Since proxy servers
+  // usually don't handle UDP, using UDP will leak the IP address.
+  PORTALLOCATOR_DISABLE_UDP_RELAY = 0x1000,
 };
 
 const uint32 kDefaultPortAllocatorFlags = 0;
@@ -55,8 +70,6 @@ enum {
   CF_RELAY = 0x4,
   CF_ALL = 0x7,
 };
-
-class PortAllocatorSessionMuxer;
 
 class PortAllocatorSession : public sigslot::has_slots<> {
  public:
@@ -115,7 +128,7 @@ class PortAllocator : public sigslot::has_slots<> {
       candidate_filter_(CF_ALL) {
     // This will allow us to have old behavior on non webrtc clients.
   }
-  virtual ~PortAllocator();
+  virtual ~PortAllocator() {}
 
   PortAllocatorSession* CreateSession(
       const std::string& sid,
@@ -123,9 +136,6 @@ class PortAllocator : public sigslot::has_slots<> {
       int component,
       const std::string& ice_ufrag,
       const std::string& ice_pwd);
-
-  PortAllocatorSessionMuxer* GetSessionMuxer(const std::string& key) const;
-  void OnSessionMuxerDestroyed(PortAllocatorSessionMuxer* session);
 
   uint32 flags() const { return flags_; }
   void set_flags(uint32 flags) { flags_ = flags; }
@@ -167,6 +177,10 @@ class PortAllocator : public sigslot::has_slots<> {
     return true;
   }
 
+  // Gets/Sets the Origin value used for WebRTC STUN requests.
+  const std::string& origin() const { return origin_; }
+  void set_origin(const std::string& origin) { origin_ = origin; }
+
  protected:
   virtual PortAllocatorSession* CreateSessionInternal(
       const std::string& content_name,
@@ -174,17 +188,15 @@ class PortAllocator : public sigslot::has_slots<> {
       const std::string& ice_ufrag,
       const std::string& ice_pwd) = 0;
 
-  typedef std::map<std::string, PortAllocatorSessionMuxer*> SessionMuxerMap;
-
   uint32 flags_;
   std::string agent_;
   rtc::ProxyInfo proxy_;
   int min_port_;
   int max_port_;
   uint32 step_delay_;
-  SessionMuxerMap muxers_;
   bool allow_tcp_listen_;
   uint32 candidate_filter_;
+  std::string origin_;
 };
 
 }  // namespace cricket

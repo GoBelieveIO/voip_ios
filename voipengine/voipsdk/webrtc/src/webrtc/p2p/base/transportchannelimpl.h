@@ -21,6 +21,12 @@ namespace cricket {
 
 class Candidate;
 
+// TODO(pthatcher): Remove this once it's no longer used in
+// remoting/protocol/libjingle_transport_factory.cc
+enum IceProtocolType {
+  ICEPROTO_RFC5245  // Standard RFC 5245 version of ICE.
+};
+
 // Base class for real implementations of TransportChannel.  This includes some
 // methods called only by Transport, which do not need to be exposed to the
 // client.
@@ -36,10 +42,9 @@ class TransportChannelImpl : public TransportChannel {
   virtual IceRole GetIceRole() const = 0;
   virtual void SetIceRole(IceRole role) = 0;
   virtual void SetIceTiebreaker(uint64 tiebreaker) = 0;
-  virtual size_t GetConnectionCount() const = 0;
-  // To toggle G-ICE/ICE.
-  virtual bool GetIceProtocolType(IceProtocolType* type) const = 0;
-  virtual void SetIceProtocolType(IceProtocolType type) = 0;
+  // TODO(pthatcher): Remove this once it's no longer called in
+  // remoting/protocol/libjingle_transport_factory.cc
+  virtual void SetIceProtocolType(IceProtocolType type) {}
   // SetIceCredentials only need to be implemented by the ICE
   // transport channels. Non-ICE transport channels can just ignore.
   // The ufrag and pwd should be set before the Connect() is called.
@@ -53,11 +58,10 @@ class TransportChannelImpl : public TransportChannel {
   // SetRemoteIceMode must be implemented only by the ICE transport channels.
   virtual void SetRemoteIceMode(IceMode mode) = 0;
 
+  virtual void SetReceivingTimeout(int timeout_ms) = 0;
+
   // Begins the process of attempting to make a connection to the other client.
   virtual void Connect() = 0;
-
-  // Resets this channel back to the initial state (i.e., not connecting).
-  virtual void Reset() = 0;
 
   // Allows an individual channel to request signaling and be notified when it
   // is ready.  This is useful if the individual named channels have need to
@@ -103,7 +107,7 @@ class TransportChannelImpl : public TransportChannel {
   sigslot::signal1<TransportChannelImpl*> SignalConnectionRemoved;
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(TransportChannelImpl);
+  DISALLOW_COPY_AND_ASSIGN(TransportChannelImpl);
 };
 
 }  // namespace cricket

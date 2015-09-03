@@ -11,9 +11,9 @@
 #ifndef WEBRTC_MODULES_INTERFACE_VIDEO_CODING_DEFINES_H_
 #define WEBRTC_MODULES_INTERFACE_VIDEO_CODING_DEFINES_H_
 
-#include "webrtc/common_video/interface/i420_video_frame.h"
 #include "webrtc/modules/interface/module_common_types.h"
 #include "webrtc/typedefs.h"
+#include "webrtc/video_frame.h"
 
 namespace webrtc {
 
@@ -36,24 +36,13 @@ namespace webrtc {
 #define VCM_ERROR_REQUEST_SLI   -12
 #define VCM_NOT_IMPLEMENTED     -20
 
-#define VCM_RED_PAYLOAD_TYPE        96
-#define VCM_ULPFEC_PAYLOAD_TYPE     97
-#define VCM_VP8_PAYLOAD_TYPE       100
-#define VCM_VP9_PAYLOAD_TYPE       101
-#define VCM_I420_PAYLOAD_TYPE      124
-#define VCM_H264_PAYLOAD_TYPE      127
-
 enum { kDefaultStartBitrateKbps = 300 };
 
 enum VCMVideoProtection {
-  kProtectionNack,                // Both send-side and receive-side
-  kProtectionNackSender,          // Send-side only
-  kProtectionNackReceiver,        // Receive-side only
+  kProtectionNone,
+  kProtectionNack,
   kProtectionFEC,
   kProtectionNackFEC,
-  kProtectionKeyOnLoss,
-  kProtectionKeyOnKeyLoss,
-  kProtectionPeriodicKeyFrames
 };
 
 enum VCMTemporalDecimation {
@@ -68,15 +57,11 @@ struct VCMFrameCount {
 // Callback class used for sending data ready to be packetized
 class VCMPacketizationCallback {
  public:
-  virtual int32_t SendData(
-      FrameType frameType,
-      uint8_t payloadType,
-      uint32_t timeStamp,
-      int64_t capture_time_ms,
-      const uint8_t* payloadData,
-      size_t payloadSize,
-      const RTPFragmentationHeader& fragmentationHeader,
-      const RTPVideoHeader* rtpVideoHdr) = 0;
+  virtual int32_t SendData(uint8_t payloadType,
+                           const EncodedImage& encoded_image,
+                           const RTPFragmentationHeader& fragmentationHeader,
+                           const RTPVideoHeader* rtpVideoHdr) = 0;
+
  protected:
   virtual ~VCMPacketizationCallback() {
   }
@@ -85,7 +70,7 @@ class VCMPacketizationCallback {
 // Callback class used for passing decoded frames which are ready to be rendered.
 class VCMReceiveCallback {
  public:
-  virtual int32_t FrameToRender(I420VideoFrame& videoFrame) = 0;
+  virtual int32_t FrameToRender(VideoFrame& videoFrame) = 0;
   virtual int32_t ReceivedDecodedReferenceFrame(
       const uint64_t pictureId) {
     return -1;
@@ -113,8 +98,9 @@ class VCMSendStatisticsCallback {
 // Callback class used for informing the user of the incoming bit rate and frame rate.
 class VCMReceiveStatisticsCallback {
  public:
-  virtual int32_t OnReceiveStatisticsUpdate(const uint32_t bitRate,
-                                            const uint32_t frameRate) = 0;
+  virtual void OnReceiveRatesUpdated(uint32_t bitRate, uint32_t frameRate) = 0;
+  virtual void OnDiscardedPacketsUpdated(int discarded_packets) = 0;
+  virtual void OnFrameCountsUpdated(const FrameCounts& frame_counts) = 0;
 
  protected:
   virtual ~VCMReceiveStatisticsCallback() {
@@ -151,6 +137,12 @@ class VCMProtectionCallback {
   }
 };
 
+class VideoEncoderRateObserver {
+ public:
+  virtual ~VideoEncoderRateObserver() {}
+  virtual void OnSetRates(uint32_t bitrate_bps, int framerate) = 0;
+};
+
 // Callback class used for telling the user about what frame type needed to continue decoding.
 // Typically a key frame when the stream has been corrupted in some way.
 class VCMFrameTypeCallback {
@@ -185,6 +177,8 @@ class VCMQMSettingsCallback {
   virtual int32_t SetVideoQMSettings(const uint32_t frameRate,
                                            const uint32_t width,
                                            const uint32_t height) = 0;
+
+  virtual void SetTargetFramerate(int frame_rate) = 0;
 
  protected:
   virtual ~VCMQMSettingsCallback() {

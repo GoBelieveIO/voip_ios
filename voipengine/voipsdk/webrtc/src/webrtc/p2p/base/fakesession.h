@@ -38,6 +38,7 @@ struct PacketMessageData : public rtc::MessageData {
 // Fake transport channel class, which can be passed to anything that needs a
 // transport channel. Can be informed of another FakeTransportChannel via
 // SetDestination.
+// TODO(hbos): Move implementation to .cc file, this and other classes in file.
 class FakeTransportChannel : public TransportChannelImpl,
                              public rtc::MessageHandler {
  public:
@@ -53,7 +54,6 @@ class FakeTransportChannel : public TransportChannelImpl,
         do_dtls_(false),
         role_(ICEROLE_UNKNOWN),
         tiebreaker_(0),
-        ice_proto_(ICEPROTO_HYBRID),
         remote_ice_mode_(ICEMODE_FULL),
         dtls_fingerprint_("", NULL, 0),
         ssl_role_(rtc::SSL_CLIENT),
@@ -64,7 +64,6 @@ class FakeTransportChannel : public TransportChannelImpl,
   }
 
   uint64 IceTiebreaker() const { return tiebreaker_; }
-  TransportProtocol protocol() const { return ice_proto_; }
   IceMode remote_ice_mode() const { return remote_ice_mode_; }
   const std::string& ice_ufrag() const { return ice_ufrag_; }
   const std::string& ice_pwd() const { return ice_pwd_; }
@@ -82,15 +81,21 @@ class FakeTransportChannel : public TransportChannelImpl,
     return transport_;
   }
 
+  virtual TransportChannelState GetState() const {
+    if (connection_count_ == 0) {
+      return TransportChannelState::STATE_FAILED;
+    }
+
+    if (connection_count_ == 1) {
+      return TransportChannelState::STATE_COMPLETED;
+    }
+
+    return TransportChannelState::STATE_FAILED;
+  }
+
   virtual void SetIceRole(IceRole role) { role_ = role; }
   virtual IceRole GetIceRole() const { return role_; }
-  virtual size_t GetConnectionCount() const { return connection_count_; }
   virtual void SetIceTiebreaker(uint64 tiebreaker) { tiebreaker_ = tiebreaker; }
-  virtual bool GetIceProtocolType(IceProtocolType* type) const {
-    *type = ice_proto_;
-    return true;
-  }
-  virtual void SetIceProtocolType(IceProtocolType type) { ice_proto_ = type; }
   virtual void SetIceCredentials(const std::string& ice_ufrag,
                                  const std::string& ice_pwd) {
     ice_ufrag_ = ice_ufrag;
@@ -166,6 +171,12 @@ class FakeTransportChannel : public TransportChannelImpl,
       SignalConnectionRemoved(this);
   }
 
+  void SetReceiving(bool receiving) {
+    set_receiving(receiving);
+  }
+
+  void SetReceivingTimeout(int timeout) override {}
+
   virtual int SendPacket(const char* data, size_t len,
                          const rtc::PacketOptions& options, int flags) {
     if (state_ != STATE_CONNECTED) {
@@ -187,6 +198,9 @@ class FakeTransportChannel : public TransportChannelImpl,
   virtual int SetOption(rtc::Socket::Option opt, int value) {
     return true;
   }
+  virtual bool GetOption(rtc::Socket::Option opt, int* value) {
+    return true;
+  }
   virtual int GetError() {
     return 0;
   }
@@ -199,9 +213,8 @@ class FakeTransportChannel : public TransportChannelImpl,
   virtual void OnMessage(rtc::Message* msg) {
     PacketMessageData* data = static_cast<PacketMessageData*>(
         msg->pdata);
-    dest_->SignalReadPacket(dest_, data->packet.data(),
-                            data->packet.length(),
-                            rtc::CreatePacketTime(0), 0);
+    dest_->SignalReadPacket(dest_, data->packet.data<char>(),
+                            data->packet.size(), rtc::CreatePacketTime(0), 0);
     delete data;
   }
 
@@ -229,6 +242,10 @@ class FakeTransportChannel : public TransportChannelImpl,
       *cipher = chosen_srtp_cipher_;
       return true;
     }
+    return false;
+  }
+
+  virtual bool GetSslCipher(std::string* cipher) {
     return false;
   }
 
@@ -277,7 +294,7 @@ class FakeTransportChannel : public TransportChannelImpl,
     }
   }
 
-  virtual bool GetStats(ConnectionInfos* infos) OVERRIDE {
+  bool GetStats(ConnectionInfos* infos) override {
     ConnectionInfo info;
     infos->clear();
     infos->push_back(info);
@@ -297,7 +314,6 @@ class FakeTransportChannel : public TransportChannelImpl,
   std::string chosen_srtp_cipher_;
   IceRole role_;
   uint64 tiebreaker_;
-  IceProtocolType ice_proto_;
   std::string ice_ufrag_;
   std::string ice_pwd_;
   std::string remote_ice_ufrag_;
@@ -317,12 +333,11 @@ class FakeTransport : public Transport {
   FakeTransport(rtc::Thread* signaling_thread,
                 rtc::Thread* worker_thread,
                 const std::string& content_name,
-                PortAllocator* alllocator = NULL)
+                PortAllocator* alllocator = nullptr)
       : Transport(signaling_thread, worker_thread,
-                  content_name, "test_type", NULL),
-      dest_(NULL),
-      async_(false),
-      identity_(NULL) {
+                  content_name, nullptr),
+        dest_(nullptr),
+        async_(false) {
   }
   ~FakeTransport() {
     DestroyAllChannels();
@@ -335,7 +350,9 @@ class FakeTransport : public Transport {
     dest_ = dest;
     for (ChannelMap::iterator it = channels_.begin(); it != channels_.end();
          ++it) {
-      it->second->SetLocalIdentity(identity_);
+      // TODO(hbos): SetLocalCertificate
+      it->second->SetLocalIdentity(
+          certificate_ ? certificate_->identity() : nullptr);
       SetChannelDestination(it->first, it->second);
     }
   }
@@ -347,8 +364,9 @@ class FakeTransport : public Transport {
     }
   }
 
-  void set_identity(rtc::SSLIdentity* identity) {
-    identity_ = identity;
+  void set_certificate(
+      const rtc::scoped_refptr<rtc::RTCCertificate>& certificate) {
+    certificate_ = certificate;
   }
 
   using Transport::local_description;
@@ -370,14 +388,16 @@ class FakeTransport : public Transport {
     channels_.erase(channel->component());
     delete channel;
   }
-  virtual void SetIdentity_w(rtc::SSLIdentity* identity) {
-    identity_ = identity;
+  void SetCertificate_w(
+      const rtc::scoped_refptr<rtc::RTCCertificate>& certificate) override {
+    certificate_ = certificate;
   }
-  virtual bool GetIdentity_w(rtc::SSLIdentity** identity) {
-    if (!identity_)
+  bool GetCertificate_w(
+      rtc::scoped_refptr<rtc::RTCCertificate>* certificate) override {
+    if (!certificate_)
       return false;
 
-    *identity = identity_->GetReference();
+    *certificate = certificate_;
     return true;
   }
 
@@ -392,7 +412,9 @@ class FakeTransport : public Transport {
     if (dest_) {
       dest_channel = dest_->GetFakeChannel(component);
       if (dest_channel) {
-        dest_channel->SetLocalIdentity(dest_->identity_);
+        // TODO(hbos): SetLocalCertificate
+        dest_channel->SetLocalIdentity(
+            dest_->certificate_ ? dest_->certificate_->identity() : nullptr);
       }
     }
     channel->SetDestination(dest_channel);
@@ -403,7 +425,7 @@ class FakeTransport : public Transport {
   ChannelMap channels_;
   FakeTransport* dest_;
   bool async_;
-  rtc::SSLIdentity* identity_;
+  rtc::scoped_refptr<rtc::RTCCertificate> certificate_;
 };
 
 // Fake session class, which can be passed into a BaseChannel object for
@@ -447,12 +469,11 @@ class FakeSession : public BaseSession {
 
   virtual TransportChannel* CreateChannel(
       const std::string& content_name,
-      const std::string& channel_name,
       int component) {
     if (fail_create_channel_) {
       return NULL;
     }
-    return BaseSession::CreateChannel(content_name, channel_name, component);
+    return BaseSession::CreateChannel(content_name, component);
   }
 
   void set_fail_channel_creation(bool fail_channel_creation) {
@@ -460,13 +481,14 @@ class FakeSession : public BaseSession {
   }
 
   // TODO: Hoist this into Session when we re-work the Session code.
-  void set_ssl_identity(rtc::SSLIdentity* identity) {
+  void set_ssl_rtccertificate(
+      const rtc::scoped_refptr<rtc::RTCCertificate>& certificate) {
     for (TransportMap::const_iterator it = transport_proxies().begin();
         it != transport_proxies().end(); ++it) {
       // We know that we have a FakeTransport*
 
-      static_cast<FakeTransport*>(it->second->impl())->set_identity
-          (identity);
+      static_cast<FakeTransport*>(it->second->impl())->set_certificate
+          (certificate);
     }
   }
 

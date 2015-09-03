@@ -11,59 +11,97 @@
 #ifndef WEBRTC_VIDEO_ENGINE_VIE_CHANNEL_GROUP_H_
 #define WEBRTC_VIDEO_ENGINE_VIE_CHANNEL_GROUP_H_
 
+#include <list>
+#include <map>
 #include <set>
+#include <vector>
 
-#include "webrtc/system_wrappers/interface/scoped_ptr.h"
+#include "webrtc/base/criticalsection.h"
+#include "webrtc/base/scoped_ptr.h"
+#include "webrtc/modules/bitrate_controller/include/bitrate_controller.h"
 
 namespace webrtc {
 
-class BitrateController;
+class AdaptedSendTimeHistory;
+class BitrateAllocator;
 class CallStats;
 class Config;
 class EncoderStateFeedback;
+class PacedSender;
+class PacketRouter;
 class ProcessThread;
 class RemoteBitrateEstimator;
 class ViEChannel;
 class ViEEncoder;
 class VieRemb;
+class VoEVideoSync;
+
+typedef std::list<ViEChannel*> ChannelList;
 
 // Channel group contains data common for several channels. All channels in the
 // group are assumed to send/receive data to the same end-point.
-class ChannelGroup {
+class ChannelGroup : public BitrateObserver {
  public:
-  ChannelGroup(int engine_id, ProcessThread* process_thread,
-               const Config* config);
+  explicit ChannelGroup(ProcessThread* process_thread);
   ~ChannelGroup();
+  bool CreateSendChannel(int channel_id,
+                         int engine_id,
+                         Transport* transport,
+                         int number_of_cores,
+                         const std::vector<uint32_t>& ssrcs);
+  bool CreateReceiveChannel(int channel_id,
+                            int engine_id,
+                            Transport* transport,
+                            int number_of_cores);
+  void DeleteChannel(int channel_id);
+  ViEChannel* GetChannel(int channel_id) const;
+  ViEEncoder* GetEncoder(int channel_id) const;
+  void SetSyncInterface(VoEVideoSync* sync_interface);
 
-  void AddChannel(int channel_id);
-  void RemoveChannel(int channel_id, unsigned int ssrc);
-  bool HasChannel(int channel_id);
-  bool Empty();
+  void SetChannelRembStatus(bool sender, bool receiver, ViEChannel* channel);
 
-  bool SetChannelRembStatus(int channel_id, bool sender, bool receiver,
-                            ViEChannel* channel);
-  void SetBandwidthEstimationConfig(const webrtc::Config& config);
+  BitrateController* GetBitrateController() const;
+  CallStats* GetCallStats() const;
+  RemoteBitrateEstimator* GetRemoteBitrateEstimator() const;
+  EncoderStateFeedback* GetEncoderStateFeedback() const;
+  int64_t GetPacerQueuingDelayMs() const;
 
-  BitrateController* GetBitrateController();
-  CallStats* GetCallStats();
-  RemoteBitrateEstimator* GetRemoteBitrateEstimator();
-  EncoderStateFeedback* GetEncoderStateFeedback();
+  // Implements BitrateObserver.
+  void OnNetworkChanged(uint32_t target_bitrate_bps,
+                        uint8_t fraction_loss,
+                        int64_t rtt) override;
 
  private:
-  typedef std::set<int> ChannelSet;
+  typedef std::map<int, ViEChannel*> ChannelMap;
+  typedef std::map<int, ViEEncoder*> EncoderMap;
 
-  scoped_ptr<VieRemb> remb_;
-  scoped_ptr<BitrateController> bitrate_controller_;
-  scoped_ptr<CallStats> call_stats_;
-  scoped_ptr<RemoteBitrateEstimator> remote_bitrate_estimator_;
-  scoped_ptr<EncoderStateFeedback> encoder_state_feedback_;
-  ChannelSet channels_;
-  const Config* config_;
-  // Placeholder for the case where this owns the config.
-  scoped_ptr<Config> own_config_;
+  bool CreateChannel(int channel_id,
+                     int engine_id,
+                     Transport* transport,
+                     int number_of_cores,
+                     ViEEncoder* vie_encoder,
+                     size_t max_rtp_streams,
+                     bool sender);
+  ViEChannel* PopChannel(int channel_id);
+
+  rtc::scoped_ptr<VieRemb> remb_;
+  rtc::scoped_ptr<BitrateAllocator> bitrate_allocator_;
+  rtc::scoped_ptr<CallStats> call_stats_;
+  rtc::scoped_ptr<RemoteBitrateEstimator> remote_bitrate_estimator_;
+  rtc::scoped_ptr<EncoderStateFeedback> encoder_state_feedback_;
+  rtc::scoped_ptr<PacketRouter> packet_router_;
+  rtc::scoped_ptr<PacedSender> pacer_;
+  ChannelMap channel_map_;
+  // Maps Channel id -> ViEEncoder.
+  mutable rtc::CriticalSection encoder_map_crit_;
+  EncoderMap vie_encoder_map_ GUARDED_BY(encoder_map_crit_);
 
   // Registered at construct time and assumed to outlive this class.
   ProcessThread* process_thread_;
+  rtc::scoped_ptr<ProcessThread> pacer_thread_;
+
+  rtc::scoped_ptr<BitrateController> bitrate_controller_;
+  rtc::scoped_ptr<AdaptedSendTimeHistory> send_time_history_;
 };
 
 }  // namespace webrtc

@@ -34,7 +34,7 @@ private:
     BOOL STOR_;
 };
 
-
+#if 0
 
 class VideoChannelTransport:webrtc::Transport{
 public:
@@ -67,5 +67,5 @@ private:
     BOOL STOR_;
 };
 
-
+#endif
 #endif

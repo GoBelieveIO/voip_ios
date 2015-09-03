@@ -13,15 +13,19 @@
 -(BOOL)stop;
 @end
 
+
 @interface AVSendStream : NSObject {
 }
 @property (weak, nonatomic) UIView *render;
 @property (weak, nonatomic) id<VoiceTransport> voiceTransport;
-@property (weak, nonatomic) id<VideoTransport> videoTransport;
+//@property (weak, nonatomic) id<VideoTransport> videoTransport;
 @property(assign, nonatomic)int voiceChannel;
-@property(assign, nonatomic)int videoChannel;
+//@property(assign, nonatomic)int videoChannel;
 
 @property (assign, nonatomic)BOOL hasVideo;
+@property(nonatomic) int32_t ssrc;
+
+-(void)setCall:(void*)call;
 
 -(void)sendKeyFrame;
 -(BOOL)start;

@@ -38,6 +38,7 @@
 #include "webrtc/p2p/base/transportinfo.h"
 #include "webrtc/base/criticalsection.h"
 #include "webrtc/base/messagequeue.h"
+#include "webrtc/base/rtccertificate.h"
 #include "webrtc/base/sigslot.h"
 #include "webrtc/base/sslstreamadapter.h"
 
@@ -45,79 +46,28 @@ namespace rtc {
 class Thread;
 }
 
-namespace buzz {
-class QName;
-class XmlElement;
-}
-
 namespace cricket {
 
-struct ParseError;
-struct WriteError;
-class CandidateTranslator;
 class PortAllocator;
-class SessionManager;
-class Session;
 class TransportChannel;
 class TransportChannelImpl;
 
-typedef std::vector<buzz::XmlElement*> XmlElements;
 typedef std::vector<Candidate> Candidates;
 
-// Used to parse and serialize (write) transport candidates.  For
-// convenience of old code, Transports will implement TransportParser.
-// Parse/Write seems better than Serialize/Deserialize or
-// Create/Translate.
-class TransportParser {
- public:
-  // The incoming Translator value may be null, in which case
-  // ParseCandidates should return false if there are candidates to
-  // parse (indicating a failure to parse).  If the Translator is null
-  // and there are no candidates to parse, then return true,
-  // indicating a successful parse of 0 candidates.
-
-  // Parse or write a transport description, including ICE credentials and
-  // any DTLS fingerprint. Since only Jingle has transport descriptions, these
-  // functions are only used when serializing to Jingle.
-  virtual bool ParseTransportDescription(const buzz::XmlElement* elem,
-                                         const CandidateTranslator* translator,
-                                         TransportDescription* tdesc,
-                                         ParseError* error) = 0;
-  virtual bool WriteTransportDescription(const TransportDescription& tdesc,
-                                         const CandidateTranslator* translator,
-                                         buzz::XmlElement** tdesc_elem,
-                                         WriteError* error) = 0;
-
-
-  // Parse a single candidate. This must be used when parsing Gingle
-  // candidates, since there is no enclosing transport description.
-  virtual bool ParseGingleCandidate(const buzz::XmlElement* elem,
-                                    const CandidateTranslator* translator,
-                                    Candidate* candidates,
-                                    ParseError* error) = 0;
-  virtual bool WriteGingleCandidate(const Candidate& candidate,
-                                    const CandidateTranslator* translator,
-                                    buzz::XmlElement** candidate_elem,
-                                    WriteError* error) = 0;
-
-  // Helper function to parse an element describing an address.  This
-  // retrieves the IP and port from the given element and verifies
-  // that they look like plausible values.
-  bool ParseAddress(const buzz::XmlElement* elem,
-                    const buzz::QName& address_name,
-                    const buzz::QName& port_name,
-                    rtc::SocketAddress* address,
-                    ParseError* error);
-
-  virtual ~TransportParser() {}
-};
-
-// For "writable" and "readable", we need to differentiate between
+// For "writable", "readable", and "receiving", we need to differentiate between
 // none, all, and some.
 enum TransportState {
   TRANSPORT_STATE_NONE = 0,
   TRANSPORT_STATE_SOME,
   TRANSPORT_STATE_ALL
+};
+
+// When checking transport state, we need to differentiate between
+// "readable", "writable", or "receiving" check.
+enum TransportStateType {
+  TRANSPORT_READABLE_STATE = 0,
+  TRANSPORT_WRITABLE_STATE,
+  TRANSPORT_RECEIVING_STATE
 };
 
 // Stats that we can return about the connections for a transport channel.
@@ -165,6 +115,8 @@ typedef std::vector<ConnectionInfo> ConnectionInfos;
 struct TransportChannelStats {
   int component;
   ConnectionInfos connection_infos;
+  std::string srtp_cipher;
+  std::string ssl_cipher;
 };
 
 // Information about all the channels of a transport.
@@ -190,19 +142,16 @@ class Transport : public rtc::MessageHandler,
   Transport(rtc::Thread* signaling_thread,
             rtc::Thread* worker_thread,
             const std::string& content_name,
-            const std::string& type,
             PortAllocator* allocator);
   virtual ~Transport();
 
   // Returns the signaling thread. The app talks to Transport on this thread.
-  rtc::Thread* signaling_thread() { return signaling_thread_; }
+  rtc::Thread* signaling_thread() const { return signaling_thread_; }
   // Returns the worker thread. The actual networking is done on this thread.
-  rtc::Thread* worker_thread() { return worker_thread_; }
+  rtc::Thread* worker_thread() const { return worker_thread_; }
 
   // Returns the content_name of this transport.
   const std::string& content_name() const { return content_name_; }
-  // Returns the type of this transport.
-  const std::string& type() const { return type_; }
 
   // Returns the port allocator object for this transport.
   PortAllocator* port_allocator() { return allocator_; }
@@ -229,8 +178,14 @@ class Transport : public rtc::MessageHandler,
   bool all_channels_writable() const {
     return (writable_ == TRANSPORT_STATE_ALL);
   }
+  bool any_channel_receiving() const {
+    return (receiving_ == TRANSPORT_STATE_SOME ||
+            receiving_ == TRANSPORT_STATE_ALL);
+  }
+
   sigslot::signal1<Transport*> SignalReadableState;
   sigslot::signal1<Transport*> SignalWritableState;
+  sigslot::signal1<Transport*> SignalReceivingState;
   sigslot::signal1<Transport*> SignalCompleted;
   sigslot::signal1<Transport*> SignalFailed;
 
@@ -243,16 +198,17 @@ class Transport : public rtc::MessageHandler,
   void SetIceTiebreaker(uint64 IceTiebreaker) { tiebreaker_ = IceTiebreaker; }
   uint64 IceTiebreaker() { return tiebreaker_; }
 
+  void SetChannelReceivingTimeout(int timeout_ms);
+
   // Must be called before applying local session description.
-  void SetIdentity(rtc::SSLIdentity* identity);
+  void SetCertificate(
+      const rtc::scoped_refptr<rtc::RTCCertificate>& certificate);
 
   // Get a copy of the local identity provided by SetIdentity.
-  bool GetIdentity(rtc::SSLIdentity** identity);
+  bool GetCertificate(rtc::scoped_refptr<rtc::RTCCertificate>* certificate);
 
   // Get a copy of the remote certificate in use by the specified channel.
   bool GetRemoteCertificate(rtc::SSLCertificate** cert);
-
-  TransportProtocol protocol() const { return protocol_; }
 
   // Create, destroy, and lookup the channels of this type by their components.
   TransportChannelImpl* CreateChannel(int component);
@@ -316,22 +272,13 @@ class Transport : public rtc::MessageHandler,
                    int,  // component
                    const Candidate&> SignalRouteChange;
 
-  // A transport message has generated an transport-specific error.  The
-  // stanza that caused the error is available in session_msg.  If false is
-  // returned, the error is considered unrecoverable, and the session is
-  // terminated.
-  // TODO(juberti): Remove these obsolete functions once Session no longer
-  // references them.
-  virtual void OnTransportError(const buzz::XmlElement* error) {}
-  sigslot::signal6<Transport*, const buzz::XmlElement*, const buzz::QName&,
-                   const std::string&, const std::string&,
-                   const buzz::XmlElement*>
-      SignalTransportError;
-
   // Forwards the signal from TransportChannel to BaseSession.
   sigslot::signal0<> SignalRoleConflict;
 
   virtual bool GetSslRole(rtc::SSLRole* ssl_role) const;
+
+  // Must be called before channel is starting to connect.
+  virtual bool SetSslMaxProtocolVersion(rtc::SSLProtocolVersion version);
 
  protected:
   // These are called by Create/DestroyChannel above in order to create or
@@ -354,9 +301,11 @@ class Transport : public rtc::MessageHandler,
     return remote_description_.get();
   }
 
-  virtual void SetIdentity_w(rtc::SSLIdentity* identity) {}
+  virtual void SetCertificate_w(
+      const rtc::scoped_refptr<rtc::RTCCertificate>& certificate) {}
 
-  virtual bool GetIdentity_w(rtc::SSLIdentity** identity) {
+  virtual bool GetCertificate_w(
+      rtc::scoped_refptr<rtc::RTCCertificate>* certificate) {
     return false;
   }
 
@@ -372,7 +321,7 @@ class Transport : public rtc::MessageHandler,
                                                  std::string* error_desc);
 
   // Negotiates the transport parameters based on the current local and remote
-  // transport description, such at the version of ICE to use, and whether DTLS
+  // transport description, such as the ICE role to use, and whether DTLS
   // should be activated.
   // Derived classes can negotiate their specific parameters here, but must call
   // the base as well.
@@ -386,6 +335,10 @@ class Transport : public rtc::MessageHandler,
       TransportChannelImpl* channel, std::string* error_desc);
 
   virtual bool GetSslRole_w(rtc::SSLRole* ssl_role) const {
+    return false;
+  }
+
+  virtual bool SetSslMaxProtocolVersion_w(rtc::SSLProtocolVersion version) {
     return false;
   }
 
@@ -425,6 +378,9 @@ class Transport : public rtc::MessageHandler,
   void OnChannelReadableState(TransportChannel* channel);
   void OnChannelWritableState(TransportChannel* channel);
 
+  // Called when the receiving state of a channel changes.
+  void OnChannelReceivingState(TransportChannel* channel);
+
   // Called when a channel requests signaling.
   void OnChannelRequestSignaling(TransportChannelImpl* channel);
 
@@ -455,7 +411,8 @@ class Transport : public rtc::MessageHandler,
   void OnRemoteCandidate_w(const Candidate& candidate);
   void OnChannelReadableState_s();
   void OnChannelWritableState_s();
-  void OnChannelRequestSignaling_s(int component);
+  void OnChannelReceivingState_s();
+  void OnChannelRequestSignaling_s();
   void OnConnecting_s();
   void OnChannelRouteChange_s(const TransportChannel* channel,
                               const Candidate& remote_candidate);
@@ -465,8 +422,9 @@ class Transport : public rtc::MessageHandler,
   typedef void (TransportChannelImpl::* TransportChannelFunc)();
   void CallChannels_w(TransportChannelFunc func);
 
-  // Computes the OR of the channel's read or write state (argument picks).
-  TransportState GetTransportState_s(bool read);
+  // Computes the AND and OR of the channel's read/write/receiving state
+  // (argument picks the operation).
+  TransportState GetTransportState_s(TransportStateType type);
 
   void OnChannelCandidateReady_s();
 
@@ -481,26 +439,29 @@ class Transport : public rtc::MessageHandler,
   bool GetStats_w(TransportStats* infos);
   bool GetRemoteCertificate_w(rtc::SSLCertificate** cert);
 
+  void SetChannelReceivingTimeout_w(int timeout_ms);
+
   // Sends SignalCompleted if we are now in that state.
   void MaybeCompleted_w();
 
-  rtc::Thread* signaling_thread_;
-  rtc::Thread* worker_thread_;
-  std::string content_name_;
-  std::string type_;
-  PortAllocator* allocator_;
+  rtc::Thread* const signaling_thread_;
+  rtc::Thread* const worker_thread_;
+  const std::string content_name_;
+  PortAllocator* const allocator_;
   bool destroyed_;
   TransportState readable_;
   TransportState writable_;
+  TransportState receiving_;
   bool was_writable_;
   bool connect_requested_;
   IceRole ice_role_;
   uint64 tiebreaker_;
-  TransportProtocol protocol_;
   IceMode remote_ice_mode_;
+  int channel_receiving_timeout_;
   rtc::scoped_ptr<TransportDescription> local_description_;
   rtc::scoped_ptr<TransportDescription> remote_description_;
 
+  // TODO(tommi): Make sure we only use this on the worker thread.
   ChannelMap channels_;
   // Buffers the ready_candidates so that SignalCanidatesReady can
   // provide them in multiples.
@@ -508,12 +469,9 @@ class Transport : public rtc::MessageHandler,
   // Protects changes to channels and messages
   rtc::CriticalSection crit_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Transport);
+  DISALLOW_COPY_AND_ASSIGN(Transport);
 };
 
-// Extract a TransportProtocol from a TransportDescription.
-TransportProtocol TransportProtocolFromDescription(
-    const TransportDescription* desc);
 
 }  // namespace cricket
 

@@ -29,6 +29,11 @@
 		6D401BB21AAC2B470041ABC6 /* VOIPEngine.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */; };
 		6D401BB51AAC2DD80041ABC6 /* util.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BB31AAC2DD80041ABC6 /* util.c */; };
 		6D401BC21AAC2F110041ABC6 /* VOIPEngine.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */; };
+		6DF6F7971B9454C400774961 /* VOIPRenderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DF6F7961B9454C400774961 /* VOIPRenderView.m */; };
+		6DF6F7981B9454D500774961 /* VOIPRenderView.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 6DF6F7951B9454C400774961 /* VOIPRenderView.h */; };
+		6DF6F79D1B98623600774961 /* RTCEAGLVideoView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DF6F7991B98623600774961 /* RTCEAGLVideoView.m */; };
+		6DF6F79E1B98623600774961 /* RTCI420Frame.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6DF6F79A1B98623600774961 /* RTCI420Frame.mm */; };
+		6DF6F79F1B98623600774961 /* RTCOpenGLVideoRenderer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6DF6F79C1B98623600774961 /* RTCOpenGLVideoRenderer.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +53,7 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
+				6DF6F7981B9454D500774961 /* VOIPRenderView.h in Copy Files */,
 				6D401BC21AAC2F110041ABC6 /* VOIPEngine.h in Copy Files */,
 			);
 			name = "Copy Files";
@@ -72,6 +78,16 @@
 		6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VOIPEngine.mm; sourceTree = "<group>"; };
 		6D401BB31AAC2DD80041ABC6 /* util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = util.c; sourceTree = "<group>"; };
 		6D401BB41AAC2DD80041ABC6 /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = util.h; sourceTree = "<group>"; };
+		6DF6F7951B9454C400774961 /* VOIPRenderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPRenderView.h; sourceTree = "<group>"; };
+		6DF6F7961B9454C400774961 /* VOIPRenderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPRenderView.m; sourceTree = "<group>"; };
+		6DF6F7991B98623600774961 /* RTCEAGLVideoView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RTCEAGLVideoView.m; sourceTree = "<group>"; };
+		6DF6F79A1B98623600774961 /* RTCI420Frame.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RTCI420Frame.mm; sourceTree = "<group>"; };
+		6DF6F79B1B98623600774961 /* RTCI420Frame+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RTCI420Frame+Internal.h"; sourceTree = "<group>"; };
+		6DF6F79C1B98623600774961 /* RTCOpenGLVideoRenderer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RTCOpenGLVideoRenderer.mm; sourceTree = "<group>"; };
+		6DF6F7A01B98625700774961 /* RTCEAGLVideoView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTCEAGLVideoView.h; sourceTree = "<group>"; };
+		6DF6F7A11B98625700774961 /* RTCI420Frame.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTCI420Frame.h; sourceTree = "<group>"; };
+		6DF6F7A21B98625700774961 /* RTCOpenGLVideoRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTCOpenGLVideoRenderer.h; sourceTree = "<group>"; };
+		6DF6F7A31B98628B00774961 /* RTCVideoRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RTCVideoRenderer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,6 +132,14 @@
 		6D0331791AAB73E3004AA39F /* voipsdk */ = {
 			isa = PBXGroup;
 			children = (
+				6DF6F7991B98623600774961 /* RTCEAGLVideoView.m */,
+				6DF6F79A1B98623600774961 /* RTCI420Frame.mm */,
+				6DF6F79B1B98623600774961 /* RTCI420Frame+Internal.h */,
+				6DF6F7A31B98628B00774961 /* RTCVideoRenderer.h */,
+				6DF6F79C1B98623600774961 /* RTCOpenGLVideoRenderer.mm */,
+				6DF6F7A01B98625700774961 /* RTCEAGLVideoView.h */,
+				6DF6F7A11B98625700774961 /* RTCI420Frame.h */,
+				6DF6F7A21B98625700774961 /* RTCOpenGLVideoRenderer.h */,
 				6D401BB31AAC2DD80041ABC6 /* util.c */,
 				6D401BB41AAC2DD80041ABC6 /* util.h */,
 				6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */,
@@ -128,6 +152,8 @@
 				6D03319F1AAB74DD004AA39F /* ChannelTransport.h */,
 				6D0331A01AAB74DD004AA39F /* WebRTC.h */,
 				6D0331A11AAB74DD004AA39F /* WebRTC.mm */,
+				6DF6F7951B9454C400774961 /* VOIPRenderView.h */,
+				6DF6F7961B9454C400774961 /* VOIPRenderView.m */,
 			);
 			path = voipsdk;
 			sourceTree = "<group>";
@@ -258,8 +284,12 @@
 			files = (
 				6D401BB51AAC2DD80041ABC6 /* util.c in Sources */,
 				6D0331A41AAB74DD004AA39F /* WebRTC.mm in Sources */,
+				6DF6F79F1B98623600774961 /* RTCOpenGLVideoRenderer.mm in Sources */,
+				6DF6F79E1B98623600774961 /* RTCI420Frame.mm in Sources */,
 				6D401BB21AAC2B470041ABC6 /* VOIPEngine.mm in Sources */,
 				6D0331A31AAB74DD004AA39F /* AVSendStream.mm in Sources */,
+				6DF6F7971B9454C400774961 /* VOIPRenderView.m in Sources */,
+				6DF6F79D1B98623600774961 /* RTCEAGLVideoView.m in Sources */,
 				6D0331A21AAB74DD004AA39F /* AVReceiveStream.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -366,6 +396,7 @@
 					"DEBUG=1",
 					WEBRTC_IOS,
 					"$(inherited)",
+					WEBRTC_POSIX,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
@@ -384,7 +415,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = WEBRTC_IOS;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					WEBRTC_IOS,
+					WEBRTC_POSIX,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",

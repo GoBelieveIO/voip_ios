@@ -74,12 +74,13 @@ enum StorageType {
   kAllowRetransmission
 };
 
-enum RTPExtensionType
-{
-   kRtpExtensionNone,
-   kRtpExtensionTransmissionTimeOffset,
-   kRtpExtensionAudioLevel,
-   kRtpExtensionAbsoluteSendTime
+enum RTPExtensionType {
+  kRtpExtensionNone,
+  kRtpExtensionTransmissionTimeOffset,
+  kRtpExtensionAudioLevel,
+  kRtpExtensionAbsoluteSendTime,
+  kRtpExtensionVideoRotation,
+  kRtpExtensionTransportSequenceNumber,
 };
 
 enum RTCPAppSubTypes
@@ -87,26 +88,27 @@ enum RTCPAppSubTypes
     kAppSubtypeBwe     = 0x00
 };
 
-enum RTCPPacketType
-{
-    kRtcpReport         = 0x0001,
-    kRtcpSr             = 0x0002,
-    kRtcpRr             = 0x0004,
-    kRtcpBye            = 0x0008,
-    kRtcpPli            = 0x0010,
-    kRtcpNack           = 0x0020,
-    kRtcpFir            = 0x0040,
-    kRtcpTmmbr          = 0x0080,
-    kRtcpTmmbn          = 0x0100,
-    kRtcpSrReq          = 0x0200,
-    kRtcpXrVoipMetric   = 0x0400,
-    kRtcpApp            = 0x0800,
-    kRtcpSli            = 0x4000,
-    kRtcpRpsi           = 0x8000,
-    kRtcpRemb           = 0x10000,
-    kRtcpTransmissionTimeOffset = 0x20000,
-    kRtcpXrReceiverReferenceTime = 0x40000,
-    kRtcpXrDlrrReportBlock = 0x80000
+// TODO(sprang): Make this an enum class once rtcp_receiver has been cleaned up.
+enum RTCPPacketType : uint32_t {
+  kRtcpReport = 0x0001,
+  kRtcpSr = 0x0002,
+  kRtcpRr = 0x0004,
+  kRtcpSdes = 0x0008,
+  kRtcpBye = 0x0010,
+  kRtcpPli = 0x0020,
+  kRtcpNack = 0x0040,
+  kRtcpFir = 0x0080,
+  kRtcpTmmbr = 0x0100,
+  kRtcpTmmbn = 0x0200,
+  kRtcpSrReq = 0x0400,
+  kRtcpXrVoipMetric = 0x0800,
+  kRtcpApp = 0x1000,
+  kRtcpSli = 0x4000,
+  kRtcpRpsi = 0x8000,
+  kRtcpRemb = 0x10000,
+  kRtcpTransmissionTimeOffset = 0x20000,
+  kRtcpXrReceiverReferenceTime = 0x40000,
+  kRtcpXrDlrrReportBlock = 0x80000
 };
 
 enum KeyFrameRequestMethod
@@ -128,12 +130,12 @@ enum NACKMethod
     kNackRtcp     = 2
 };
 
-enum RetransmissionMode {
-  kRetransmitOff          = 0x0,
-  kRetransmitFECPackets   = 0x1,
-  kRetransmitBaseLayer    = 0x2,
+enum RetransmissionMode : uint8_t {
+  kRetransmitOff = 0x0,
+  kRetransmitFECPackets = 0x1,
+  kRetransmitBaseLayer = 0x2,
   kRetransmitHigherLayers = 0x4,
-  kRetransmitAllPackets   = 0xFF
+  kRetransmitAllPackets = 0xFF
 };
 
 enum RtxMode {
@@ -250,8 +252,6 @@ public:
     virtual void OnIncomingCSRCChanged( const int32_t id,
                                         const uint32_t CSRC,
                                         const bool added) = 0;
-
-    virtual void ResetStatistics(uint32_t ssrc) = 0;
 };
 
 class RtpAudioFeedback {
@@ -283,21 +283,32 @@ class RtcpIntraFrameObserver {
 class RtcpBandwidthObserver {
  public:
   // REMB or TMMBR
-  virtual void OnReceivedEstimatedBitrate(const uint32_t bitrate) = 0;
+  virtual void OnReceivedEstimatedBitrate(uint32_t bitrate) = 0;
 
   virtual void OnReceivedRtcpReceiverReport(
       const ReportBlockList& report_blocks,
-      uint16_t rtt,
+      int64_t rtt,
       int64_t now_ms) = 0;
 
   virtual ~RtcpBandwidthObserver() {}
 };
 
+class SendTimeObserver {
+ public:
+  SendTimeObserver() {}
+  virtual ~SendTimeObserver() {}
+
+  // Transport-wide sequence number and timestamp (system time in milliseconds),
+  // of when the packet was put on the wire.
+  virtual void OnPacketSent(uint16_t transport_sequence_number,
+                            int64_t send_time) = 0;
+};
+
 class RtcpRttStats {
  public:
-  virtual void OnRttUpdate(uint32_t rtt) = 0;
+  virtual void OnRttUpdate(int64_t rtt) = 0;
 
-  virtual uint32_t LastProcessedRtt() const = 0;
+  virtual int64_t LastProcessedRtt() const = 0;
 
   virtual ~RtcpRttStats() {};
 };
@@ -307,24 +318,20 @@ class NullRtpFeedback : public RtpFeedback {
  public:
   virtual ~NullRtpFeedback() {}
 
-  virtual int32_t OnInitializeDecoder(
-      const int32_t id,
-      const int8_t payloadType,
-      const char payloadName[RTP_PAYLOAD_NAME_SIZE],
-      const int frequency,
-      const uint8_t channels,
-      const uint32_t rate) OVERRIDE {
+  int32_t OnInitializeDecoder(const int32_t id,
+                              const int8_t payloadType,
+                              const char payloadName[RTP_PAYLOAD_NAME_SIZE],
+                              const int frequency,
+                              const uint8_t channels,
+                              const uint32_t rate) override {
     return 0;
   }
 
-  virtual void OnIncomingSSRCChanged(const int32_t id,
-                                     const uint32_t ssrc) OVERRIDE {}
+  void OnIncomingSSRCChanged(const int32_t id, const uint32_t ssrc) override {}
 
-  virtual void OnIncomingCSRCChanged(const int32_t id,
-                                     const uint32_t CSRC,
-                                     const bool added) OVERRIDE {}
-
-  virtual void ResetStatistics(uint32_t ssrc) OVERRIDE {}
+  void OnIncomingCSRCChanged(const int32_t id,
+                             const uint32_t CSRC,
+                             const bool added) override {}
 };
 
 // Null object version of RtpData.
@@ -332,15 +339,13 @@ class NullRtpData : public RtpData {
  public:
   virtual ~NullRtpData() {}
 
-  virtual int32_t OnReceivedPayloadData(
-      const uint8_t* payloadData,
-      const size_t payloadSize,
-      const WebRtcRTPHeader* rtpHeader) OVERRIDE {
+  int32_t OnReceivedPayloadData(const uint8_t* payloadData,
+                                const size_t payloadSize,
+                                const WebRtcRTPHeader* rtpHeader) override {
     return 0;
   }
 
-  virtual bool OnRecoveredPacket(const uint8_t* packet,
-                                 size_t packet_length) OVERRIDE {
+  bool OnRecoveredPacket(const uint8_t* packet, size_t packet_length) override {
     return true;
   }
 };
@@ -350,10 +355,23 @@ class NullRtpAudioFeedback : public RtpAudioFeedback {
  public:
   virtual ~NullRtpAudioFeedback() {}
 
-  virtual void OnPlayTelephoneEvent(const int32_t id,
-                                    const uint8_t event,
-                                    const uint16_t lengthMs,
-                                    const uint8_t volume) OVERRIDE {}
+  void OnPlayTelephoneEvent(const int32_t id,
+                            const uint8_t event,
+                            const uint16_t lengthMs,
+                            const uint8_t volume) override {}
+};
+
+// Statistics about packet loss for a single directional connection. All values
+// are totals since the connection initiated.
+struct RtpPacketLossStats {
+  // The number of packets lost in events where no adjacent packets were also
+  // lost.
+  uint64_t single_packet_loss_count;
+  // The number of events in which more than one adjacent packet was lost.
+  uint64_t multiple_packet_loss_event_count;
+  // The number of packets lost in events where more than one adjacent packet
+  // was lost.
+  uint64_t multiple_packet_loss_packet_count;
 };
 
 }  // namespace webrtc

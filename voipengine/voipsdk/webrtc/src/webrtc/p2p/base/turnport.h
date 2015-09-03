@@ -33,6 +33,12 @@ class TurnEntry;
 
 class TurnPort : public Port {
  public:
+  enum PortState {
+    STATE_CONNECTING,    // Initial state, cannot send any packets.
+    STATE_CONNECTED,     // Socket connected, ready to send stun requests.
+    STATE_READY,         // Received allocate success, can send any packets.
+    STATE_DISCONNECTED,  // TCP connection died, cannot send any packets.
+  };
   static TurnPort* Create(rtc::Thread* thread,
                           rtc::PacketSocketFactory* factory,
                           rtc::Network* network,
@@ -41,9 +47,10 @@ class TurnPort : public Port {
                           const std::string& password,  // ice password.
                           const ProtocolAddress& server_address,
                           const RelayCredentials& credentials,
-                          int server_priority) {
+                          int server_priority,
+                          const std::string& origin) {
     return new TurnPort(thread, factory, network, socket, username, password,
-                        server_address, credentials, server_priority);
+                        server_address, credentials, server_priority, origin);
   }
 
   static TurnPort* Create(rtc::Thread* thread,
@@ -56,17 +63,23 @@ class TurnPort : public Port {
                           const std::string& password,  // ice password.
                           const ProtocolAddress& server_address,
                           const RelayCredentials& credentials,
-                          int server_priority) {
+                          int server_priority,
+                          const std::string& origin) {
     return new TurnPort(thread, factory, network, ip, min_port, max_port,
                         username, password, server_address, credentials,
-                        server_priority);
+                        server_priority, origin);
   }
 
   virtual ~TurnPort();
 
   const ProtocolAddress& server_address() const { return server_address_; }
+  // Returns an empty address if the local address has not been assigned.
+  rtc::SocketAddress GetLocalAddress() const;
 
-  bool connected() const { return connected_; }
+  bool ready() const { return state_ == STATE_READY; }
+  bool connected() const {
+    return state_ == STATE_READY || state_ == STATE_CONNECTED;
+  }
   const RelayCredentials& credentials() const { return credentials_; }
 
   virtual void PrepareAddress();
@@ -129,7 +142,8 @@ class TurnPort : public Port {
            const std::string& password,
            const ProtocolAddress& server_address,
            const RelayCredentials& credentials,
-           int server_priority);
+           int server_priority,
+           const std::string& origin);
 
   TurnPort(rtc::Thread* thread,
            rtc::PacketSocketFactory* factory,
@@ -141,12 +155,14 @@ class TurnPort : public Port {
            const std::string& password,
            const ProtocolAddress& server_address,
            const RelayCredentials& credentials,
-           int server_priority);
+           int server_priority,
+           const std::string& origin);
 
  private:
   enum {
     MSG_ERROR = MSG_FIRST_AVAILABLE,
-    MSG_ALLOCATE_MISMATCH
+    MSG_ALLOCATE_MISMATCH,
+    MSG_TRY_ALTERNATE_SERVER
   };
 
   typedef std::list<TurnEntry*> EntryList;
@@ -218,7 +234,7 @@ class TurnPort : public Port {
   int next_channel_number_;
   EntryList entries_;
 
-  bool connected_;
+  PortState state_;
   // By default the value will be set to 0. This value will be used in
   // calculating the candidate priority.
   int server_priority_;

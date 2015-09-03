@@ -14,19 +14,19 @@
 -(BOOL)stop;
 @end
 
+@class VOIPRenderView;
+
 @interface AVReceiveStream : NSObject {
     
 }
-@property (weak, nonatomic) UIView *render;
-@property (weak, nonatomic) id<VoiceTransport> voiceTransport;
-@property (weak, nonatomic) id<VideoTransport> videoTransport;
-@property(assign, nonatomic)int voiceChannel;
-@property(assign, nonatomic)int videoChannel;
+@property (weak, nonatomic) VOIPRenderView *render;
 @property (assign) uint64_t uid;
+@property (weak, nonatomic) id<VoiceTransport> voiceTransport;
+@property (assign, nonatomic) int voiceChannel;
+@property (nonatomic) int32_t localSSRC;
+@property (nonatomic) int32_t remoteSSRC;
 
-@property (assign, nonatomic) BOOL isHeadphone;
-@property (assign, nonatomic) BOOL isLoudspeaker;
-
+-(void)setCall:(void*)call;
 
 -(BOOL)start;
 -(BOOL)stop;
