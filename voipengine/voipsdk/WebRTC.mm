@@ -60,6 +60,8 @@
         
         self.voe_apm = webrtc::VoEAudioProcessing::GetInterface(voe);
         
+        self.voe_rtp_rtcp = webrtc::VoERTP_RTCP::GetInterface(voe);
+        
          webrtc::field_trial::InitFieldTrialsFromString("");
 
     }

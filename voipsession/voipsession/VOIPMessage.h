@@ -32,6 +32,7 @@
 #define PLATFORM_IOS 1
 
 enum VOIPCommand {
+    //语音通话
     VOIP_COMMAND_DIAL = 1,
     VOIP_COMMAND_ACCEPT,
     VOIP_COMMAND_CONNECTED,
@@ -43,6 +44,8 @@ enum VOIPCommand {
     //通话中
     VOIP_COMMAND_TALKING,
     
+    //视频通话
+    VOIP_COMMAND_DIAL_VIDEO,
 };
 
 #define VOIP_AUDIO 1
@@ -60,7 +63,7 @@ enum VOIPCommand {
 @property(nonatomic, assign)int64_t sender;
 @property(nonatomic, assign)int64_t receiver;
 @property(nonatomic, assign) int32_t cmd;
-@property(nonatomic, assign) int32_t dialCount;//只对VOIP_COMMAND_DIAL有意义
+@property(nonatomic, assign) int32_t dialCount;//只对VOIP_COMMAND_DIAL, VOIP_COMMAND_DIAL_VIDEO
 @property(nonatomic) NatPortMap *natMap;//VOIP_COMMAND_ACCEPT，VOIP_COMMAND_CONNECTED
 @property(nonatomic) int32_t relayIP;//VOIP_COMMAND_CONNECTED, 中转服务器ip地址
 @end

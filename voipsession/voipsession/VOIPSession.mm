@@ -13,8 +13,13 @@
 #define VOIP_PORT 20002
 #define STUN_SERVER  @"stun.counterpath.net"
 
+enum SessionMode {
+    SESSION_VOICE,
+    SESSION_VIDEO,
+};
 @interface VOIPSession()
 
+@property(nonatomic, assign) SessionMode mode;
 @property(nonatomic, assign) int dialCount;
 @property(nonatomic, assign) time_t dialBeginTimestamp;
 @property(nonatomic) NSTimer *dialTimer;
@@ -140,7 +145,14 @@
     VOIPControl *ctl = [[VOIPControl alloc] init];
     ctl.sender = self.currentUID;
     ctl.receiver = self.peerUID;
-    ctl.cmd = VOIP_COMMAND_DIAL;
+    if (self.mode == SESSION_VOICE) {
+        ctl.cmd = VOIP_COMMAND_DIAL;
+    } else if (self.mode == SESSION_VIDEO) {
+        ctl.cmd = VOIP_COMMAND_DIAL_VIDEO;
+    } else {
+        NSAssert(NO, @"invalid session mode");
+    }
+    
     ctl.dialCount = self.dialCount + 1;
     BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
     if (r) {
@@ -334,6 +346,20 @@
 
 -(void)dial {
     self.state = VOIP_DIALING;
+    self.mode = SESSION_VOICE;
+    
+    self.dialBeginTimestamp = time(NULL);
+    [self sendDial];
+    self.dialTimer = [NSTimer scheduledTimerWithTimeInterval: 1
+                                                      target:self
+                                                    selector:@selector(sendDial)
+                                                    userInfo:nil
+                                                     repeats:YES];
+}
+
+-(void)dialVideo {
+    self.state = VOIP_DIALING;
+    self.mode = SESSION_VIDEO;
     
     self.dialBeginTimestamp = time(NULL);
     [self sendDial];

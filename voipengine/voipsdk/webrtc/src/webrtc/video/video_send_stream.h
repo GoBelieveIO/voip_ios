@@ -59,6 +59,7 @@ class VideoSendStream : public webrtc::VideoSendStream {
   VideoCaptureInput* Input() override;
   bool ReconfigureVideoEncoder(const VideoEncoderConfig& config) override;
   Stats GetStats() override;
+  ViEEncoder *encoder() override;
 
   typedef std::map<uint32_t, RtpState> RtpStateMap;
   RtpStateMap GetRtpStates() const;

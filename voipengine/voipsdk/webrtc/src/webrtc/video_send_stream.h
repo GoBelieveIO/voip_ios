@@ -23,6 +23,7 @@
 namespace webrtc {
 
 class VideoEncoder;
+class ViEEncoder;
 
 // Class to deliver captured frame to the video send stream.
 class VideoCaptureInput {
@@ -140,6 +141,8 @@ class VideoSendStream : public SendStream {
   // Gets interface used to insert captured frames. Valid as long as the
   // VideoSendStream is valid.
   virtual VideoCaptureInput* Input() = 0;
+
+  virtual ViEEncoder *encoder() = 0;
 
   // Set which streams to send. Must have at least as many SSRCs as configured
   // in the config. Encoder settings are passed on to the encoder instance along

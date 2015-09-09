@@ -26,18 +26,6 @@
 #include "webrtc/modules/utility/interface/process_thread.h"
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
-#if 0
-#include "webrtc/video_engine/include/vie_base.h"
-#include "webrtc/video_engine/include/vie_capture.h"
-#include "webrtc/video_engine/include/vie_codec.h"
-#include "webrtc/video_engine/include/vie_image_process.h"
-#include "webrtc/video_engine/include/vie_network.h"
-#include "webrtc/video_engine/include/vie_render.h"
-#include "webrtc/video_engine/include/vie_rtp_rtcp.h"
-#include "webrtc/video_engine/vie_defines.h"
-#include "webrtc/video_engine/include/vie_errors.h"
-#include "webrtc/video_engine/include/vie_render.h"
-#endif
 
 #include "webrtc/voice_engine/include/voe_network.h"
 #include "webrtc/voice_engine/include/voe_base.h"
@@ -51,15 +39,22 @@
 #include "webrtc/voice_engine/include/voe_hardware.h"
 
 
+
 #include "webrtc/engine_configurations.h"
 #include "webrtc/modules/video_render/include/video_render_defines.h"
 #include "webrtc/modules/video_render/include/video_render.h"
 #include "webrtc/modules/video_capture/include/video_capture_factory.h"
 #include "webrtc/system_wrappers/interface/tick_util.h"
+#include "webrtc/video_engine/vie_encoder.h"
 #include <string>
 #import "WebRTC.h"
 //#include "channel_transport.h"
 #include "ChannelTransport.h"
+
+#import "VOIPRenderView.h"
+#import "RTCI420Frame+Internal.h"
+#import "RTCI420Frame.h"
+#import "RTCEAGLVideoView.h"
 
 #define EXPECT_EQ(a, b) do {if ((a)!=(b)) assert(0);} while(0)
 #define EXPECT_TRUE(a) do {BOOL c = (a); assert(c);} while(0)
@@ -83,7 +78,7 @@ const int kDefaultRtxVp8PlType = 96;
 
 const int kMinVideoBitrate = 30;
 const int kStartVideoBitrate = 300;
-const int kMaxVideoBitrate = 2000;
+const int kMaxVideoBitrate = 1000;
 
 const int kMinBandwidthBps = 30000;
 const int kStartBandwidthBps = 300000;
@@ -105,8 +100,7 @@ const char kCodecParamMaxBitrate[] = "x-google-max-bitrate";
 
 - (void)dealloc
 {
-    delete self.voiceChannelTransport;
-    self.voiceChannelTransport = NULL;
+    NSAssert(self.voiceChannelTransport == NULL, @"");
     NSLog(@"audio send stream dealloc");
 }
 
@@ -165,7 +159,9 @@ const char kCodecParamMaxBitrate[] = "x-google-max-bitrate";
     rtc.voe_base->StopReceive(self.voiceChannel);
     rtc.voe_base->StopSend(self.voiceChannel);
     rtc.voe_base->DeleteChannel(self.voiceChannel);
-//    rtc.base->DisconnectAudioChannel(self.voiceChannel);
+    
+    delete self.voiceChannelTransport;
+    self.voiceChannelTransport = NULL;
     return YES;
 }
 
@@ -323,18 +319,37 @@ public:
     ++captured_frames_;
     // Log the size and pixel aspect ratio of the first captured frame.
     if (1 == captured_frames_) {
-        NSLog(@"frame width:%d heigth:%d", frame->width(), frame->height());
+        NSLog(@"frame width:%d heigth:%d rotation:%d", frame->width(), frame->height(), frame->rotation());
     }
-    
-    if (stream_) {
+
+    //3帧取1帧
+    if (stream_ && captured_frames_%4 == 0) {
         webrtc::VideoCaptureInput *input = stream_->Input();
         input->IncomingCapturedFrame(*frame);
+    }
+    
+    if (self.render) {
+        
+        RTCEAGLVideoView *rtcView = (__bridge RTCEAGLVideoView*)[self.render getRTCView];
+        
+        RTCI420Frame *f = [[RTCI420Frame alloc] initWithVideoFrame:frame];
+        
+        [rtcView renderFrame:f];
+    }
+}
+
+-(void)sendKeyFrame {
+    if (stream_) {
+        stream_->encoder()->SendKeyFrame();
     }
 }
 
 #define WIDTH 352
 #define HEIGHT 288
-#define FPS 10
+#define FPS 30
+
+#define STREAM_WIDTH 240
+#define STREAM_HEIGHT 320
 
 -(BOOL) start {
     captured_frames_ = 0;
@@ -389,16 +404,16 @@ public:
     [self setSendVoiceCodec];
     
 
+    rtc.voe_rtp_rtcp->SetLocalSSRC(self.voiceChannel, self.voiceSSRC);
     rtc.voe_base->StartSend(self.voiceChannel);
-//    rtc.voe_base->StartReceive(self.voiceChannel);
 }
 
 -(std::vector<webrtc::VideoStream>) CreateVideoStreams {
     int max_bitrate_bps = kMaxVideoBitrate * 1000;
     
     webrtc::VideoStream stream;
-    stream.width = WIDTH;
-    stream.height = HEIGHT;
+    stream.width = STREAM_WIDTH;
+    stream.height = STREAM_HEIGHT;
     stream.max_framerate = 30;
     
     stream.min_bitrate_bps = kMinVideoBitrate * 1000;
@@ -455,8 +470,6 @@ public:
     type = webrtc::kVideoCodecVP8;
     codec_name = kVp8CodecName;
     pl_type = kDefaultVp8PlType;
-
-    
     
     if (type == webrtc::kVideoCodecVP8) {
         encoder = webrtc::VideoEncoder::Create(webrtc::VideoEncoder::kVp8);
@@ -465,7 +478,6 @@ public:
     } else if (type == webrtc::kVideoCodecH264) {
         encoder = webrtc::VideoEncoder::Create(webrtc::VideoEncoder::kH264);
     }
-    
 
     webrtc::internal::VideoSendStream::Config config;
 
@@ -473,7 +485,7 @@ public:
     config.encoder_settings.payload_name = codec_name;
     config.encoder_settings.payload_type = pl_type;
 
-    config.rtp.ssrcs.push_back(self.ssrc);
+    config.rtp.ssrcs.push_back(self.videoSSRC);
     config.rtp.nack.rtp_history_ms = 0;
     
     encoder_config.encoder_specific_settings = [self ConfigureVideoEncoderSettings:type];
@@ -502,8 +514,6 @@ public:
 
     
     WebRTC *rtc = [WebRTC sharedWebRTC];
-    
-//    rtc.voe_base->StopReceive(self.voiceChannel);
     rtc.voe_base->StopSend(self.voiceChannel);
     rtc.voe_base->DeleteChannel(self.voiceChannel);
 

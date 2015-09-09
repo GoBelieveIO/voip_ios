@@ -21,11 +21,14 @@
 @property(nonatomic)int64_t callee;
 @property(nonatomic)int32_t calleeIP;
 @property(nonatomic)int calleePort;
-@property(nonatomic)BOOL isHeadphone;
 //当前用户是呼叫方
 @property(nonatomic)BOOL isCaller;
 
-@property(nonatomic)VOIPRenderView *render;
+@property(nonatomic)BOOL videoEnabled;
+
+@property(nonatomic)VOIPRenderView *localRender;
+@property(nonatomic)VOIPRenderView *remoteRender;
+
 -(void)startStream;
 -(void)stopStream;
 @end

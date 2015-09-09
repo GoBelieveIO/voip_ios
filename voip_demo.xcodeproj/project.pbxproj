@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6D2A40D81B9D6C9200FB6A5A /* VOIPVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A40D71B9D6C9200FB6A5A /* VOIPVideoViewController.m */; };
+		6D2A40DB1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A40DA1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m */; };
 		6D5C189F1AC8FDB70047A9A3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C189E1AC8FDB70047A9A3 /* main.m */; };
 		6D5C18A21AC8FDB70047A9A3 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18A11AC8FDB70047A9A3 /* AppDelegate.m */; };
 		6D5C18A51AC8FDB70047A9A3 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18A41AC8FDB70047A9A3 /* ViewController.m */; };
@@ -31,6 +33,7 @@
 		6D5C195E1AC935360047A9A3 /* end.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195A1AC935360047A9A3 /* end.mp3 */; };
 		6D5C195F1AC935360047A9A3 /* start.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195B1AC935360047A9A3 /* start.mp3 */; };
 		6D5C19641AD2B79B0047A9A3 /* libvoipengine.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C19631AD2B79B0047A9A3 /* libvoipengine.a */; };
+		6DF6F78F1B92CBF600774961 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +89,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6D2A40D61B9D6C9200FB6A5A /* VOIPVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPVideoViewController.h; sourceTree = "<group>"; };
+		6D2A40D71B9D6C9200FB6A5A /* VOIPVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVideoViewController.m; sourceTree = "<group>"; };
+		6D2A40D91B9D6D4B00FB6A5A /* VOIPVoiceViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPVoiceViewController.h; sourceTree = "<group>"; };
+		6D2A40DA1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVoiceViewController.m; sourceTree = "<group>"; };
 		6D5C18991AC8FDB70047A9A3 /* voip_demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = voip_demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D5C189D1AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D5C189E1AC8FDB70047A9A3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -122,6 +129,7 @@
 		6D5C195A1AC935360047A9A3 /* end.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = end.mp3; sourceTree = "<group>"; };
 		6D5C195B1AC935360047A9A3 /* start.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = start.mp3; sourceTree = "<group>"; };
 		6D5C19631AD2B79B0047A9A3 /* libvoipengine.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libvoipengine.a; path = "../../../Library/Developer/Xcode/DerivedData/voip_demo-ghegouphrmfjtsbdqtgolwbghldy/Build/Products/Debug-iphoneos/libvoipengine.a"; sourceTree = "<group>"; };
+		6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +137,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6DF6F78F1B92CBF600774961 /* VideoToolbox.framework in Frameworks */,
 				6D5C19641AD2B79B0047A9A3 /* libvoipengine.a in Frameworks */,
 				6D5C19551AC9306A0047A9A3 /* GLKit.framework in Frameworks */,
 				6D5C19531AC9305E0047A9A3 /* libstdc++.dylib in Frameworks */,
@@ -181,6 +190,10 @@
 				6D5C18A41AC8FDB70047A9A3 /* ViewController.m */,
 				6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */,
 				6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */,
+				6D2A40D61B9D6C9200FB6A5A /* VOIPVideoViewController.h */,
+				6D2A40D71B9D6C9200FB6A5A /* VOIPVideoViewController.m */,
+				6D2A40D91B9D6D4B00FB6A5A /* VOIPVoiceViewController.h */,
+				6D2A40DA1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m */,
 				6D5C18A61AC8FDB70047A9A3 /* Main.storyboard */,
 				6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */,
 				6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */,
@@ -283,6 +296,7 @@
 		6D5C19561AC931B30047A9A3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */,
 				6D5C19631AD2B79B0047A9A3 /* libvoipengine.a */,
 				6D5C19541AC9306A0047A9A3 /* GLKit.framework */,
 				6D5C19521AC9305E0047A9A3 /* libstdc++.dylib */,
@@ -464,10 +478,12 @@
 				6D5C18A51AC8FDB70047A9A3 /* ViewController.m in Sources */,
 				6D5C18A21AC8FDB70047A9A3 /* AppDelegate.m in Sources */,
 				6D5C19451AC92A560047A9A3 /* UIView+Toast.m in Sources */,
+				6D2A40DB1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m in Sources */,
 				6D5C189F1AC8FDB70047A9A3 /* main.m in Sources */,
 				6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */,
 				6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */,
 				6D5C19491AC92A860047A9A3 /* VWWWaterView.m in Sources */,
+				6D2A40D81B9D6C9200FB6A5A /* VOIPVideoViewController.m in Sources */,
 				6D5C19021AC9296E0047A9A3 /* VOIPViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

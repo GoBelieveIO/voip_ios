@@ -23,8 +23,11 @@
 @property (assign) uint64_t uid;
 @property (weak, nonatomic) id<VoiceTransport> voiceTransport;
 @property (assign, nonatomic) int voiceChannel;
-@property (nonatomic) int32_t localSSRC;
-@property (nonatomic) int32_t remoteSSRC;
+@property (nonatomic) int32_t localVideoSSRC;
+@property (nonatomic) int32_t remoteVideoSSRC;
+
+@property (nonatomic) int32_t localVoiceSSRC;
+@property (nonatomic) int32_t remoteVoiceSSRC;
 
 -(void)setCall:(void*)call;
 

@@ -13,17 +13,16 @@
 -(BOOL)stop;
 @end
 
+@class VOIPRenderView;
 
 @interface AVSendStream : NSObject {
 }
-@property (weak, nonatomic) UIView *render;
+@property (weak, nonatomic) VOIPRenderView *render;
 @property (weak, nonatomic) id<VoiceTransport> voiceTransport;
-//@property (weak, nonatomic) id<VideoTransport> videoTransport;
 @property(assign, nonatomic)int voiceChannel;
-//@property(assign, nonatomic)int videoChannel;
 
-@property (assign, nonatomic)BOOL hasVideo;
-@property(nonatomic) int32_t ssrc;
+@property(nonatomic) int32_t videoSSRC;
+@property(nonatomic) int32_t voiceSSRC;
 
 -(void)setCall:(void*)call;
 

@@ -65,7 +65,7 @@
 
         voip_writeInt32(ctl.cmd, p);
         p += 4;
-        if (ctl.cmd == VOIP_COMMAND_DIAL) {
+        if (ctl.cmd == VOIP_COMMAND_DIAL || ctl.cmd == VOIP_COMMAND_DIAL_VIDEO) {
             voip_writeInt32(ctl.dialCount, p);
             p += 4;
             return [NSData dataWithBytes:buf length:HEAD_SIZE+24];
@@ -116,7 +116,7 @@
         p += 8;
         ctl.cmd = voip_readInt32(p);
         p += 4;
-        if (ctl.cmd == VOIP_COMMAND_DIAL) {
+        if (ctl.cmd == VOIP_COMMAND_DIAL || ctl.cmd == VOIP_COMMAND_DIAL_VIDEO) {
             ctl.dialCount = voip_readInt32(p);
         } else if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
             if (data.length >= HEAD_SIZE + 26) {

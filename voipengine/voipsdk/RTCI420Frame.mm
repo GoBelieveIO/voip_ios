@@ -31,7 +31,11 @@
 #include "webrtc/video_frame.h"
 
 @implementation RTCI420Frame {
-    rtc::scoped_ptr<webrtc::VideoFrame> _videoFrame;
+    const webrtc::VideoFrame *_videoFrame;
+}
+
+-(void)dealloc {
+    delete _videoFrame;
 }
 
 - (NSUInteger)width {
@@ -96,8 +100,8 @@
     // Keep a shallow copy of the video frame. The underlying frame buffer is
     // not copied.
       webrtc::VideoFrame *p = new webrtc::VideoFrame();
-      videoFrame->ShallowCopy(*p);
-      _videoFrame.reset(p);
+      p->ShallowCopy(*videoFrame);
+      _videoFrame = p;
   }
   return self;
 }

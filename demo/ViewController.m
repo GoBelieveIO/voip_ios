@@ -12,6 +12,8 @@
 #import <voipengine/VOIPEngine.h>
 #import <voipsession/VOIPService.h>
 #import "VOIPViewController.h"
+#import "VOIPVideoViewController.h"
+#import "VOIPVoiceViewController.h"
 
 @interface ViewController ()<VOIPObserver>
 @property (weak, nonatomic) IBOutlet UITextField *myTextField;
@@ -38,6 +40,46 @@
     [[VOIPService instance] startRechabilityNotifier];
 }
 
+- (IBAction)dialVideo:(id)sender {
+    [self.myTextField resignFirstResponder];
+    [self.peerTextField resignFirstResponder];
+    
+    int64_t myUID = [self.myTextField.text longLongValue];
+    int64_t peerUID = [self.peerTextField.text longLongValue];
+    
+    if (myUID == 0 || peerUID == 0) {
+        return;
+    }
+    
+    self.hud = [MBProgressHUD showHUDAddedTo:self.view animated:NO];
+    self.hud.labelText = @"登录中...";
+    
+    self.myUID = myUID;
+    self.peerUID = peerUID;
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *token = [self login:myUID];
+        NSLog(@"token:%@", token);
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [VOIPService instance].token = token;
+            [[VOIPService instance] start];
+            self.token = token;
+            [self.hud hide:NO];
+            
+            VOIPViewController *controller = [[VOIPVideoViewController alloc] init];
+            controller.currentUID = self.myUID;
+            controller.peerUID = self.peerUID;
+            controller.peerName = @"测试";
+            controller.token = self.token;
+            controller.isCaller = YES;
+            
+            [self presentViewController:controller animated:YES completion:nil];
+            
+            
+        });
+    });
+}
+
 - (IBAction)dial:(id)sender {
     [self.myTextField resignFirstResponder];
     [self.peerTextField resignFirstResponder];
@@ -52,6 +94,8 @@
     self.hud = [MBProgressHUD showHUDAddedTo:self.view animated:NO];
     self.hud.labelText = @"登录中...";
     
+    self.myUID = myUID;
+    self.peerUID = peerUID;
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *token = [self login:myUID];
@@ -62,7 +106,7 @@
             self.token = token;
             [self.hud hide:NO];
             
-            VOIPViewController *controller = [[VOIPViewController alloc] init];
+            VOIPViewController *controller = [[VOIPVoiceViewController alloc] init];
             controller.currentUID = self.myUID;
             controller.peerUID = self.peerUID;
             controller.peerName = @"测试";
@@ -118,7 +162,22 @@
             [self.hud hide:NO];
             
             
-            VOIPViewController *controller = [[VOIPViewController alloc] init];
+            VOIPViewController *controller = [[VOIPVoiceViewController alloc] init];
+            controller.currentUID = self.myUID;
+            controller.peerUID = self.peerUID;
+            controller.peerName = @"测试";
+            controller.token = self.token;
+            controller.isCaller = NO;
+            
+            [self presentViewController:controller animated:YES completion:nil];
+        }
+    } else if (ctl.cmd == VOIP_COMMAND_DIAL_VIDEO) {
+        if (ctl.sender == self.peerUID) {
+            
+            [self.hud hide:NO];
+            
+            
+            VOIPViewController *controller = [[VOIPVideoViewController alloc] init];
             controller.currentUID = self.myUID;
             controller.peerUID = self.peerUID;
             controller.peerName = @"测试";

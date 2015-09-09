@@ -22,11 +22,7 @@
 #include "webrtc/video_engine/vie_channel_group.h"
 #include "webrtc/modules/utility/interface/process_thread.h"
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
-//#import "talk/app/webrtc/objc/public/RTCEAGLVideoView.h"
-//#import "talk/app/webrtc/objc/public/RTCI420Frame.h"
-//#import "talk/app/webrtc/objc/RTCI420Frame+Internal.h"
 
-//#import "talk/media/webrtc/webrtcvideoframe.h"
 
 
 #include "webrtc/voice_engine/include/voe_network.h"
@@ -109,7 +105,6 @@ const int kDefaultRtxVp8PlType = 96;
     rtc.voe_base->StopSend(self.voiceChannel);
     rtc.voe_base->StopPlayout(self.voiceChannel);
     rtc.voe_base->DeleteChannel(self.voiceChannel);
-//    rtc.base->DisconnectAudioChannel(self.voiceChannel);
     
     return YES;
 }
@@ -138,7 +133,7 @@ public:
     
     virtual void RenderFrame(const webrtc::VideoFrame& video_frame,
                              int time_to_render_ms) {
-        NSLog(@"render frame:%d %d", video_frame.width(), video_frame.height());
+//        NSLog(@"render frame:%d %d rotation:%d", video_frame.width(), video_frame.height(), video_frame.rotation());
         [s_ renderFrame:video_frame render_ts:time_to_render_ms];
     }
     
@@ -179,7 +174,6 @@ private:
     type = webrtc::kVideoCodecVP8;
     codec_name = kVp8CodecName;
     pl_type = kDefaultVp8PlType;
-    
 
     webrtc::VideoDecoder *video_decoder = NULL;
     
@@ -198,8 +192,8 @@ private:
     decoder.payload_name = codec_name;
     config.decoders.push_back(decoder);
 
-    config.rtp.local_ssrc = self.localSSRC;
-    config.rtp.remote_ssrc = self.remoteSSRC;
+    config.rtp.local_ssrc = self.localVideoSSRC;
+    config.rtp.remote_ssrc = self.remoteVideoSSRC;
     config.rtp.nack.rtp_history_ms = 0;
     
 //    config.sync_group = "sync";
@@ -225,22 +219,10 @@ private:
     self.voiceChannelTransport = new VoiceChannelTransport(rtc.voe_network, self.voiceChannel, self.voiceTransport, NO);
     
 
+    rtc.voe_rtp_rtcp->SetLocalSSRC(self.voiceChannel, self.localVoiceSSRC);
+    
     rtc.voe_base->StartReceive(self.voiceChannel);
     rtc.voe_base->StartPlayout(self.voiceChannel);
-    
-//    rtc.voe_base->StartSend(self.voiceChannel);
-    
-/*
-    webrtc::AudioReceiveStream::Config config;
-    config.sync_group = "sync";
-    config.voe_channel_id = self.voiceChannel;
-    config.rtp.remote_ssrc = 1000;
-    config.rtp.local_ssrc = 2000;
-    webrtc::AudioReceiveStream *stream = call_->CreateAudioReceiveStream(config);
-    stream->Start();
-    
-    audioStream_ = stream;
-*/
 }
 
 -(BOOL)stop {
@@ -254,18 +236,11 @@ private:
     
     delete decoder_;
     decoder_ = NULL;
-    
-    //audio
-
-//    audioStream_->Stop();
-//    call_->DestroyAudioReceiveStream(audioStream_);
-//    audioStream_ = NULL;
 
 
     WebRTC *rtc = [WebRTC sharedWebRTC];
     
     rtc.voe_base->StopReceive(self.voiceChannel);
-    //rtc.voe_base->StopSend(self.voiceChannel);
     rtc.voe_base->StopPlayout(self.voiceChannel);
     rtc.voe_base->DeleteChannel(self.voiceChannel);
 
@@ -274,12 +249,6 @@ private:
 
 -(void)renderFrame:(const webrtc::VideoFrame&) frame render_ts:(int)time_to_render_ms {
     RTCEAGLVideoView *rtcView = (__bridge RTCEAGLVideoView*)[self.render getRTCView];
-    
-/*    const cricket::WebRtcVideoFrame render_frame(
-                                        frame.video_frame_buffer(),
-                                        0,
-                                        0, frame.rotation());
-  */
 
     RTCI420Frame *f = [[RTCI420Frame alloc] initWithVideoFrame:&frame];
 

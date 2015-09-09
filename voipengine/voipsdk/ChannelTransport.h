@@ -33,39 +33,4 @@ private:
     __weak id<VoiceTransport> transport_;
     BOOL STOR_;
 };
-
-#if 0
-
-class VideoChannelTransport:webrtc::Transport{
-public:
-    VideoChannelTransport(webrtc::ViENetwork* vie_network, int channel,
-                          id<VideoTransport> transport, BOOL STOR): channel_(channel),
-    vie_network_(vie_network),
-    transport_(transport), STOR_(STOR){
-        
-        
-        int registered = vie_network_->RegisterSendTransport(channel,
-                                                             *this);
-        
-        assert(registered == 0);
-    }
-    virtual ~VideoChannelTransport() {
-        transport_ = nil;
-    }
-    
-public:
-    virtual int SendPacket(int channel, const void *data, size_t len) {
-        return [transport_ sendRTPPacketV:data length:(int)len];
-    }
-    virtual int SendRTCPPacket(int channel, const void *data, size_t len) {
-        return [transport_ sendRTCPPacketV:data length:(int)len STOR:STOR_];
-    }
-private:
-    int channel_;
-    webrtc::ViENetwork* vie_network_;
-    __weak id<VideoTransport> transport_;
-    BOOL STOR_;
-};
-
-#endif
 #endif
