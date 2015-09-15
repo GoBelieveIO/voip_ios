@@ -99,6 +99,7 @@ static const int kDefaultQpMax = 56;
 
 const char kCodecParamMaxBitrate[] = "x-google-max-bitrate";
 
+static const int kNackHistoryMs = 1000;
 
 @interface AudioSendStream()
 @property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
@@ -330,8 +331,8 @@ public:
         NSLog(@"frame width:%d heigth:%d rotation:%d", frame->width(), frame->height(), frame->rotation());
     }
 
-    //3帧取1帧
-    if (stream_ && captured_frames_%4 == 0) {
+    //2帧取1帧
+    if (stream_ && captured_frames_%2 == 0) {
         webrtc::VideoCaptureInput *input = stream_->Input();
         input->IncomingCapturedFrame(*frame);
     }
@@ -494,7 +495,13 @@ public:
     config.encoder_settings.payload_type = pl_type;
 
     config.rtp.ssrcs.push_back(self.videoSSRC);
-    config.rtp.nack.rtp_history_ms = 0;
+    config.rtp.nack.rtp_history_ms = kNackHistoryMs;
+    config.rtp.fec.ulpfec_payload_type = kDefaultUlpfecType;
+    config.rtp.fec.red_payload_type = kDefaultRedPlType;
+    config.rtp.fec.red_rtx_payload_type = kDefaultRtxVp8PlType;
+    
+    config.rtp.rtx.payload_type = kDefaultRtxVp8PlType;
+    config.rtp.rtx.ssrcs.push_back(self.rtxSSRC);
     
     encoder_config.encoder_specific_settings = [self ConfigureVideoEncoderSettings:type];
     webrtc::VideoSendStream *stream = call_->CreateVideoSendStream(config, encoder_config);

@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <sys/time.h>
 #import "VOIPEngine.h"
 #import "AVSendStream.h"
 #import "AVReceiveStream.h"
@@ -64,6 +65,10 @@ class AVEngine;
     webrtc::Call *call_;
     AVEngine *engine_;
     pthread_t thread_;
+    
+    pthread_t deliverThread_;
+    pthread_mutex_t mutex_;
+    pthread_cond_t cond_;
 }
 @property(nonatomic) NSDate *beginDate;
 @property(nonatomic) BOOL isPeerConnected;
@@ -74,6 +79,7 @@ class AVEngine;
 @property(strong, nonatomic) AVSendStream *sendStream;
 @property(strong, nonatomic) AVReceiveStream *recvStream;
 
+@property(nonatomic) NSMutableArray *packets;
 
 @property(atomic, assign) BOOL running;
 @property(nonatomic, assign)int udpFD;
@@ -86,6 +92,7 @@ class AVEngine;
 -(BOOL)sendVideoRTCP:(const void*)data length:(size_t)len;
 
 -(void)recvLoop;
+-(void)deliverLoop;
 @end
 
 
@@ -97,6 +104,12 @@ static void* recv_thread(void *arg) {
     return NULL;
 }
 
+static void* deliver_thread(void *arg) {
+    pthread_setname_np("deliver thread");
+    VOIPEngine *engine = (__bridge VOIPEngine*)arg;
+    [engine deliverLoop];
+    return NULL;
+}
 
 class AVEngine : public webrtc::newapi::Transport, public webrtc::LoadObserver {
 public:
@@ -126,6 +139,15 @@ private:
     self = [super init];
     if (self) {
         engine_ = new AVEngine(self);
+        self.packets = [NSMutableArray array];
+        
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+        
+        pthread_mutex_init(&mutex_, &attr);
+        pthread_cond_init(&cond_, NULL);
+
 
     }
     return self;
@@ -133,6 +155,9 @@ private:
 
 -(void)dealloc {
     delete engine_;
+    
+    pthread_mutex_destroy(&mutex_);
+    pthread_cond_destroy(&cond_);
 }
 
 -(void)listenVOIP {
@@ -147,9 +172,46 @@ private:
     int one = 1;
     setsockopt(self.udpFD, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
     
+    int bufSize = 0;
+    socklen_t size = sizeof(bufSize);
+    getsockopt(self.udpFD, SOL_SOCKET, SO_RCVBUF, (void*)&bufSize, &size);
+    NSLog(@"udp recv buf size:%d", bufSize);
+    bufSize = 1024 * 1024;
+    if (setsockopt(self.udpFD, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(int)) == -1) {
+        NSLog(@"set sock recv buf size error");
+    } else {
+        NSLog(@"new udp recv buf size:%d", bufSize);
+    }
+    
+    
     bind(self.udpFD, (struct sockaddr *)&addr,sizeof(addr));
     
     voip_sock_nonblock(self.udpFD, 1);
+}
+
+-(void)deliverLoop {
+
+    while (self.running) {
+        pthread_mutex_lock(&mutex_);
+        
+        while (self.packets.count == 0 && self.running) {
+            struct timeval tv;
+            struct timespec ts;
+            gettimeofday(&tv, NULL);
+            ts.tv_sec = tv.tv_sec;
+            ts.tv_nsec = tv.tv_usec*1000 + 1000*1000*100;
+            pthread_cond_timedwait(&cond_, &mutex_, &ts);
+        }
+
+        NSMutableArray *packets = self.packets;
+        self.packets = [NSMutableArray array];
+    
+        pthread_mutex_unlock(&mutex_);
+        
+        for (VOIPData *data in packets) {
+            [self onVOIPData:data];
+        }
+    }
 }
 
 -(void)recvLoop {
@@ -162,6 +224,16 @@ private:
     
     int one = 1;
     setsockopt(self.udpFD, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
+    int bufSize = 0;
+    socklen_t size = sizeof(bufSize);
+    getsockopt(self.udpFD, SOL_SOCKET, SO_RCVBUF, (void*)&bufSize, &size);
+    NSLog(@"udp recv buf size:%d", bufSize);
+    bufSize = 1024 * 1024;
+    if (setsockopt(self.udpFD, SOL_SOCKET, SO_RCVBUF, &bufSize, sizeof(int)) == -1) {
+        NSLog(@"set sock recv buf size error");
+    } else {
+        NSLog(@"new udp recv buf size:%d", bufSize);
+    }
     
     bind(self.udpFD, (struct sockaddr *)&addr,sizeof(addr));
     
@@ -226,8 +298,16 @@ private:
     
     int ip = ntohl(addr->sin_addr.s_addr);
     int port = ntohs(addr->sin_port);
-    [self onVOIPData:vdata ip:ip port:port];
-
+    
+    if (!self.isPeerConnected && self.calleeIP == ip && self.calleePort == port) {
+        self.isPeerConnected = YES;
+        NSLog(@"peer connected");
+    }
+    
+    pthread_mutex_lock(&mutex_);
+    [self.packets addObject:vdata];
+    pthread_cond_signal(&cond_);
+    pthread_mutex_unlock(&mutex_);
 }
 
 -(void)handleAuthStatus:(const char*)buf length:(size_t)len {
@@ -259,7 +339,7 @@ private:
     }
 }
 
--(void)onVOIPData:(VOIPData*)data ip:(int)ip port:(int)port {
+-(void)onVOIPData:(VOIPData*)data {
     if (data.sender != self.callee) {
         NSLog(@"skip data...");
         return;
@@ -269,11 +349,6 @@ private:
     NSInteger packet_length = [data.content length];
     
     WebRTC *rtc = [WebRTC sharedWebRTC];
-    
-    if (!self.isPeerConnected && self.calleeIP == ip && self.calleePort == port) {
-        self.isPeerConnected = YES;
-        NSLog(@"peer connected");
-    }
     
     if (self.videoEnabled) {
         if (self.recvStream == nil) {
@@ -359,9 +434,11 @@ private:
         if (self.isCaller) {
             self.sendStream.videoSSRC = 1;
             self.sendStream.voiceSSRC = 11;
+            self.sendStream.rtxSSRC = 101;
         } else {
             self.sendStream.videoSSRC = 2;
             self.sendStream.voiceSSRC = 12;
+            self.sendStream.rtxSSRC = 102;
         }
         
         [self.sendStream start];
@@ -376,12 +453,16 @@ private:
             
             self.recvStream.localVoiceSSRC = 13;
             self.recvStream.remoteVoiceSSRC = 12;
+            
+            self.recvStream.rtxSSRC = 102;
         } else {
             self.recvStream.localVideoSSRC = 4;
             self.recvStream.remoteVideoSSRC = 1;
             
             self.recvStream.localVoiceSSRC = 14;
             self.recvStream.remoteVoiceSSRC = 11;
+            
+            self.recvStream.rtxSSRC = 101;
         }
         
         [self.recvStream start];
@@ -422,7 +503,8 @@ private:
 
     self.running = YES;
     pthread_create(&thread_, NULL, recv_thread, (__bridge void*)self);
-
+    pthread_create(&deliverThread_, NULL, deliver_thread, (__bridge void*)self);
+    
     self.beginDate = [NSDate date];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -456,6 +538,9 @@ private:
     }
     self.running = NO;
     pthread_join(thread_, NULL);
+    pthread_join(deliverThread_, NULL);
+    
+    [self.packets removeAllObjects];
 }
 
 -(void)closeUDP {

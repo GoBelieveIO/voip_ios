@@ -69,6 +69,8 @@ const int kDefaultRedPlType = 116;
 const int kDefaultUlpfecType = 117;
 const int kDefaultRtxVp8PlType = 96;
 
+static const int kNackHistoryMs = 1000;
+
 
 @interface AudioReceiveStream()
 @property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
@@ -202,7 +204,17 @@ private:
 
     config.rtp.local_ssrc = self.localVideoSSRC;
     config.rtp.remote_ssrc = self.remoteVideoSSRC;
-    config.rtp.nack.rtp_history_ms = 0;
+    config.rtp.nack.rtp_history_ms = kNackHistoryMs;
+    config.rtp.fec.ulpfec_payload_type = kDefaultUlpfecType;
+    config.rtp.fec.red_payload_type = kDefaultRedPlType;
+    config.rtp.fec.red_rtx_payload_type = kDefaultRtxVp8PlType;
+    
+
+    webrtc::VideoReceiveStream::Config::Rtp::Rtx rtx;
+    rtx.ssrc = self.rtxSSRC;
+    rtx.payload_type = kDefaultRtxVp8PlType;
+    config.rtp.rtx[kDefaultVp8PlType] = rtx;
+    
     
 //    config.sync_group = "sync";
     config.renderer = renderer_;

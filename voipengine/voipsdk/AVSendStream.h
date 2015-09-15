@@ -32,6 +32,9 @@
 @property(nonatomic) int32_t videoSSRC;
 @property(nonatomic) int32_t voiceSSRC;
 
+@property(nonatomic) int32_t rtxSSRC;
+
+
 -(void)setCall:(void*)call;
 
 -(void)sendKeyFrame;

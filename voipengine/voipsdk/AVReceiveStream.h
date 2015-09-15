@@ -37,6 +37,8 @@
 @property (nonatomic) int32_t localVoiceSSRC;
 @property (nonatomic) int32_t remoteVoiceSSRC;
 
+@property (nonatomic) int32_t rtxSSRC;
+
 -(void)setCall:(void*)call;
 
 -(BOOL)start;
