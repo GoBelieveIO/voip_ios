@@ -38,6 +38,7 @@
 -(void)setCall:(void*)call;
 
 -(void)sendKeyFrame;
+-(void)switchCamera;
 -(BOOL)start;
 -(BOOL)stop;
 @end

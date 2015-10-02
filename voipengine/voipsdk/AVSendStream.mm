@@ -220,6 +220,7 @@ class VideoCaptureDataCallback;
     
 }
 @property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
+@property(nonatomic, getter=isFrontCamera) BOOL frontCamera;
 
 -(void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame;
 @end
@@ -249,72 +250,15 @@ public:
     if (self) {
         factory_ =new WebRtcVcmFactory();
 
-        //使用前置摄像头
-        AVCaptureDevice *device;
-        for (AVCaptureDevice *captureDevice in [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] ) {
-            if (captureDevice.position == AVCaptureDevicePositionFront) {
-                device = captureDevice;
-                break;
-            }
-        }
-        NSLog(@"device:%@ %@", device.uniqueID, device.localizedName);
-
-        const char *device_name = [device.localizedName UTF8String];
-        
-        webrtc::VideoCaptureModule::DeviceInfo* info = factory_->CreateDeviceInfo(0);
-        if (!info) {
-            return nil;
-        }
-
-        int num_cams = info->NumberOfDevices();
-        char vcm_id[256] = "";
-        bool found = false;
-        for (int index = 0; index < num_cams; ++index) {
-            char vcm_name[256] = {0};
-            if (info->GetDeviceName(index, vcm_name, ARRAY_SIZE(vcm_name),
-                                    vcm_id, ARRAY_SIZE(vcm_id)) != -1) {
-                
-                NSLog(@"vcm name:%s", vcm_name);
-                if (strcmp(vcm_name, device_name) == 0) {
-                    found = true;
-                    break;
-                }
-            }
-        }
-        
-        if (!found) {
-            NSLog(@"Failed to find capturer for name:%s", device_name);
-            factory_->DestroyDeviceInfo(info);
-            return nil;
-        }
-        
-        int32_t num_caps = info->NumberOfCapabilities(vcm_id);
-        for (int32_t i = 0; i < num_caps; ++i) {
-            webrtc::VideoCaptureCapability cap;
-            if (info->GetCapability(vcm_id, i, cap) != -1) {
-                NSLog(@"cap width:%d height:%d raw type:%d max fps:%d", cap.width, cap.height, cap.rawType, cap.maxFPS);
-            }
-        }
-        factory_->DestroyDeviceInfo(info);
-
-        
-        module_ = factory_->Create(0, vcm_id);
-        if (!module_) {
-            NSLog(@"Failed to create capturer for name:%s ", device_name);
-            return nil;
-        }
-        
-        // It is safe to change member attributes now.
-        module_->AddRef();
-
         cb_ = new VideoCaptureDataCallback(self);
+        
+        self.frontCamera = YES;
         
     }
     return self;
 }
 
 -(void)dealloc {
-    module_->Release();
     delete cb_;
     delete factory_;
 }
@@ -353,6 +297,20 @@ public:
     }
 }
 
+
+-(void)switchCamera {
+    module_->DeRegisterCaptureDataCallback();
+    module_->StopCapture();
+    
+    module_->Release();
+    module_ = NULL;
+    
+
+    self.frontCamera = !self.isFrontCamera;
+    [self startCapture:self.isFrontCamera];
+
+}
+
 #define WIDTH 352
 #define HEIGHT 288
 #define FPS 30
@@ -360,20 +318,101 @@ public:
 #define STREAM_WIDTH 240
 #define STREAM_HEIGHT 320
 
--(BOOL) start {
-    captured_frames_ = 0;
+-(BOOL)startCapture:(BOOL)front {
+    AVCaptureDevice *device;
+    for (AVCaptureDevice *captureDevice in [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] ) {
+        if (front && captureDevice.position == AVCaptureDevicePositionFront) {
+            device = captureDevice;
+            break;
+        } else if (!front && captureDevice.position == AVCaptureDevicePositionBack) {
+            device = captureDevice;
+            break;
+        }
+    }
+    NSLog(@"device:%@ %@", device.uniqueID, device.localizedName);
     
-    webrtc::VideoCaptureCapability cap;
-    cap.width = WIDTH;
-    cap.height = HEIGHT;
-    cap.maxFPS = FPS;
-    cap.rawType = webrtc::kVideoNV12;
+    const char *device_name = [device.localizedName UTF8String];
+    
+    webrtc::VideoCaptureModule::DeviceInfo* info = factory_->CreateDeviceInfo(0);
+    if (!info) {
+        return NO;
+    }
+    
+    int num_cams = info->NumberOfDevices();
+    char vcm_id[256] = "";
+    bool found = false;
+    for (int index = 0; index < num_cams; ++index) {
+        char vcm_name[256] = {0};
+        if (info->GetDeviceName(index, vcm_name, ARRAY_SIZE(vcm_name),
+                                vcm_id, ARRAY_SIZE(vcm_id)) != -1) {
+            
+            NSLog(@"vcm name:%s", vcm_name);
+            if (strcmp(vcm_name, device_name) == 0) {
+                found = true;
+                break;
+            }
+        }
+    }
+    
+    if (!found) {
+        NSLog(@"Failed to find capturer for name:%s", device_name);
+        factory_->DestroyDeviceInfo(info);
+        return NO;
+    }
+    
+    webrtc::VideoCaptureCapability best_cap;
+    best_cap.width = WIDTH;
+    best_cap.height = HEIGHT;
+    best_cap.maxFPS = FPS;
+    best_cap.rawType = webrtc::kVideoNV12;
+    
+    int best_diff = INT_MAX;
+    
+    int32_t num_caps = info->NumberOfCapabilities(vcm_id);
+    for (int32_t i = 0; i < num_caps; ++i) {
+        webrtc::VideoCaptureCapability cap;
+        if (info->GetCapability(vcm_id, i, cap) != -1) {
+            NSLog(@"cap width:%d height:%d raw type:%d max fps:%d", cap.width, cap.height, cap.rawType, cap.maxFPS);
+        }
+        
+        int area = cap.width*cap.height;
+        int diff = abs(area - WIDTH*HEIGHT);
+        
+        if (diff < best_diff) {
+            best_cap = cap;
+            best_diff = diff;
+        }
+    }
+    
+    NSLog(@"best cap width:%d height:%d raw type:%d max fps:%d",
+          best_cap.width, best_cap.height, best_cap.rawType, best_cap.maxFPS);
+    
+    factory_->DestroyDeviceInfo(info);
+    
+    
+    module_ = factory_->Create(0, vcm_id);
+    if (!module_) {
+        NSLog(@"Failed to create capturer for name:%s ", device_name);
+        return NO;
+    }
+    
+    // It is safe to change member attributes now.
+    module_->AddRef();
 
+    
     module_->RegisterCaptureDataCallback(*cb_);
-    if (module_->StartCapture(cap) != 0) {
+    if (module_->StartCapture(best_cap) != 0) {
         module_->DeRegisterCaptureDataCallback();
         return NO;
     }
+    
+    return YES;
+}
+
+-(BOOL) start {
+    captured_frames_ = 0;
+
+    [self startCapture:self.isFrontCamera];
     
     [self startSendStream];
     
@@ -519,6 +558,9 @@ public:
     
     module_->DeRegisterCaptureDataCallback();
     module_->StopCapture();
+    
+    module_->Release();
+    module_ = NULL;
 
     stream_->Stop();
     call_->DestroyVideoSendStream(stream_);

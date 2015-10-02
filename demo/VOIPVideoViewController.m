@@ -26,6 +26,17 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    
+    UIButton *switchButton = [[UIButton alloc] initWithFrame:CGRectMake(240, 50, 80, 40)];
+
+    [switchButton setTitle:@"切换" forState:UIControlStateNormal];
+    [switchButton addTarget:self
+                          action:@selector(switchCamera:)
+                forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:switchButton];
+    
+    
     self.remoteRender = [[VOIPRenderView alloc] initWithFrame:self.view.bounds];
     [self.view insertSubview:self.remoteRender atIndex:0];
     
@@ -40,6 +51,11 @@
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+-(void)switchCamera:(id)sender {
+    NSLog(@"switch camera");
+    [self.engine switchCamera];
 }
 
 /*

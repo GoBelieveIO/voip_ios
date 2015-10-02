@@ -543,6 +543,10 @@ private:
     [self.packets removeAllObjects];
 }
 
+-(void)switchCamera {
+    [self.sendStream switchCamera];
+}
+
 -(void)closeUDP {
     close(self.udpFD);
     self.udpFD = -1;

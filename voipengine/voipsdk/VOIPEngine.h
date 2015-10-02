@@ -30,6 +30,7 @@
 @property(nonatomic)VOIPRenderView *localRender;
 @property(nonatomic)VOIPRenderView *remoteRender;
 
+-(void)switchCamera;
 -(void)startStream;
 -(void)stopStream;
 @end

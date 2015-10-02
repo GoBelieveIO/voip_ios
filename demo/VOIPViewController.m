@@ -338,17 +338,8 @@
 
 
 -(void)playDialIn {
-
+    [self SetLoudspeakerStatus:YES];
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"start.mp3"];
-    
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
-    
-    //打开外放
-    [session overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker
-                               error:nil];
-    
-    
     NSURL *u = [NSURL fileURLWithPath:path];
     self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:u error:nil];
     [self.player setDelegate:self];
