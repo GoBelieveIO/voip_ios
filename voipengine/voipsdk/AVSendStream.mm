@@ -149,6 +149,7 @@ static const int kNackHistoryMs = 1000;
     WebRTC *rtc = [WebRTC sharedWebRTC];
     
     self.voiceChannel = rtc.voe_base->CreateChannel();
+    //register external transport
     self.voiceChannelTransport = new VoiceChannelTransport(rtc.voe_network,
                                                            self.voiceChannel,
                                                            self.voiceTransport, YES);
@@ -165,12 +166,15 @@ static const int kNackHistoryMs = 1000;
 -(BOOL)stop {
     WebRTC *rtc = [WebRTC sharedWebRTC];
 
+    //deregister external transport
+    delete self.voiceChannelTransport;
+    self.voiceChannelTransport = NULL;
+    
     rtc.voe_base->StopReceive(self.voiceChannel);
     rtc.voe_base->StopSend(self.voiceChannel);
     rtc.voe_base->DeleteChannel(self.voiceChannel);
     
-    delete self.voiceChannelTransport;
-    self.voiceChannelTransport = NULL;
+
     return YES;
 }
 
@@ -571,6 +575,9 @@ public:
 
     
     WebRTC *rtc = [WebRTC sharedWebRTC];
+    
+    delete self.voiceChannelTransport;
+    self.voiceChannelTransport = NULL;
     rtc.voe_base->StopSend(self.voiceChannel);
     rtc.voe_base->DeleteChannel(self.voiceChannel);
 

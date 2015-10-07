@@ -16,7 +16,7 @@ public:
     voe_network_(voe_network),
     transport_(transport), STOR_(STOR){
         
-        int registered = voe_network_->RegisterExternalTransport(channel,
+        int registered = voe_network_->RegisterExternalTransport(channel_,
                                                                  *this);
         
         assert(registered == 0);
@@ -24,6 +24,7 @@ public:
     }
     
     virtual ~VoiceChannelTransport() {
+        voe_network_->DeRegisterExternalTransport(channel_);
         transport_ = nil;
     }
     
