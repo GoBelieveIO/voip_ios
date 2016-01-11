@@ -379,6 +379,7 @@
 				TargetAttributes = {
 					6D5C18981AC8FDB70047A9A3 = {
 						CreatedOnToolsVersion = 6.2;
+						DevelopmentTeam = HB5A8TLKYL;
 					};
 					6D5C18B11AC8FDB70047A9A3 = {
 						CreatedOnToolsVersion = 6.2;
@@ -618,6 +619,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -632,6 +636,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = voip_demo;
+				PROVISIONING_PROFILE = "";
 				VALID_ARCHS = "armv7 arm64";
 			};
 			name = Debug;
@@ -642,6 +647,9 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = demo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -651,6 +659,7 @@
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = voip_demo;
+				PROVISIONING_PROFILE = "";
 				VALID_ARCHS = "armv7 arm64";
 			};
 			name = Release;
