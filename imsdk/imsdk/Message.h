@@ -25,12 +25,18 @@
 #define MSG_PONG 14
 #define MSG_AUTH_TOKEN 15
 #define MSG_LOGIN_POINT 16
-
+#define MSG_RT 17
+#define MSG_ENTER_ROOM 18
+#define MSG_LEAVE_ROOM 19
+#define MSG_ROOM_IM 20
+#define MSG_SYSTEM 21
+#define MSG_UNREAD_COUNT 22
 
 #define MSG_VOIP_CONTROL 64
-#define MSG_VOIP_DATA 65
 
-#define PLATFORM_IOS 1
+#define PLATFORM_IOS  1
+#define PLATFORM_ANDROID 2
+#define PLATFORM_WEB 3
 
 enum VOIPCommand {
     //语音通话
@@ -49,16 +55,51 @@ enum VOIPCommand {
     VOIP_COMMAND_DIAL_VIDEO,
 };
 
-#define VOIP_AUDIO 1
-#define VOIP_VIDEO 2
 
-#define VOIP_RTP 1
-#define VOIP_RTCP 2
+@interface IMMessage : NSObject
+@property(nonatomic, assign)int64_t sender;
+@property(nonatomic, assign)int64_t receiver;
+@property(nonatomic, assign)int32_t timestamp;
+@property(nonatomic, assign)int32_t msgLocalID;
+@property(nonatomic, copy)NSString *content;
+@end
+
+@interface RoomMessage : NSObject
+@property(nonatomic, assign)int64_t sender;
+@property(nonatomic, assign)int64_t receiver;
+@property(nonatomic, copy)NSString *content;
+@end
+
+
+@interface MessageInputing : NSObject
+@property(nonatomic, assign)int64_t sender;
+@property(nonatomic, assign)int64_t receiver;
+@end
+
+
+@interface MessagePeerACK : NSObject
+@property(nonatomic, assign)int64_t sender;
+@property(nonatomic, assign)int64_t receiver;
+@property(nonatomic, assign)int32_t msgLocalID;
+@end
+
+@interface AuthenticationToken : NSObject
+@property(nonatomic, copy) NSString *token;
+@property(nonatomic, assign) int8_t platformID;
+@property(nonatomic, copy) NSString *deviceID;
+@end
+
+@interface LoginPoint : NSObject
+@property(nonatomic, assign) int32_t upTimestamp;
+@property(nonatomic, assign) int8_t platformID;
+@property(nonatomic, copy) NSString *deviceID;
+@end
 
 @interface NatPortMap : NSObject
 @property(nonatomic) int32_t ip;
 @property(nonatomic) int16_t port;
 @end
+
 
 @interface VOIPControl : NSObject
 @property(nonatomic, assign)int64_t sender;
@@ -69,18 +110,8 @@ enum VOIPCommand {
 @property(nonatomic) int32_t relayIP;//VOIP_COMMAND_CONNECTED, 中转服务器ip地址
 @end
 
-@interface VOIPAuthenticationToken : NSObject
-@property(nonatomic, copy) NSString *token;
-@property(nonatomic, assign) int8_t platformID;
-@property(nonatomic, copy) NSString *deviceID;
-@end
 
-@interface VOIPAuthenticationStatus : NSObject
-@property(nonatomic, assign) int32_t status;
-@property(nonatomic, assign) int32_t ip;
-@end
-
-@interface VOIPMessage : NSObject
+@interface Message : NSObject
 @property(nonatomic, assign)int cmd;
 @property(nonatomic, assign)int seq;
 @property(nonatomic) NSObject *body;

@@ -6,11 +6,14 @@
  LICENSE file in the root directory of this source tree. An additional grant
  of patent rights can be found in the PATENTS file in the same directory.
  */
+#include <netdb.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #import "VOIPSession.h"
 #import "VOIPService.h"
 #import "stun.h"
 
+#define VOIP_HOST @"voipnode.gobelieve.io"
 #define VOIP_PORT 20002
 #define STUN_SERVER  @"stun.counterpath.net"
 
@@ -35,6 +38,8 @@ enum SessionMode {
 @property(atomic, assign) NatType natType;
 @property(nonatomic) BOOL hairpin;
 
+@property(atomic, copy) NSString *voipHostIP;
+
 @end
 
 @implementation VOIPSession
@@ -44,10 +49,50 @@ enum SessionMode {
     if (self) {
         self.state = VOIP_ACCEPTING;
         
+        self.voipHost = VOIP_HOST;
         self.voipPort = VOIP_PORT;
         self.stunServer = STUN_SERVER;
     }
     return self;
+}
+
+-(NSString*)IP2String:(struct in_addr)addr {
+    char buf[64] = {0};
+    const char *p = inet_ntop(AF_INET, &addr, buf, 64);
+    if (p) {
+        return [NSString stringWithUTF8String:p];
+    }
+    return nil;
+    
+}
+
+-(NSString*)resolveIP:(NSString*)host {
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int s;
+    
+    char buf[32];
+    snprintf(buf, 32, "%d", 0);
+    
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags = 0;
+    
+    s = getaddrinfo([host UTF8String], buf, &hints, &result);
+    if (s != 0) {
+        NSLog(@"get addr info error:%s", gai_strerror(s));
+        return nil;
+    }
+    NSString *ip = nil;
+    rp = result;
+    if (rp != NULL) {
+        struct sockaddr_in *addr = (struct sockaddr_in*)rp->ai_addr;
+        ip = [self IP2String:addr->sin_addr];
+    }
+    freeaddrinfo(result);
+    return ip;
 }
 
 -(void)holePunch {
@@ -61,17 +106,23 @@ enum SessionMode {
             self.natType = stype;
             self.mappedAddr = addr;
             
-            
             if (self.localNatMap == nil) {
                 self.localNatMap = [[NatPortMap alloc] init];
                 self.localNatMap.ip = self.mappedAddr.addr;
                 self.localNatMap.port = self.mappedAddr.port;
-                
-                //self.localNatMap.localIP = [self getPrimaryIP];
-                //self.localNatMap.localPort = [Config instance].voipPort;
             }
-            
         });
+    });
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        for (int i = 0; i < 10; i++) {
+            self.voipHostIP = [self resolveIP:self.voipHost];
+            if (self.voipHost.length > 0) {
+                break;
+            }
+            [NSThread sleepForTimeInterval:0.05];
+        }
+        NSLog(@"voip host:%@ ip:%@", self.voipHost, self.voipHostIP);
     });
 }
 
@@ -268,7 +319,7 @@ enum SessionMode {
             }
             
             if (self.relayIP == nil) {
-                self.relayIP = [VOIPService instance].relayIP;
+                self.relayIP = self.voipHostIP;
             }
             
             [self sendConnected];
@@ -315,7 +366,7 @@ enum SessionMode {
                 const char *str = inet_ntop(AF_INET, &addr, buff, 64);
                 self.relayIP = [NSString stringWithUTF8String:str];
             } else {
-                self.relayIP = [VOIPService instance].relayIP;
+                self.relayIP = self.voipHostIP;
             }
             
             [self.acceptTimer invalidate];

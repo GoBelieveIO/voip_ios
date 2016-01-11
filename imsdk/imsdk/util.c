@@ -21,7 +21,7 @@
 #include <sys/un.h>
 #include <errno.h>
 
-static int64_t hton64(int64_t val )
+int64_t hton64(int64_t val )
 {
     int64_t high, low;
     low = (int64_t)(val & 0x00000000FFFFFFFF);
@@ -33,7 +33,7 @@ static int64_t hton64(int64_t val )
     return (int64_t)low << 32 | high;
 }
 
-static int64_t ntoh64(int64_t val )
+int64_t ntoh64(int64_t val )
 {
     int64_t high, low;
     low = (int64_t)(val & 0x00000000FFFFFFFF);
@@ -45,40 +45,40 @@ static int64_t ntoh64(int64_t val )
     return (int64_t)low << 32 | high;
 }
 
-void voip_writeInt32(int32_t v, void *p) {
+void writeInt32(int32_t v, void *p) {
     v = htonl(v);
     memcpy(p, &v, 4);
 }
 
-int32_t voip_readInt32(const void *p) {
+int32_t readInt32(const void *p) {
     int32_t v;
     memcpy(&v, p, 4);
     return ntohl(v);
 }
 
-void voip_writeInt64(int64_t v, void *p) {
+void writeInt64(int64_t v, void *p) {
     v = hton64(v);
     memcpy(p, &v, 8);
 }
 
-int64_t voip_readInt64(const void *p) {
+int64_t readInt64(const void *p) {
     int64_t v;
     memcpy(&v, p, 8);
     return ntoh64(v);
 }
 
-void voip_writeInt16(int16_t v, void *p) {
+void writeInt16(int16_t v, void *p) {
     v = htons(v);
     memcpy(p, &v, 2);
 }
 
-int16_t voip_readInt16(const void *p) {
+int16_t readInt16(const void *p) {
     int16_t v;
     memcpy(&v, p, 2);
     return ntohs(v);
 }
 
-int voip_lookupAddr(const char *host, int port, struct sockaddr_in *addr) {
+int lookupAddr(const char *host, int port, struct sockaddr_in *addr) {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int s;
@@ -96,17 +96,16 @@ int voip_lookupAddr(const char *host, int port, struct sockaddr_in *addr) {
     if (s != 0) {
         return -1;
     }
-    
-    for (rp = result; rp != NULL; rp = rp->ai_next) {
+    if (result != NULL) {
+        rp = result;
         memcpy(addr, rp->ai_addr, rp->ai_addrlen);
-        break;
     }
     
     freeaddrinfo(result);
     return 0;
 }
 
-int voip_sock_nonblock(int fd, int set) {
+int sock_nonblock(int fd, int set) {
     int r;
     
     do
@@ -116,7 +115,7 @@ int voip_sock_nonblock(int fd, int set) {
     return r;
 }
 
-int voip_write_data(int fd, uint8_t *bytes, int len) {
+int write_data(int fd, uint8_t *bytes, int len) {
     ssize_t n = 0;
     
     do {

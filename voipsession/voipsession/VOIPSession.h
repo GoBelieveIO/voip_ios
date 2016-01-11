@@ -42,6 +42,7 @@ enum VOIPState {
 
 @property(nonatomic, assign) enum VOIPState state;
 
+@property(nonatomic, copy) NSString *voipHost;
 @property(nonatomic, copy) NSString *relayIP;
 
 @property(nonatomic, assign) int voipPort;

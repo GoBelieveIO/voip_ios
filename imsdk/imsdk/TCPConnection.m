@@ -1,64 +1,45 @@
-/*                                                                            
-  Copyright (c) 2014-2015, GoBelieve     
-    All rights reserved.		    				     			
- 
-  This source code is licensed under the BSD-style license found in the
-  LICENSE file in the root directory of this source tree. An additional grant
-  of patent rights can be found in the PATENTS file in the same directory.
-*/
+//
+//  TCPConnection.m
+//  podcasting
+//
+//  Created by houxh on 15/6/25.
+//  Copyright (c) 2015年 beetle. All rights reserved.
+//
+
+#import "TCPConnection.h"
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#import "VOIPService.h"
-#import "VOIPTCP.h"
-#import "VOIPMessage.h"
-#import "VOIPUtil.h"
-#import "VOIPReachability.h"
+#import "AsyncTCP.h"
+#import "util.h"
+#import "GOReachability.h"
 
-#define HEARTBEAT (180ull*NSEC_PER_SEC)
-
-#define HOST @"voipnode.gobelieve.io"
-#define PORT 20000
-
-@interface VOIPService()
+@interface TCPConnection()
 
 @property(atomic, copy) NSString *hostIP;
-@property(nonatomic, assign) int port;
-
 @property(atomic, assign) time_t timestmap;
-
 
 @property(nonatomic, assign)BOOL stopped;
 @property(nonatomic, assign)BOOL suspended;
 @property(nonatomic, assign)BOOL isBackground;
 
-@property(nonatomic)VOIPTCP *tcp;
+
 @property(nonatomic, strong)dispatch_source_t connectTimer;
+
 @property(nonatomic, strong)dispatch_source_t heartbeatTimer;
+@property(nonatomic)time_t pingTimestamp;
+
+
 @property(nonatomic)int connectFailCount;
-@property(nonatomic)int seq;
-@property(nonatomic)NSMutableArray *observers;
-@property(nonatomic)NSMutableData *data;
 
-@property(nonatomic)NSMutableArray *voipObservers;
+@property(nonatomic)NSMutableArray *connectionObservers;
 
-@property(nonatomic)VOIPReachability *reach;
+@property(nonatomic)GOReachability *reach;
 @property(nonatomic)BOOL reachable;
-
 @end
 
-@implementation VOIPService
-+(VOIPService*)instance {
-    static VOIPService *im;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        if (!im) {
-            im = [[VOIPService alloc] init];
-        }
-    });
-    return im;
-}
 
+@implementation TCPConnection
 -(id)init {
     self = [super init];
     if (self) {
@@ -67,32 +48,27 @@
         dispatch_source_set_event_handler(self.connectTimer, ^{
             [self connect];
         });
-
+        
         self.heartbeatTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
         dispatch_source_set_event_handler(self.heartbeatTimer, ^{
-            [self sendHeartbeat];
+            [self ping];
         });
-        self.voipObservers = [NSMutableArray array];
-        self.observers = [NSMutableArray array];
-        self.data = [NSMutableData data];
+        self.connectionObservers = [NSMutableArray array];
+
         self.connectState = STATE_UNCONNECTED;
         self.stopped = YES;
         self.suspended = YES;
         self.reachable = YES;
         self.isBackground = NO;
-        
-        self.host = HOST;
-        self.port = PORT;
     }
     return self;
 }
 
-
 -(void)startRechabilityNotifier {
-    VOIPService *wself = self;
-    self.reach = [VOIPReachability reachabilityForInternetConnection];
+    TCPConnection *wself = self;
+    self.reach = [GOReachability reachabilityForInternetConnection];
     
-    self.reach.reachableBlock = ^(VOIPReachability*reach) {
+    self.reach.reachableBlock = ^(GOReachability*reach) {
         dispatch_async(dispatch_get_main_queue(), ^{
             NSLog(@"internet reachable");
             wself.reachable = YES;
@@ -102,7 +78,7 @@
         });
     };
     
-    self.reach.unreachableBlock = ^(VOIPReachability*reach) {
+    self.reach.unreachableBlock = ^(GOReachability*reach) {
         dispatch_async(dispatch_get_main_queue(), ^{
             NSLog(@"internet unreachable");
             wself.reachable = NO;
@@ -131,7 +107,6 @@
     }
 }
 
-
 -(void)start {
     if (!self.host || !self.port) {
         NSLog(@"should init im server host and port");
@@ -157,8 +132,6 @@
     [self suspend];
 }
 
-
-
 -(void)suspend {
     if (self.suspended) {
         return;
@@ -170,6 +143,7 @@
     dispatch_suspend(self.connectTimer);
     dispatch_suspend(self.heartbeatTimer);
     
+    [self onClose];
     self.connectState = STATE_UNCONNECTED;
     [self publishConnectState:STATE_UNCONNECTED];
     [self close];
@@ -186,16 +160,26 @@
     dispatch_source_set_timer(self.connectTimer, w, DISPATCH_TIME_FOREVER, 0);
     dispatch_resume(self.connectTimer);
     
-    w = dispatch_walltime(NULL, HEARTBEAT);
-    dispatch_source_set_timer(self.heartbeatTimer, w, HEARTBEAT, HEARTBEAT/2);
+    w = dispatch_walltime(NULL, self.heartbeatHZ);
+    dispatch_source_set_timer(self.heartbeatTimer, w, self.heartbeatHZ*NSEC_PER_SEC, self.heartbeatHZ*NSEC_PER_SEC/2);
     dispatch_resume(self.heartbeatTimer);
     
     [self refreshHostIP];
 }
 
+//2s后重新连接
+-(void)reconnect2S {
+    self.connectFailCount = 2;
+    [self close];
+    [self startConnectTimer];
+    self.connectState = STATE_UNCONNECTED;
+    [self publishConnectState:STATE_UNCONNECTED];
+}
 
 -(void)close {
     if (self.tcp) {
+        NSLog(@"im service on close");
+        [self.tcp flush];
         [self.tcp close];
         self.tcp = nil;
     }
@@ -217,87 +201,18 @@
 }
 
 -(void)handleClose {
+    [self onClose];
     self.connectState = STATE_UNCONNECTED;
     [self publishConnectState:STATE_UNCONNECTED];
-    
+
     [self close];
     [self startConnectTimer];
 }
 
--(NSString*)IP2String:(struct in_addr)addr {
-    char buf[64] = {0};
-    const char *p = inet_ntop(AF_INET, &addr, buf, 64);
-    if (p) {
-        return [NSString stringWithUTF8String:p];
-    }
-    return nil;
-
-}
-
--(void)handleAuthStatus:(VOIPMessage*)msg {
-    VOIPAuthenticationStatus *status = (VOIPAuthenticationStatus*)msg.body;
-    
-    struct in_addr addr;
-    addr.s_addr = htonl(status.ip);
-    self.relayIP = [self IP2String:addr];
-    
-    NSLog(@"auth status:%d, ip:%@", status.status, self.relayIP);
-    if (status.status != 0) {
-        //失效的accesstoken,2s后重新连接
-        self.connectFailCount = 2;
-        [self close];
-        [self startConnectTimer];
-        self.connectState = STATE_UNCONNECTED;
-        [self publishConnectState:STATE_UNCONNECTED];
-    }
-}
-
--(void)handleVOIPControl:(VOIPMessage*)msg {
-    VOIPControl *ctl = (VOIPControl*)msg.body;
-    id<VOIPObserver> ob = [self.voipObservers lastObject];
-    if (ob) {
-        [ob onVOIPControl:ctl];
-    }
-}
-
-
--(void)publishConnectState:(int)state {
-    for (id<VOIPConnectObserver> ob in self.observers) {
-        [ob onConnectState:state];
-    }
-}
-
--(void)handleMessage:(VOIPMessage*)msg {
-    if (msg.cmd == MSG_AUTH_STATUS) {
-        [self handleAuthStatus:msg];
-    } else if (msg.cmd == MSG_VOIP_CONTROL) {
-        [self handleVOIPControl:msg];
-    }
-}
 
 -(BOOL)handleData:(NSData*)data {
-    [self.data appendData:data];
-    int pos = 0;
-    const uint8_t *p = [self.data bytes];
-    while (YES) {
-        if (self.data.length < pos + 4) {
-            break;
-        }
-        int len = voip_readInt32(p+pos);
-        if (self.data.length < 4 + 8 + pos + len) {
-            break;
-        }
-        NSData *tmp = [NSData dataWithBytes:p+4+pos length:len + 8];
-        VOIPMessage *msg = [[VOIPMessage alloc] init];
-        if (![msg unpack:tmp]) {
-            NSLog(@"unpack message fail");
-            return NO;
-        }
-        [self handleMessage:msg];
-        pos += 4+8+len;
-    }
-    self.data = [NSMutableData dataWithBytes:p+pos length:self.data.length - pos];
-    return YES;
+    NSAssert(NO, @"not implmented");
+    return NO;
 }
 
 -(void)onRead:(NSData*)data error:(int)err {
@@ -317,6 +232,16 @@
     }
 }
 
+-(NSString*)IP2String:(struct in_addr)addr {
+    char buf[64] = {0};
+    const char *p = inet_ntop(AF_INET, &addr, buf, 64);
+    if (p) {
+        return [NSString stringWithUTF8String:p];
+    }
+    return nil;
+    
+}
+
 -(NSString*)resolveIP:(NSString*)host {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
@@ -333,6 +258,7 @@
     
     s = getaddrinfo([host UTF8String], buf, &hints, &result);
     if (s != 0) {
+        NSLog(@"get addr info error:%s", gai_strerror(s));
         return nil;
     }
     NSString *ip = nil;
@@ -341,16 +267,16 @@
         struct sockaddr_in *addr = (struct sockaddr_in*)rp->ai_addr;
         ip = [self IP2String:addr->sin_addr];
     }
-    
     freeaddrinfo(result);
     return ip;
 }
 
 -(void)refreshHostIP {
-    NSLog(@"refresh host ip...");
+    
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0), ^{
+        NSLog(@"refresh host ip...");
         NSString *ip = [self resolveIP:self.host];
-        NSLog(@"host ip:%@", ip);
+        NSLog(@"host:%@ ip:%@", self.host, ip);
         if ([ip length] > 0) {
             self.hostIP = ip;
             self.timestmap = time(NULL);
@@ -360,16 +286,14 @@
 
 -(void)connect {
     if (self.tcp) {
-        NSLog(@"tcp already connected");
         return;
     }
     if (self.stopped) {
-        NSLog(@"im service already stopped");
+        NSLog(@"opps......");
         return;
     }
     
-    NSString *host = self.hostIP;
-    if (host.length == 0) {
+    if (self.hostIP.length == 0) {
         [self refreshHostIP];
         self.connectFailCount = self.connectFailCount + 1;
         [self startConnectTimer];
@@ -380,108 +304,87 @@
         [self refreshHostIP];
     }
     
+    self.pingTimestamp = 0;
     self.connectState = STATE_CONNECTING;
     [self publishConnectState:STATE_CONNECTING];
-    self.tcp = [[VOIPTCP alloc] init];
-    BOOL r = [self.tcp connect:self.host port:self.port cb:^(VOIPTCP *tcp, int err) {
+    self.tcp = [[AsyncTCP alloc] init];
+    __weak TCPConnection *wself = self;
+    BOOL r = [self.tcp connect:self.hostIP port:self.port cb:^(AsyncTCP *tcp, int err) {
         if (err) {
             NSLog(@"tcp connect err");
-            [self close];
-            self.connectFailCount = self.connectFailCount + 1;
+            wself.connectFailCount = wself.connectFailCount + 1;
+            [wself close];
             self.connectState = STATE_CONNECTFAIL;
             [self publishConnectState:STATE_CONNECTFAIL];
-            
             [self startConnectTimer];
             return;
         } else {
             NSLog(@"tcp connected");
-            self.connectFailCount = 0;
+            wself.connectFailCount = 0;
             self.connectState = STATE_CONNECTED;
             [self publishConnectState:STATE_CONNECTED];
-            [self sendAuth];
-            [self.tcp startRead:^(VOIPTCP *tcp, NSData *data, int err) {
-                [self onRead:data error:err];
+            [wself.tcp startRead:^(AsyncTCP *tcp, NSData *data, int err) {
+                [wself onRead:data error:err];
             }];
+            [self onConnect];
         }
     }];
     if (!r) {
         NSLog(@"tcp connect err");
-        self.tcp = nil;
-        self.connectFailCount = self.connectFailCount + 1;
+        wself.connectFailCount = wself.connectFailCount + 1;
         self.connectState = STATE_CONNECTFAIL;
         [self publishConnectState:STATE_CONNECTFAIL];
         
+        self.tcp = nil;
         [self startConnectTimer];
     }
 }
 
--(BOOL)sendMessage:(VOIPMessage *)msg {
-    if (!self.tcp || self.connectState != STATE_CONNECTED) return NO;
-    self.seq = self.seq + 1;
-    msg.seq = self.seq;
-
-    NSMutableData *data = [NSMutableData data];
-    NSData *p = [msg pack];
-    if (!p) {
-        NSLog(@"message pack error");
-        return NO;
-    }
-    char b[4];
-    voip_writeInt32((int)(p.length-8), b);
-    [data appendBytes:(void*)b length:4];
-    [data appendData:p];
-    [self.tcp write:data];
-    return YES;
+-(void)pong {
+    self.pingTimestamp = 0;
 }
 
--(void)sendHeartbeat {
-    NSLog(@"send heartbeat");
-    VOIPMessage *msg = [[VOIPMessage alloc] init];
-    msg.cmd = MSG_HEARTBEAT;
-    [self sendMessage:msg];
+-(void)sendPing {
+    NSAssert(NO, @"not implemented");
 }
 
-
--(void)sendAuth {
-    NSLog(@"send auth");
-    VOIPMessage *msg = [[VOIPMessage alloc] init];
-    msg.cmd = MSG_AUTH_TOKEN;
-    VOIPAuthenticationToken *auth = [[VOIPAuthenticationToken alloc] init];
-    auth.token = self.token;
-    auth.platformID = PLATFORM_IOS;
-    auth.deviceID = self.deviceID;
-    msg.body = auth;
-    [self sendMessage:msg];
-}
-
--(void)addMessageObserver:(id<VOIPObserver>)ob {
-    [self.observers addObject:ob];
-}
-
--(void)removeMessageObserver:(id<VOIPObserver>)ob {
-    [self.observers removeObject:ob];
-}
-
--(void)pushVOIPObserver:(id<VOIPObserver>)ob {
-    [self.voipObservers addObject:ob];
-}
-
--(void)popVOIPObserver:(id<VOIPObserver>)ob {
-    NSInteger count = [self.voipObservers count];
-    if (count == 0) {
+-(void)ping {
+    time_t now = time(NULL);
+    if (self.pingTimestamp > 0 && now - self.pingTimestamp > 60) {
+        NSLog(@"ping timeout");
+        [self handleClose];
         return;
     }
-    id<VOIPObserver> top = [self.voipObservers objectAtIndex:count-1];
-    if (top == ob) {
-        [self.voipObservers removeObject:top];
+    
+    NSLog(@"send ping");
+    [self sendPing];
+    
+    if (self.tcp != nil && self.pingTimestamp == 0) {
+        self.pingTimestamp = now;
     }
 }
 
--(BOOL)sendVOIPControl:(VOIPControl*)ctl {
-    VOIPMessage *m = [[VOIPMessage alloc] init];
-    m.cmd = MSG_VOIP_CONTROL;
-    m.body = ctl;
-    return [self sendMessage:m];
+-(void)onConnect {
+    
+}
+-(void)onClose {
+    
+}
+
+-(void)addConnectionObserver:(id<TCPConnectionObserver>)ob {
+    [self.connectionObservers addObject:ob];
+}
+-(void)removeConnectionObserver:(id<TCPConnectionObserver>)ob {
+    [self.connectionObservers removeObject:ob];
+}
+
+
+-(void)publishConnectState:(int)state {
+    for (id<TCPConnectionObserver> ob in self.connectionObservers) {
+        if ([ob respondsToSelector:@selector(onConnectState:)]) {
+            [ob onConnectState:state];
+        }
+    }
 }
 
 @end
