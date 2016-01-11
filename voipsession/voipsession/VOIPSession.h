@@ -37,6 +37,7 @@ enum VOIPState {
 
 @interface VOIPSession : NSObject<VOIPObserver>
 
++(void)setVOIPHost:(NSString*)voipHost;
 
 @property(nonatomic, weak) NSObject<VOIPSessionDelegate> *delegate;
 

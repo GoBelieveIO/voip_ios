@@ -17,6 +17,8 @@
 #define VOIP_PORT 20002
 #define STUN_SERVER  @"stun.counterpath.net"
 
+static NSString *g_voipHost = VOIP_HOST;
+
 enum SessionMode {
     SESSION_VOICE,
     SESSION_VIDEO,
@@ -44,12 +46,16 @@ enum SessionMode {
 
 @implementation VOIPSession
 
++(void)setVOIPHost:(NSString*)voipHost {
+    g_voipHost = [voipHost copy];
+}
+
 -(id)init {
     self = [super init];
     if (self) {
         self.state = VOIP_ACCEPTING;
         
-        self.voipHost = VOIP_HOST;
+        self.voipHost = g_voipHost;
         self.voipPort = VOIP_PORT;
         self.stunServer = STUN_SERVER;
     }
