@@ -136,6 +136,8 @@ class VideoRenderer;
 }
 
 @property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
+@property(nonatomic) int frameWidth;
+@property(nonatomic) int frameHeight;
 
 -(void)renderFrame:(const webrtc::VideoFrame&) video_frame render_ts:(int)time_to_render_ms;
 @end
@@ -276,9 +278,16 @@ private:
 }
 
 -(void)renderFrame:(const webrtc::VideoFrame&) frame render_ts:(int)time_to_render_ms {
+    if (frame.width() != self.frameWidth || frame.height() != self.frameHeight) {
+        NSLog(@"frame width:%d height:%d", frame.width(), frame.height());
+        self.frameWidth = frame.width();
+        self.frameHeight = frame.height();
+    }
+    
     RTCEAGLVideoView *rtcView = (__bridge RTCEAGLVideoView*)[self.render getRTCView];
 
     RTCI420Frame *f = [[RTCI420Frame alloc] initWithVideoFrame:&frame];
+
 
     [rtcView renderFrame:f];
     

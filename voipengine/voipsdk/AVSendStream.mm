@@ -315,12 +315,12 @@ public:
 
 }
 
-#define WIDTH 352
-#define HEIGHT 288
+#define WIDTH 640
+#define HEIGHT 480
 #define FPS 30
 
-#define STREAM_WIDTH 240
-#define STREAM_HEIGHT 320
+#define STREAM_WIDTH 480
+#define STREAM_HEIGHT 640
 
 -(BOOL)startCapture:(BOOL)front {
     AVCaptureDevice *device;
