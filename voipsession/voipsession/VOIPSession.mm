@@ -41,6 +41,7 @@ enum SessionMode {
 @property(nonatomic) BOOL hairpin;
 
 @property(atomic, copy) NSString *voipHostIP;
+@property(atomic) BOOL refreshing;
 
 @end
 
@@ -58,6 +59,7 @@ enum SessionMode {
         self.voipHost = g_voipHost;
         self.voipPort = VOIP_PORT;
         self.stunServer = STUN_SERVER;
+        self.refreshing = NO;
     }
     return self;
 }
@@ -101,6 +103,24 @@ enum SessionMode {
     return ip;
 }
 
+-(void)refreshHost {
+    if (self.voipHostIP.length > 0 || self.refreshing) {
+        return;
+    }
+    self.refreshing = YES;
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        for (int i = 0; i < 10; i++) {
+            self.voipHostIP = [self resolveIP:self.voipHost];
+            if (self.voipHostIP.length > 0) {
+                break;
+            }
+            [NSThread sleepForTimeInterval:0.05];
+        }
+        NSLog(@"voip host:%@ ip:%@", self.voipHost, self.voipHostIP);
+        self.refreshing = NO;
+    });
+}
+
 -(void)holePunch {
     self.natType = StunTypeUnknown;
     self.hairpin = NO;
@@ -120,16 +140,7 @@ enum SessionMode {
         });
     });
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        for (int i = 0; i < 10; i++) {
-            self.voipHostIP = [self resolveIP:self.voipHost];
-            if (self.voipHost.length > 0) {
-                break;
-            }
-            [NSThread sleepForTimeInterval:0.05];
-        }
-        NSLog(@"voip host:%@ ip:%@", self.voipHost, self.voipHostIP);
-    });
+    [self refreshHost];
 }
 
 
@@ -212,11 +223,17 @@ enum SessionMode {
     }
     
     ctl.dialCount = self.dialCount + 1;
-    BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
-    if (r) {
-        self.dialCount = self.dialCount + 1;
+    
+    if (self.voipHostIP.length > 0) {
+        BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
+        if (r) {
+            self.dialCount = self.dialCount + 1;
+        } else {
+            NSLog(@"dial fail");
+        }
     } else {
-        NSLog(@"dial fail");
+        NSLog(@"voip host ip is empty");
+        [self refreshHost];
     }
     
     time_t now = time(NULL);
