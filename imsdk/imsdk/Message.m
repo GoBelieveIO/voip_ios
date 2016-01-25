@@ -17,6 +17,10 @@
 
 @end
 
+@implementation CustomerMessage
+
+@end
+
 @implementation RoomMessage
 
 @end
@@ -24,11 +28,6 @@
 @implementation MessageInputing
 
 @end
-
-@implementation MessagePeerACK
-
-@end
-
 
 @implementation AuthenticationToken
 
@@ -93,6 +92,23 @@
         }
         memcpy(p, s, l);
         return [NSData dataWithBytes:buf length:HEAD_SIZE + 24 +l];
+    } else if (self.cmd == MSG_CUSTOMER_SERVICE) {
+        CustomerMessage *m = (CustomerMessage*)self.body;
+        writeInt64(m.customer, p);
+        p += 8;
+        writeInt64(m.sender, p);
+        p += 8;
+        writeInt64(m.receiver, p);
+        p += 8;
+        writeInt32(m.timestamp, p);
+        p += 4;
+        const char *s = [m.content UTF8String];
+        size_t l = strlen(s);
+        if ((l + 28) >= 32*1024) {
+            return nil;
+        }
+        memcpy(p, s, l);
+        return [NSData dataWithBytes:buf length:HEAD_SIZE + 28 + l];
     } else if (self.cmd == MSG_ACK) {
         writeInt32([(NSNumber*)self.body intValue], p);
         return [NSData dataWithBytes:buf length:HEAD_SIZE+4];
@@ -108,7 +124,7 @@
         writeInt64(roomID, p);
         p += 8;
         return [NSData dataWithBytes:buf length:HEAD_SIZE + 8];
-    } else if (self.cmd == MSG_ROOM_IM) {
+    } else if (self.cmd == MSG_ROOM_IM || self.cmd == MSG_RT) {
         RoomMessage *rm = (RoomMessage*)self.body;
         writeInt64(rm.sender, p);
         p += 8;
@@ -188,18 +204,22 @@
         m.content = [[NSString alloc] initWithBytes:p length:data.length-32 encoding:NSUTF8StringEncoding];
         self.body = m;
         return YES;
+    } else if (self.cmd == MSG_CUSTOMER_SERVICE) {
+        CustomerMessage *m = [[CustomerMessage alloc] init];
+        m.customer = readInt64(p);
+        p += 8;
+        m.sender = readInt64(p);
+        p += 8;
+        m.receiver = readInt64(p);
+        p += 8;
+        m.timestamp = readInt32(p);
+        p += 4;
+        m.content = [[NSString alloc] initWithBytes:p length:data.length-36 encoding:NSUTF8StringEncoding];
+        self.body = m;
+        return YES;
     } else if (self.cmd == MSG_ACK) {
         int seq = readInt32(p);
         self.body = [NSNumber numberWithInt:seq];
-        return YES;
-    } else if (self.cmd == MSG_PEER_ACK) {
-        MessagePeerACK *ack = [[MessagePeerACK alloc] init];
-        ack.sender = readInt64(p);
-        p += 8;
-        ack.receiver = readInt64(p);
-        p += 8;
-        ack.msgLocalID = readInt32(p);
-        self.body = ack;
         return YES;
     } else if (self.cmd == MSG_INPUTING) {
         MessageInputing *inputing = [[MessageInputing alloc] init];
@@ -221,7 +241,7 @@
         lp.deviceID = [[NSString alloc] initWithBytes:p length:data.length-13 encoding:NSUTF8StringEncoding];
         self.body = lp;
         return YES;
-    } else if (self.cmd == MSG_ROOM_IM) {
+    } else if (self.cmd == MSG_ROOM_IM || self.cmd == MSG_RT) {
         RoomMessage *rm = [[RoomMessage alloc] init];
         rm.sender = readInt64(p);
         p += 8;

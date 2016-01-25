@@ -26,7 +26,12 @@
 -(BOOL)handleMessageFailure:(int)msgLocalID gid:(int64_t)gid;
 
 -(BOOL)handleGroupNotification:(NSString*)notification;
+@end
 
+@protocol IMCustomerMessageHandler <NSObject>
+-(BOOL)handleMessage:(CustomerMessage*)msg;
+-(BOOL)handleMessageACK:(int)msgLocalID uid:(int64_t)uid;
+-(BOOL)handleMessageFailure:(int)msgLocalID uid:(int64_t)uid;
 @end
 
 
@@ -67,10 +72,26 @@
 
 @end
 
+@protocol RTMessageObserver <NSObject>
+
+@optional
+-(void)onRTMessage:(RTMessage*)rt;
+
+@end
+
 @protocol SystemMessageObserver <NSObject>
 @optional
 -(void)onSystemMessage:(NSString*)sm;
 
+@end
+
+@protocol CustomerMessageObserver <NSObject>
+@optional
+-(void)onCustomerMessage:(CustomerMessage*)msg;
+//服务器ack
+-(void)onCustomerMessageACK:(int)msgLocalID uid:(int64_t)uid;
+//消息发送失败
+-(void)onCustomerMessageFailure:(int)msgLocalID uid:(int64_t)uid;
 @end
 
 @protocol VOIPObserver <NSObject>
@@ -86,14 +107,19 @@
 
 @property(nonatomic, weak)id<IMPeerMessageHandler> peerMessageHandler;
 @property(nonatomic, weak)id<IMGroupMessageHandler> groupMessageHandler;
+@property(nonatomic, weak)id<IMCustomerMessageHandler> customerMessageHandler;
+
 +(IMService*)instance;
 
 -(BOOL)isPeerMessageSending:(int64_t)peer id:(int)msgLocalID;
 -(BOOL)isGroupMessageSending:(int64_t)groupID id:(int)msgLocalID;
+-(BOOL)isCustomerMessageSending:(int64_t)peer id:(int)msgLocalID;
 
 -(BOOL)sendPeerMessage:(IMMessage*)msg;
 -(BOOL)sendGroupMessage:(IMMessage*)msg;
 -(BOOL)sendRoomMessage:(RoomMessage*)msg;
+-(BOOL)sendCustomerMessage:(CustomerMessage*)im;
+-(BOOL)sendRTMessage:(RTMessage*)msg;
 
 -(void)enterRoom:(int64_t)roomID;
 -(void)leaveRoom:(int64_t)roomID;
@@ -118,6 +144,12 @@
 -(void)addSystemMessageObserver:(id<SystemMessageObserver>)ob;
 -(void)removeSystemMessageObserver:(id<SystemMessageObserver>)ob;
 
+-(void)addCustomerMessageObserver:(id<CustomerMessageObserver>)ob;
+-(void)removeCustomerMessageObserver:(id<CustomerMessageObserver>)ob;
+
+-(void)addRTMessageObserver:(id<RTMessageObserver>)ob;
+-(void)removeRTMessageObserver:(id<RTMessageObserver>)ob;
+    
 -(void)pushVOIPObserver:(id<VOIPObserver>)ob;
 -(void)popVOIPObserver:(id<VOIPObserver>)ob;
 

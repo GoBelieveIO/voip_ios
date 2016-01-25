@@ -31,6 +31,7 @@
 #define MSG_ROOM_IM 20
 #define MSG_SYSTEM 21
 #define MSG_UNREAD_COUNT 22
+#define MSG_CUSTOMER_SERVICE 23
 
 #define MSG_VOIP_CONTROL 64
 
@@ -64,23 +65,21 @@ enum VOIPCommand {
 @property(nonatomic, copy)NSString *content;
 @end
 
+@interface CustomerMessage : IMMessage
+@property(nonatomic, assign)int64_t customer;//普通用户id
+@end
+
 @interface RoomMessage : NSObject
 @property(nonatomic, assign)int64_t sender;
 @property(nonatomic, assign)int64_t receiver;
 @property(nonatomic, copy)NSString *content;
 @end
 
+typedef RoomMessage RTMessage;
 
 @interface MessageInputing : NSObject
 @property(nonatomic, assign)int64_t sender;
 @property(nonatomic, assign)int64_t receiver;
-@end
-
-
-@interface MessagePeerACK : NSObject
-@property(nonatomic, assign)int64_t sender;
-@property(nonatomic, assign)int64_t receiver;
-@property(nonatomic, assign)int32_t msgLocalID;
 @end
 
 @interface AuthenticationToken : NSObject
