@@ -33,25 +33,21 @@
 //RGB颜色
 #define RGBCOLOR(r,g,b) [UIColor colorWithRed:(r)/255.0f green:(g)/255.0f blue:(b)/255.0f alpha:1]
 
-@interface VOIPViewController ()<VOIPSessionDelegate>
-
+@interface VOIPViewController ()<VOIPSessionDelegate, RTMessageObserver>
 
 @property(nonatomic) UIButton *hangUpButton;
 @property(nonatomic) UIButton *acceptButton;
 @property(nonatomic) UIButton *refuseButton;
 
-
-
-
 @property(nonatomic) UILabel *durationLabel;
 @property(nonatomic) ReflectionView *headView;
 @property(nonatomic) NSTimer *refreshTimer;
 
+@property(nonatomic) NSTimer *pingTimer;
+
 @property(nonatomic) UInt64  conversationDuration;
 
-
 @property(nonatomic) AVAudioPlayer *player;
-
 
 @property(nonatomic) BOOL isConnected;
 
@@ -184,6 +180,7 @@
     self.voip.delegate = self;
     [self.voip holePunch];
     [[VOIPService instance] pushVOIPObserver:self.voip];
+    [[VOIPService instance] addRTMessageObserver:self];
     
     [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
         if (granted) {
@@ -212,8 +209,11 @@
 -(void)dismiss {
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
 
+    [self.pingTimer invalidate];
+    self.pingTimer = nil;
     [self dismissViewControllerAnimated:YES completion:^{
         [[VOIPService instance] popVOIPObserver:self.voip];
+        [[VOIPService instance] removeRTMessageObserver:self];
         [[VOIPService instance] stop];
     }];
 }
@@ -369,6 +369,9 @@
  *  @param voip  VOIP
  */
 -(void) makeDialing:(VOIPSession*)voip{
+    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(ping) userInfo:nil repeats:YES];
+    [self.pingTimer fire];
+    
     [self dial];
     [self playDialOut];
 }
@@ -404,6 +407,30 @@
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
 }
 
+-(void)ping {
+    RTMessage *rt = [[RTMessage alloc] init];
+    rt.sender = self.currentUID;
+    rt.receiver = self.peerUID;
+    //自定义格式
+    rt.content = @"ping";
+    [[VOIPService instance] sendRTMessage:rt];
+}
+
+-(void)onRTMessage:(RTMessage *)rt {
+    if (rt.sender == self.peerUID) {
+        if ([rt.content isEqualToString:@"pong"]) {
+            NSLog(@"对方在线");
+            [self.pingTimer invalidate];
+            self.pingTimer = nil;
+        } else if ([rt.content isEqualToString:@"ping"]) {
+            RTMessage *rt = [[RTMessage alloc] init];
+            rt.sender = self.currentUID;
+            rt.receiver = self.peerUID;
+            rt.content = @"pong";
+            [[VOIPService instance] sendRTMessage:rt];
+        }
+    }
+}
 #pragma mark - VOIPStateDelegate
 -(void)onRefuse {
     [self.player stop];
