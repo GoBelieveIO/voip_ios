@@ -101,85 +101,6 @@ const char kCodecParamMaxBitrate[] = "x-google-max-bitrate";
 
 static const int kNackHistoryMs = 1000;
 
-@interface AudioSendStream()
-@property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
-@end
-
-@implementation AudioSendStream
-
-- (void)dealloc
-{
-    NSAssert(self.voiceChannelTransport == NULL, @"");
-    NSLog(@"audio send stream dealloc");
-}
-
-
-- (void)startSend
-{
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    rtc.voe_base->StartSend(self.voiceChannel);
-}
-
-- (void)startReceive
-{
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    rtc.voe_base->StartReceive(self.voiceChannel);
-}
-
--(void)setSendVoiceCodec {
-    int error;
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    rtc.voe_codec->NumOfCodecs();
-    webrtc::CodecInst audio_codec;
-    memset(&audio_codec, 0, sizeof(webrtc::CodecInst));
-    for (int codec_idx = 0; codec_idx < rtc.voe_codec->NumOfCodecs(); codec_idx++) {
-        error = rtc.voe_codec->GetCodec(codec_idx, audio_codec);
-        
-        if (strcmp(audio_codec.plname, DEFAULT_AUDIO_CODEC) == 0) {
-            break;
-        }
-    }
-    
-    error = rtc.voe_codec->SetSendCodec(self.voiceChannel, audio_codec);
-    NSLog(@"codec:%s", audio_codec.plname);
-}
-
--(BOOL) start
-{
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    
-    self.voiceChannel = rtc.voe_base->CreateChannel();
-    //register external transport
-    self.voiceChannelTransport = new VoiceChannelTransport(rtc.voe_network,
-                                                           self.voiceChannel,
-                                                           self.voiceTransport, YES);
-
-    [self setSendVoiceCodec];
-
-
-    [self startSend];
-    [self startReceive];
-    
-    return YES;
-}
-
--(BOOL)stop {
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-
-    //deregister external transport
-    delete self.voiceChannelTransport;
-    self.voiceChannelTransport = NULL;
-    
-    rtc.voe_base->StopReceive(self.voiceChannel);
-    rtc.voe_base->StopSend(self.voiceChannel);
-    rtc.voe_base->DeleteChannel(self.voiceChannel);
-    
-
-    return YES;
-}
-
-@end
-
 struct VideoFormat {
     int width;  // Number of pixels.
     int height;  // Number of pixels.
@@ -223,7 +144,8 @@ class VideoCaptureDataCallback;
     webrtc::VideoEncoder *encoder_;
     
 }
-@property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
+
+@property(assign, nonatomic) VoiceChannelTransport *voiceChannelTransport;
 @property(nonatomic, getter=isFrontCamera) BOOL frontCamera;
 
 -(void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame;
@@ -249,7 +171,7 @@ public:
 
 
 @implementation AVSendStream
--(id)init {
+- (id)init {
     self = [super init];
     if (self) {
         factory_ =new WebRtcVcmFactory();
@@ -262,16 +184,16 @@ public:
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     delete cb_;
     delete factory_;
 }
 
--(void)setCall:(void*)call {
+- (void)setCall:(void*)call {
     call_ = (webrtc::Call*)call;
 }
 
--(void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame {
+- (void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame {
     
     ++captured_frames_;
     // Log the size and pixel aspect ratio of the first captured frame.
@@ -322,7 +244,7 @@ public:
 #define STREAM_WIDTH 480
 #define STREAM_HEIGHT 640
 
--(BOOL)startCapture:(BOOL)front {
+- (BOOL)startCapture:(BOOL)front {
     AVCaptureDevice *device;
     for (AVCaptureDevice *captureDevice in [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] ) {
         if (front && captureDevice.position == AVCaptureDevicePositionFront) {
@@ -413,7 +335,7 @@ public:
     return YES;
 }
 
--(BOOL) start {
+- (BOOL)start {
     captured_frames_ = 0;
 
     [self startCapture:self.isFrontCamera];
@@ -426,7 +348,7 @@ public:
 }
 
 
--(void)setSendVoiceCodec {
+- (void)setSendVoiceCodec {
     int error;
     WebRTC *rtc = [WebRTC sharedWebRTC];
     rtc.voe_codec->NumOfCodecs();
@@ -445,7 +367,7 @@ public:
 }
 
 
--(void)startAudioStream {
+- (void)startAudioStream {
     WebRTC *rtc = [WebRTC sharedWebRTC];
     
     self.voiceChannel = rtc.voe_base->CreateChannel();
@@ -460,7 +382,7 @@ public:
     rtc.voe_base->StartSend(self.voiceChannel);
 }
 
--(std::vector<webrtc::VideoStream>) CreateVideoStreams {
+- (std::vector<webrtc::VideoStream>) CreateVideoStreams {
     int max_bitrate_bps = kMaxVideoBitrate * 1000;
     
     webrtc::VideoStream stream;
@@ -479,7 +401,7 @@ public:
 }
 
 
--(webrtc::VideoEncoderConfig)CreateVideoEncoderConfig {
+- (webrtc::VideoEncoderConfig)CreateVideoEncoderConfig {
     webrtc::VideoEncoderConfig encoder_config;
 
     encoder_config.min_transmit_bitrate_bps = 0;
@@ -489,7 +411,7 @@ public:
     return encoder_config;
 }
 
--(void*) ConfigureVideoEncoderSettings:(webrtc::VideoCodecType) type {
+- (void*)ConfigureVideoEncoderSettings:(webrtc::VideoCodecType)type {
     if (type == webrtc::kVideoCodecVP8) {
         encoder_settings_.vp8 = webrtc::VideoEncoder::GetDefaultVp8Settings();
         encoder_settings_.vp8.automaticResizeOn = true;
@@ -507,7 +429,7 @@ public:
 }
 
 
--(void)startSendStream {
+- (void)startSendStream {
     NSLog(@"support h264:%d", webrtc::H264Encoder::IsSupported());
     
     struct webrtc::VideoEncoderConfig encoder_config = [self CreateVideoEncoderConfig];
@@ -555,7 +477,7 @@ public:
 }
 
 
--(BOOL) stop {
+- (BOOL)stop {
     if (stream_ == NULL) {
         return YES;
     }

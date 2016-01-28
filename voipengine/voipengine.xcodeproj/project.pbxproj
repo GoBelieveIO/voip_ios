@@ -26,6 +26,8 @@
 		6D0331A31AAB74DD004AA39F /* AVSendStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D03319D1AAB74DD004AA39F /* AVSendStream.mm */; };
 		6D0331A41AAB74DD004AA39F /* WebRTC.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D0331A11AAB74DD004AA39F /* WebRTC.mm */; };
 		6D0331A61AAB7529004AA39F /* libwebrtc_all.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D0331A51AAB7529004AA39F /* libwebrtc_all.a */; };
+		6D2AC1BE1C5A1FF9009DACD5 /* AudioSendStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D2AC1BD1C5A1FF9009DACD5 /* AudioSendStream.mm */; };
+		6D2AC1C11C5A2012009DACD5 /* AudioReceiveStream.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D2AC1C01C5A2012009DACD5 /* AudioReceiveStream.mm */; };
 		6D401BB21AAC2B470041ABC6 /* VOIPEngine.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */; };
 		6D401BB51AAC2DD80041ABC6 /* util.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D401BB31AAC2DD80041ABC6 /* util.c */; };
 		6D401BC21AAC2F110041ABC6 /* VOIPEngine.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */; };
@@ -74,6 +76,10 @@
 		6D0331A01AAB74DD004AA39F /* WebRTC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebRTC.h; sourceTree = "<group>"; };
 		6D0331A11AAB74DD004AA39F /* WebRTC.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = WebRTC.mm; sourceTree = "<group>"; };
 		6D0331A51AAB7529004AA39F /* libwebrtc_all.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwebrtc_all.a; sourceTree = "<group>"; };
+		6D2AC1BC1C5A1FF9009DACD5 /* AudioSendStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioSendStream.h; sourceTree = "<group>"; };
+		6D2AC1BD1C5A1FF9009DACD5 /* AudioSendStream.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioSendStream.mm; sourceTree = "<group>"; };
+		6D2AC1BF1C5A2012009DACD5 /* AudioReceiveStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AudioReceiveStream.h; sourceTree = "<group>"; };
+		6D2AC1C01C5A2012009DACD5 /* AudioReceiveStream.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioReceiveStream.mm; sourceTree = "<group>"; };
 		6D401BB01AAC2B470041ABC6 /* VOIPEngine.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPEngine.h; sourceTree = "<group>"; };
 		6D401BB11AAC2B470041ABC6 /* VOIPEngine.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VOIPEngine.mm; sourceTree = "<group>"; };
 		6D401BB31AAC2DD80041ABC6 /* util.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = util.c; sourceTree = "<group>"; };
@@ -154,6 +160,10 @@
 				6D0331A11AAB74DD004AA39F /* WebRTC.mm */,
 				6DF6F7951B9454C400774961 /* VOIPRenderView.h */,
 				6DF6F7961B9454C400774961 /* VOIPRenderView.m */,
+				6D2AC1BC1C5A1FF9009DACD5 /* AudioSendStream.h */,
+				6D2AC1BD1C5A1FF9009DACD5 /* AudioSendStream.mm */,
+				6D2AC1BF1C5A2012009DACD5 /* AudioReceiveStream.h */,
+				6D2AC1C01C5A2012009DACD5 /* AudioReceiveStream.mm */,
 			);
 			path = voipsdk;
 			sourceTree = "<group>";
@@ -283,7 +293,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D401BB51AAC2DD80041ABC6 /* util.c in Sources */,
+				6D2AC1C11C5A2012009DACD5 /* AudioReceiveStream.mm in Sources */,
 				6D0331A41AAB74DD004AA39F /* WebRTC.mm in Sources */,
+				6D2AC1BE1C5A1FF9009DACD5 /* AudioSendStream.mm in Sources */,
 				6DF6F79F1B98623600774961 /* RTCOpenGLVideoRenderer.mm in Sources */,
 				6DF6F79E1B98623600774961 /* RTCI420Frame.mm in Sources */,
 				6D401BB21AAC2B470041ABC6 /* VOIPEngine.mm in Sources */,

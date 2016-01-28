@@ -72,60 +72,6 @@ const int kDefaultRtxVp8PlType = 96;
 static const int kNackHistoryMs = 1000;
 
 
-@interface AudioReceiveStream()
-@property(assign, nonatomic)VoiceChannelTransport *voiceChannelTransport;
-@end
-
-@implementation AudioReceiveStream
-
-
-- (void)dealloc {
-    delete self.voiceChannelTransport;
-    self.voiceChannelTransport = NULL;
-    NSLog(@"audio receive stream dealloc");
-}
-
-
-- (void)startReceive
-{
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    rtc.voe_base->StartReceive(self.voiceChannel);
-    
-}
-
--(BOOL)start
-{
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    
-    self.voiceChannel = rtc.voe_base->CreateChannel();
-    
-    //register external transport
-    self.voiceChannelTransport = new VoiceChannelTransport(rtc.voe_network, self.voiceChannel, self.voiceTransport, NO);
-    
-
-    [self startReceive];
-    rtc.voe_base->StartPlayout(self.voiceChannel);
-
-    return YES;
-}
-
-- (BOOL)stop {
-    WebRTC *rtc = [WebRTC sharedWebRTC];
-    
-    //deregister external transport
-    delete self.voiceChannelTransport;
-    self.voiceChannelTransport = NULL;
-    
-    rtc.voe_base->StopReceive(self.voiceChannel);
-    rtc.voe_base->StopSend(self.voiceChannel);
-    rtc.voe_base->StopPlayout(self.voiceChannel);
-    rtc.voe_base->DeleteChannel(self.voiceChannel);
-    
-    return YES;
-}
-
-@end
-
 class VideoRenderer;
 @interface AVReceiveStream() {
     webrtc::Call *call_;
@@ -165,7 +111,7 @@ private:
 
 @implementation AVReceiveStream
 
--(id)init {
+- (id)init {
     self = [super init];
     if (self) {
         renderer_ = new VideoRenderer(self);
@@ -174,15 +120,15 @@ private:
     return self;
 }
 
--(void)dealloc {
+- (void)dealloc {
     delete renderer_;
 }
 
--(void)setCall:(void*)call {
+- (void)setCall:(void*)call {
     call_ = (webrtc::Call*)call;
 }
 
--(BOOL)start {
+- (BOOL)start {
     webrtc::VideoReceiveStream::Config config;
 
     webrtc::VideoCodecType type;
@@ -238,7 +184,7 @@ private:
     return YES;
 }
 
--(void)startAudioStream {
+- (void)startAudioStream {
     WebRTC *rtc = [WebRTC sharedWebRTC];
     
     self.voiceChannel = rtc.voe_base->CreateChannel();
@@ -252,7 +198,7 @@ private:
     rtc.voe_base->StartPlayout(self.voiceChannel);
 }
 
--(BOOL)stop {
+- (BOOL)stop {
     if (stream_ == NULL) {
         return NO;
     }
@@ -277,7 +223,7 @@ private:
     return YES;
 }
 
--(void)renderFrame:(const webrtc::VideoFrame&) frame render_ts:(int)time_to_render_ms {
+- (void)renderFrame:(const webrtc::VideoFrame&) frame render_ts:(int)time_to_render_ms {
     if (frame.width() != self.frameWidth || frame.height() != self.frameHeight) {
         NSLog(@"frame width:%d height:%d", frame.width(), frame.height());
         self.frameWidth = frame.width();

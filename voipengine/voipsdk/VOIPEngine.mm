@@ -13,6 +13,9 @@
 #import "VOIPEngine.h"
 #import "AVSendStream.h"
 #import "AVReceiveStream.h"
+#import "AudioSendStream.h"
+#import "AudioReceiveStream.h"
+
 #import "util.h"
 #import "WebRTC.h"
 #include "webrtc/voice_engine/include/voe_network.h"

@@ -10,17 +10,6 @@
 #import <UIKit/UIKit.h>
 #import "AVTransport.h"
 
-@interface AudioReceiveStream : NSObject
-@property (weak, nonatomic) id<VoiceTransport> voiceTransport;
-@property(assign, nonatomic)int voiceChannel;
-
-@property (assign, nonatomic) BOOL isHeadphone;
-@property (assign, nonatomic) BOOL isLoudspeaker;
-
-
--(BOOL)start;
--(BOOL)stop;
-@end
 
 @class VOIPRenderView;
 
