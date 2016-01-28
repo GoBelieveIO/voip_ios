@@ -9,7 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface VOIPRenderView : UIView
-
-
 -(void*)getRTCView;
 @end

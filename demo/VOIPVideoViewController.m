@@ -13,12 +13,14 @@
 #import <UIKit/UIKit.h>
 #import <voipengine/VOIPEngine.h>
 #import <voipengine/VOIPRenderView.h>
+#import <voipengine/VOIPCapture.h>
 #import <voipsession/VOIPSession.h>
 
 
 @interface VOIPVideoViewController ()
 @property(nonatomic) VOIPRenderView *remoteRender;
 @property(nonatomic) VOIPRenderView *localRender;
+@property(nonatomic) VOIPCapture *voipCapture;
 @end
 
 @implementation VOIPVideoViewController
@@ -46,6 +48,13 @@
     self.localRender.hidden = YES;
     self.remoteRender.hidden = YES;
     
+    
+    self.voipCapture = [[VOIPCapture alloc] init];
+    self.voipCapture.render = self.remoteRender;
+    self.remoteRender.hidden = NO;
+
+    [self.voipCapture startCapture];
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -67,7 +76,11 @@
     // Pass the selected object to the new view controller.
 }
 */
-
+-(void)dismiss {
+    [super dismiss];
+    [self.voipCapture stopCapture];
+    self.voipCapture = nil;
+}
 
 - (void)dial {
     [self.voip dialVideo];
@@ -93,6 +106,9 @@
     } else {
         NSLog(@"start stream");
     }
+    
+    [self.voipCapture stopCapture];
+    self.voipCapture = nil;
     
     if (self.engine != nil) {
         return;

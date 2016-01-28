@@ -6,6 +6,8 @@
  LICENSE file in the root directory of this source tree. An additional grant
  of patent rights can be found in the PATENTS file in the same directory.
  */
+#import <AVFoundation/AVCaptureDevice.h>
+#import <AVFoundation/AVMediaFormat.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -15,15 +17,20 @@
 #import "AVReceiveStream.h"
 #import "AudioSendStream.h"
 #import "AudioReceiveStream.h"
-
 #import "util.h"
 #import "WebRTC.h"
+#include "webrtc/modules/video_capture/include/video_capture_factory.h"
+#include "webrtc/modules/video_capture/include/video_capture.h"
 #include "webrtc/voice_engine/include/voe_network.h"
 #include "webrtc/voice_engine/include/voe_audio_processing.h"
 #include "webrtc/voice_engine/include/voe_hardware.h"
+#import "VOIPRenderView.h"
+#import "RTCI420Frame+Internal.h"
+#import "RTCI420Frame.h"
+#import "RTCEAGLVideoView.h"
+#import "VOIPCapture.h"
 
 #include "webrtc/call.h"
-
 #include <pthread.h>
 //兼容没有消息头的旧版本协议
 #define COMPATIBLE
@@ -49,6 +56,8 @@ const int kStartBandwidthBps = 300000;
 const int kMaxBandwidthBps = 2000000;
 
 
+
+
 @interface VOIPData : NSObject
 @property(nonatomic, assign)int64_t sender;
 @property(nonatomic, assign)int64_t receiver;
@@ -61,10 +70,11 @@ const int kMaxBandwidthBps = 2000000;
 
 @end
 
-
 class AVEngine;
 
-@interface VOIPEngine()<VoiceTransport> {
+@interface VOIPEngine()<VoiceTransport, VOIPCaptureDelegate> {
+    int captured_frames_;
+    
     webrtc::Call *call_;
     AVEngine *engine_;
     pthread_t thread_;
@@ -75,6 +85,8 @@ class AVEngine;
 }
 @property(nonatomic) NSDate *beginDate;
 @property(nonatomic) BOOL isPeerConnected;
+
+@property(nonatomic) VOIPCapture *capture;
 
 @property(strong, nonatomic) AudioSendStream *audioSendStream;
 @property(strong, nonatomic) AudioReceiveStream *audioRecvStream;
@@ -90,12 +102,13 @@ class AVEngine;
 @property(nonatomic, getter=isAuth) BOOL auth;
 @property(nonatomic) BOOL isPeerNoHeader;
 
--(BOOL)sendVideoRTP:(const void*)data length:(size_t)len;
 
--(BOOL)sendVideoRTCP:(const void*)data length:(size_t)len;
+- (BOOL)sendVideoRTP:(const void*)data length:(size_t)len;
 
--(void)recvLoop;
--(void)deliverLoop;
+- (BOOL)sendVideoRTCP:(const void*)data length:(size_t)len;
+
+- (void)recvLoop;
+- (void)deliverLoop;
 @end
 
 
@@ -151,7 +164,7 @@ private:
         pthread_mutex_init(&mutex_, &attr);
         pthread_cond_init(&cond_, NULL);
 
-
+        self.frontCamera = YES;
     }
     return self;
 }
@@ -427,9 +440,11 @@ private:
         [self.recvStream start];
         
     } else {
+        captured_frames_ = 0;
+        [self startCapture:self.isFrontCamera];
+        
         self.sendStream = [[AVSendStream alloc] init];
         self.sendStream.voiceTransport = self;
-        self.sendStream.render = self.localRender;
         self.sendStream.call = call_;
         
         //caller(1:3)
@@ -516,10 +531,13 @@ private:
 }
 
 -(void)stopAVStream {
+    [self stopCapture];
+    
     [self.sendStream stop];
     [self.recvStream stop];
     self.sendStream = NULL;
     self.recvStream = NULL;
+
     
     delete call_;
     call_ = NULL;
@@ -546,8 +564,42 @@ private:
     [self.packets removeAllObjects];
 }
 
+-(void)onIncomingCapturedFrame:(void*)pframe {
+    webrtc::VideoFrame *frame = (webrtc::VideoFrame*)pframe;
+    ++captured_frames_;
+    // Log the size and pixel aspect ratio of the first captured frame.
+    if (1 == captured_frames_) {
+        NSLog(@"frame width:%d heigth:%d rotation:%d", frame->width(), frame->height(), frame->rotation());
+    }
+    
+    //2帧取1帧
+    if (captured_frames_%2 == 0) {
+        [self.sendStream OnIncomingCapturedFrame:0 frame:frame];
+    }
+}
+
+- (BOOL)startCapture:(BOOL)front {
+    if (self.capture != nil) {
+        NSLog(@"can't start capture, module is't null");
+        return NO;
+    }
+    
+    self.capture = [[VOIPCapture alloc] init];
+    self.capture.frontCamera = self.isFrontCamera;
+    self.capture.delegate = self;
+    self.capture.render = self.localRender;
+    return [self.capture startCapture];
+}
+
+- (void)stopCapture {
+    [self.capture stopCapture];
+    self.capture = nil;
+}
+
 -(void)switchCamera {
-    [self.sendStream switchCamera];
+    self.frontCamera = !self.isFrontCamera;
+    [self stopCapture];
+    [self startCapture:self.isFrontCamera];
 }
 
 -(void)closeUDP {

@@ -21,12 +21,10 @@
 //当前用户是否是主动呼叫方
 @property(nonatomic) BOOL isCaller;
 
-
 @property(nonatomic) VOIPEngine *engine;
 @property(nonatomic) VOIPSession *voip;
 
-
 -(BOOL)isP2P;
 -(int)SetLoudspeakerStatus:(BOOL)enable;
-
+-(void)dismiss;
 @end

@@ -16,9 +16,7 @@
 @property(nonatomic, copy) NSString *relayIP;
 @property(nonatomic, copy) NSString *token;
 
-
 @property(nonatomic)int64_t caller;
-
 @property(nonatomic)int64_t callee;
 @property(nonatomic)int32_t calleeIP;
 @property(nonatomic)int calleePort;
@@ -26,6 +24,7 @@
 @property(nonatomic)BOOL isCaller;
 
 @property(nonatomic)BOOL videoEnabled;
+@property(nonatomic, getter=isFrontCamera) BOOL frontCamera;
 
 @property(nonatomic)VOIPRenderView *localRender;
 @property(nonatomic)VOIPRenderView *remoteRender;
@@ -33,4 +32,6 @@
 -(void)switchCamera;
 -(void)startStream;
 -(void)stopStream;
+
+
 @end

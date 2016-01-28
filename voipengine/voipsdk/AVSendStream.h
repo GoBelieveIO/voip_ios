@@ -13,9 +13,13 @@
 
 @class VOIPRenderView;
 
+namespace webrtc {
+    class VideoFrame;
+}
+
 @interface AVSendStream : NSObject {
 }
-@property(weak, nonatomic) VOIPRenderView *render;
+
 @property(weak, nonatomic) id<VoiceTransport> voiceTransport;
 @property(assign, nonatomic) int voiceChannel;
 
@@ -24,9 +28,9 @@
 
 @property(nonatomic) int32_t rtxSSRC;
 
+- (void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame ;
 -(void)setCall:(void*)call;
 -(void)sendKeyFrame;
--(void)switchCamera;
 -(BOOL)start;
 -(BOOL)stop;
 @end

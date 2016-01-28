@@ -10,21 +10,10 @@
 #import <AVFoundation/AVCaptureDevice.h>
 #import <AVFoundation/AVMediaFormat.h>
 
+#include <string>
 #include "webrtc/common_types.h"
 
 #include "webrtc/modules/video_capture/include/video_capture_factory.h"
-#include "webrtc/base/thread.h"
-#include "webrtc/base/scoped_ptr.h"
-#include "webrtc/base/asyncinvoker.h"
-#include "webrtc/base/messagehandler.h"
-#include "webrtc/base/bind.h"
-#include "webrtc/base/helpers.h"
-#include "webrtc/base/checks.h"
-#include "webrtc/base/criticalsection.h"
-#include "webrtc/base/logging.h"
-#include "webrtc/base/safe_conversions.h"
-#include "webrtc/base/thread.h"
-#include "webrtc/base/timeutils.h"
 #include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
 #include "webrtc/modules/video_capture/include/video_capture.h"
 #include "webrtc/video/audio_receive_stream.h"
@@ -33,7 +22,6 @@
 #include "webrtc/video_engine/vie_channel_group.h"
 #include "webrtc/modules/utility/interface/process_thread.h"
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
-
 
 #include "webrtc/voice_engine/include/voe_network.h"
 #include "webrtc/voice_engine/include/voe_base.h"
@@ -46,19 +34,16 @@
 #include "webrtc/voice_engine/include/voe_rtp_rtcp.h"
 #include "webrtc/voice_engine/include/voe_hardware.h"
 
-
-
 #include "webrtc/engine_configurations.h"
 #include "webrtc/modules/video_render/include/video_render_defines.h"
 #include "webrtc/modules/video_render/include/video_render.h"
 #include "webrtc/modules/video_capture/include/video_capture_factory.h"
 #include "webrtc/system_wrappers/interface/tick_util.h"
 #include "webrtc/video_engine/vie_encoder.h"
-#include <string>
-#import "WebRTC.h"
-//#include "channel_transport.h"
+
 #include "ChannelTransport.h"
 
+#import "WebRTC.h"
 #import "VOIPRenderView.h"
 #import "RTCI420Frame+Internal.h"
 #import "RTCI420Frame.h"
@@ -101,40 +86,15 @@ const char kCodecParamMaxBitrate[] = "x-google-max-bitrate";
 
 static const int kNackHistoryMs = 1000;
 
-struct VideoFormat {
-    int width;  // Number of pixels.
-    int height;  // Number of pixels.
-    int64_t interval;  // Nanoseconds.
-    uint32_t fourcc;  // Color space. FOURCC_ANY means that any color space is OK.
-};
-
-class WebRtcVcmFactory {
-public:
-    virtual webrtc::VideoCaptureModule* Create(int id, const char* device) {
-        return webrtc::VideoCaptureFactory::Create(id, device);
-    }
-    virtual webrtc::VideoCaptureModule::DeviceInfo* CreateDeviceInfo(int id) {
-        return webrtc::VideoCaptureFactory::CreateDeviceInfo(id);
-    }
-    virtual void DestroyDeviceInfo(webrtc::VideoCaptureModule::DeviceInfo* info) {
-        delete info;
-    }
-};
-
-#define ARRAY_SIZE(x) (static_cast<int>(sizeof(x) / sizeof(x[0])))
+#define STREAM_WIDTH 480
+#define STREAM_HEIGHT 640
 
 union VideoEncoderSettings {
     webrtc::VideoCodecVP8 vp8;
     webrtc::VideoCodecVP9 vp9;
 };
 
-class VideoCaptureDataCallback;
 @interface AVSendStream() {
-    WebRtcVcmFactory *factory_;
-    webrtc::VideoCaptureModule* module_;
-    
-    VideoCaptureDataCallback *cb_;
-    int captured_frames_;
     std::vector<uint8_t> capture_buffer_;
     
     webrtc::Call *call_;
@@ -146,47 +106,24 @@ class VideoCaptureDataCallback;
 }
 
 @property(assign, nonatomic) VoiceChannelTransport *voiceChannelTransport;
-@property(nonatomic, getter=isFrontCamera) BOOL frontCamera;
 
 -(void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame;
 @end
 
-
-class VideoCaptureDataCallback:public webrtc::VideoCaptureDataCallback {
-public:
-    // Callback when a frame is captured by camera.
-    virtual void OnIncomingCapturedFrame(const int32_t id,
-                                         const webrtc::VideoFrame& frame) {
-        [sendStream OnIncomingCapturedFrame:id frame:&frame];
-    }
-    virtual void OnCaptureDelayChanged(const int32_t id,
-                                       const int32_t delay) {
-        
-    }
-    
-    __weak AVSendStream *sendStream;
-    
-    VideoCaptureDataCallback(AVSendStream *s):sendStream(s) {}
-};
 
 
 @implementation AVSendStream
 - (id)init {
     self = [super init];
     if (self) {
-        factory_ =new WebRtcVcmFactory();
-
-        cb_ = new VideoCaptureDataCallback(self);
-        
-        self.frontCamera = YES;
+ 
         
     }
     return self;
 }
 
 - (void)dealloc {
-    delete cb_;
-    delete factory_;
+
 }
 
 - (void)setCall:(void*)call {
@@ -194,26 +131,9 @@ public:
 }
 
 - (void)OnIncomingCapturedFrame:(int32_t)id frame:(const webrtc::VideoFrame*)frame {
-    
-    ++captured_frames_;
-    // Log the size and pixel aspect ratio of the first captured frame.
-    if (1 == captured_frames_) {
-        NSLog(@"frame width:%d heigth:%d rotation:%d", frame->width(), frame->height(), frame->rotation());
-    }
-
-    //2帧取1帧
-    if (stream_ && captured_frames_%2 == 0) {
+    if (stream_) {
         webrtc::VideoCaptureInput *input = stream_->Input();
         input->IncomingCapturedFrame(*frame);
-    }
-    
-    if (self.render) {
-        
-        RTCEAGLVideoView *rtcView = (__bridge RTCEAGLVideoView*)[self.render getRTCView];
-        
-        RTCI420Frame *f = [[RTCI420Frame alloc] initWithVideoFrame:frame];
-        
-        [rtcView renderFrame:f];
     }
 }
 
@@ -223,127 +143,9 @@ public:
     }
 }
 
-
--(void)switchCamera {
-    module_->DeRegisterCaptureDataCallback();
-    module_->StopCapture();
-    
-    module_->Release();
-    module_ = NULL;
-    
-
-    self.frontCamera = !self.isFrontCamera;
-    [self startCapture:self.isFrontCamera];
-
-}
-
-#define WIDTH 640
-#define HEIGHT 480
-#define FPS 30
-
-#define STREAM_WIDTH 480
-#define STREAM_HEIGHT 640
-
-- (BOOL)startCapture:(BOOL)front {
-    AVCaptureDevice *device;
-    for (AVCaptureDevice *captureDevice in [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo] ) {
-        if (front && captureDevice.position == AVCaptureDevicePositionFront) {
-            device = captureDevice;
-            break;
-        } else if (!front && captureDevice.position == AVCaptureDevicePositionBack) {
-            device = captureDevice;
-            break;
-        }
-    }
-    NSLog(@"device:%@ %@", device.uniqueID, device.localizedName);
-    
-    const char *device_name = [device.localizedName UTF8String];
-    
-    webrtc::VideoCaptureModule::DeviceInfo* info = factory_->CreateDeviceInfo(0);
-    if (!info) {
-        return NO;
-    }
-    
-    int num_cams = info->NumberOfDevices();
-    char vcm_id[256] = "";
-    bool found = false;
-    for (int index = 0; index < num_cams; ++index) {
-        char vcm_name[256] = {0};
-        if (info->GetDeviceName(index, vcm_name, ARRAY_SIZE(vcm_name),
-                                vcm_id, ARRAY_SIZE(vcm_id)) != -1) {
-            
-            NSLog(@"vcm name:%s", vcm_name);
-            if (strcmp(vcm_name, device_name) == 0) {
-                found = true;
-                break;
-            }
-        }
-    }
-    
-    if (!found) {
-        NSLog(@"Failed to find capturer for name:%s", device_name);
-        factory_->DestroyDeviceInfo(info);
-        return NO;
-    }
-    
-    webrtc::VideoCaptureCapability best_cap;
-    best_cap.width = WIDTH;
-    best_cap.height = HEIGHT;
-    best_cap.maxFPS = FPS;
-    best_cap.rawType = webrtc::kVideoNV12;
-    
-    int best_diff = INT_MAX;
-    
-    int32_t num_caps = info->NumberOfCapabilities(vcm_id);
-    for (int32_t i = 0; i < num_caps; ++i) {
-        webrtc::VideoCaptureCapability cap;
-        if (info->GetCapability(vcm_id, i, cap) != -1) {
-            NSLog(@"cap width:%d height:%d raw type:%d max fps:%d", cap.width, cap.height, cap.rawType, cap.maxFPS);
-        }
-        
-        int area = cap.width*cap.height;
-        int diff = abs(area - WIDTH*HEIGHT);
-        
-        if (diff < best_diff) {
-            best_cap = cap;
-            best_diff = diff;
-        }
-    }
-    
-    NSLog(@"best cap width:%d height:%d raw type:%d max fps:%d",
-          best_cap.width, best_cap.height, best_cap.rawType, best_cap.maxFPS);
-    
-    factory_->DestroyDeviceInfo(info);
-    
-    
-    module_ = factory_->Create(0, vcm_id);
-    if (!module_) {
-        NSLog(@"Failed to create capturer for name:%s ", device_name);
-        return NO;
-    }
-    
-    // It is safe to change member attributes now.
-    module_->AddRef();
-
-    
-    module_->RegisterCaptureDataCallback(*cb_);
-    if (module_->StartCapture(best_cap) != 0) {
-        module_->DeRegisterCaptureDataCallback();
-        return NO;
-    }
-    
-    return YES;
-}
-
 - (BOOL)start {
-    captured_frames_ = 0;
-
-    [self startCapture:self.isFrontCamera];
-    
     [self startSendStream];
-    
     [self startAudioStream];
-    
     return YES;
 }
 
@@ -481,12 +283,6 @@ public:
     if (stream_ == NULL) {
         return YES;
     }
-    
-    module_->DeRegisterCaptureDataCallback();
-    module_->StopCapture();
-    
-    module_->Release();
-    module_ = NULL;
 
     stream_->Stop();
     call_->DestroyVideoSendStream(stream_);
