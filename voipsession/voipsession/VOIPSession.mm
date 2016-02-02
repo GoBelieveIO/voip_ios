@@ -214,15 +214,20 @@ enum SessionMode {
     VOIPControl *ctl = [[VOIPControl alloc] init];
     ctl.sender = self.currentUID;
     ctl.receiver = self.peerUID;
+    
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+
     if (self.mode == SESSION_VOICE) {
-        ctl.cmd = VOIP_COMMAND_DIAL;
+        command.cmd = VOIP_COMMAND_DIAL;
     } else if (self.mode == SESSION_VIDEO) {
-        ctl.cmd = VOIP_COMMAND_DIAL_VIDEO;
+        command.cmd = VOIP_COMMAND_DIAL_VIDEO;
     } else {
         NSAssert(NO, @"invalid session mode");
     }
     
-    ctl.dialCount = self.dialCount + 1;
+    command.dialCount = self.dialCount + 1;
+    
+    ctl.content = command.content;
     
     if (self.voipHostIP.length > 0) {
         BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
@@ -245,12 +250,18 @@ enum SessionMode {
     }
 }
 
--(void)sendControlCommand:(enum VOIPCommand)cmd {
+-(void)sendCommand:(VOIPCommand*)command {
     VOIPControl *ctl = [[VOIPControl alloc] init];
     ctl.sender = self.currentUID;
     ctl.receiver = self.peerUID;
-    ctl.cmd = cmd;
+    ctl.content = command.content;
     [[VOIPService instance] sendVOIPControl:ctl];
+}
+
+-(void)sendControlCommand:(enum EVOIPCommand)cmd {
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+    command.cmd = cmd;
+    [self sendCommand:command];
 }
 
 -(void)sendRefused {
@@ -261,7 +272,9 @@ enum SessionMode {
     VOIPControl *ctl = [[VOIPControl alloc] init];
     ctl.sender = self.currentUID;
     ctl.receiver = receiver;
-    ctl.cmd = VOIP_COMMAND_TALKING;
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+    command.cmd = VOIP_COMMAND_TALKING;
+    ctl.content = command.content;
     [[VOIPService instance] sendVOIPControl:ctl];
 }
 
@@ -270,28 +283,23 @@ enum SessionMode {
 }
 
 -(void)sendConnected {
-    VOIPControl *ctl = [[VOIPControl alloc] init];
-    ctl.sender = self.currentUID;
-    ctl.receiver = self.peerUID;
-    ctl.cmd = VOIP_COMMAND_CONNECTED;
-    ctl.natMap = self.localNatMap;
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+    command.cmd = VOIP_COMMAND_CONNECTED;
+    command.natMap = self.localNatMap;
     
     if (self.relayIP.length > 0) {
         in_addr_t addr = inet_addr([self.relayIP UTF8String]);
-        ctl.relayIP = ntohl(addr);
+        command.relayIP = ntohl(addr);
     }
     
-    [[VOIPService instance] sendVOIPControl:ctl];
+    [self sendCommand:command];
 }
 
 -(void)sendDialAccept {
-    VOIPControl *ctl = [[VOIPControl alloc] init];
-    ctl.sender = self.currentUID;
-    ctl.receiver = self.peerUID;
-    ctl.cmd = VOIP_COMMAND_ACCEPT;
-    ctl.natMap = self.localNatMap;
-    
-    [[VOIPService instance] sendVOIPControl:ctl];
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+    command.cmd = VOIP_COMMAND_ACCEPT;
+    command.natMap = self.localNatMap;
+    [self sendCommand:command];
     
     time_t now = time(NULL);
     if (now - self.acceptTimestamp >= 10) {
@@ -331,11 +339,15 @@ enum SessionMode {
         [self sendTalking:ctl.sender];
         return;
     }
-    NSLog(@"voip state:%d command:%d", voip.state, ctl.cmd);
     
+    VOIPCommand *command = [[VOIPCommand alloc] initWithContent:ctl.content];
+    
+    NSLog(@"voip state:%d command:%d", voip.state, command.cmd);
+    
+
     if (voip.state == VOIP_DIALING) {
-        if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
-            self.peerNatMap = ctl.natMap;
+        if (command.cmd == VOIP_COMMAND_ACCEPT) {
+            self.peerNatMap = command.natMap;
             
             if (self.localNatMap == nil) {
                 self.localNatMap = [[NatPortMap alloc] init];
@@ -352,7 +364,7 @@ enum SessionMode {
 
             //onconnected
             [self.delegate onConnected];
-        } else if (ctl.cmd == VOIP_COMMAND_REFUSE) {
+        } else if (command.cmd == VOIP_COMMAND_REFUSE) {
             voip.state = VOIP_REFUSED;
             
             [self sendRefused];
@@ -363,7 +375,7 @@ enum SessionMode {
             //onrefuse
             [self.delegate onRefuse];
             
-        } else if (ctl.cmd == VOIP_COMMAND_TALKING) {
+        } else if (command.cmd == VOIP_COMMAND_TALKING) {
             voip.state = VOIP_SHUTDOWN;
             
             [self.dialTimer invalidate];
@@ -372,19 +384,19 @@ enum SessionMode {
             [self.delegate onTalking];
         }
     } else if (voip.state == VOIP_ACCEPTING) {
-        if (ctl.cmd == VOIP_COMMAND_HANG_UP) {
+        if (command.cmd == VOIP_COMMAND_HANG_UP) {
             voip.state = VOIP_HANGED_UP;
             //onhangup
             [self.delegate onHangUp];
         }
     } else if (voip.state == VOIP_ACCEPTED) {
-        if (ctl.cmd == VOIP_COMMAND_CONNECTED) {
+        if (command.cmd == VOIP_COMMAND_CONNECTED) {
             NSLog(@"called voip connected");
 
-            self.peerNatMap = ctl.natMap;
-            if (ctl.relayIP > 0) {
+            self.peerNatMap = command.natMap;
+            if (command.relayIP > 0) {
                 in_addr addr;
-                addr.s_addr = htonl(ctl.relayIP);
+                addr.s_addr = htonl(command.relayIP);
                 char buff[64] = {0};
                 const char *str = inet_ntop(AF_INET, &addr, buff, 64);
                 self.relayIP = [NSString stringWithUTF8String:str];
@@ -400,16 +412,16 @@ enum SessionMode {
 
         }
     } else if (voip.state == VOIP_CONNECTED) {
-        if (ctl.cmd == VOIP_COMMAND_HANG_UP) {
+        if (command.cmd == VOIP_COMMAND_HANG_UP) {
             voip.state = VOIP_HANGED_UP;
 
             //onhangup
             [self.delegate onHangUp];
-        } else if (ctl.cmd == VOIP_COMMAND_ACCEPT) {
+        } else if (command.cmd == VOIP_COMMAND_ACCEPT) {
             [self sendConnected];
         }
     } else if (voip.state == VOIP_REFUSING) {
-        if (ctl.cmd == VOIP_COMMAND_REFUSED) {
+        if (command.cmd == VOIP_COMMAND_REFUSED) {
             NSLog(@"refuse finished");
             voip.state = VOIP_REFUSED;
             //onRefuseFinished

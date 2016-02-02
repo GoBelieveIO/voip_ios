@@ -9,6 +9,7 @@
 
 #import <Foundation/Foundation.h>
 #import "VOIPService.h"
+#import "VOIPCommand.h"
 
 //todo 状态变迁图
 enum VOIPState {
