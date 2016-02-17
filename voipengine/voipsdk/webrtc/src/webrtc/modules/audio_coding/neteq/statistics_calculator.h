@@ -15,7 +15,7 @@
 #include <string>
 
 #include "webrtc/base/constructormagic.h"
-#include "webrtc/modules/audio_coding/neteq/interface/neteq.h"
+#include "webrtc/modules/audio_coding/neteq/include/neteq.h"
 #include "webrtc/typedefs.h"
 
 namespace webrtc {
@@ -160,7 +160,7 @@ class StatisticsCalculator {
   PeriodicUmaCount delayed_packet_outage_counter_;
   PeriodicUmaAverage excess_buffer_delay_;
 
-  DISALLOW_COPY_AND_ASSIGN(StatisticsCalculator);
+  RTC_DISALLOW_COPY_AND_ASSIGN(StatisticsCalculator);
 };
 
 }  // namespace webrtc

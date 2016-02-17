@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_AUDIO_DEVICE_AUDIO_DEVICE_DEFINES_H
-#define WEBRTC_AUDIO_DEVICE_AUDIO_DEVICE_DEFINES_H
+#ifndef WEBRTC_MODULES_AUDIO_DEVICE_INCLUDE_AUDIO_DEVICE_DEFINES_H_
+#define WEBRTC_MODULES_AUDIO_DEVICE_INCLUDE_AUDIO_DEVICE_DEFINES_H_
 
 #include <stddef.h>
 
@@ -49,7 +49,7 @@ class AudioTransport {
   virtual int32_t RecordedDataIsAvailable(const void* audioSamples,
                                           const size_t nSamples,
                                           const size_t nBytesPerSample,
-                                          const uint8_t nChannels,
+                                          const size_t nChannels,
                                           const uint32_t samplesPerSec,
                                           const uint32_t totalDelayMS,
                                           const int32_t clockDrift,
@@ -59,7 +59,7 @@ class AudioTransport {
 
   virtual int32_t NeedMorePlayData(const size_t nSamples,
                                    const size_t nBytesPerSample,
-                                   const uint8_t nChannels,
+                                   const size_t nChannels,
                                    const uint32_t samplesPerSec,
                                    void* audioSamples,
                                    size_t& nSamplesOut,
@@ -82,10 +82,10 @@ class AudioTransport {
   // TODO(xians): Remove this interface after Chrome and Libjingle switches
   // to OnData().
   virtual int OnDataAvailable(const int voe_channels[],
-                              int number_of_voe_channels,
+                              size_t number_of_voe_channels,
                               const int16_t* audio_data,
                               int sample_rate,
-                              int number_of_channels,
+                              size_t number_of_channels,
                               size_t number_of_frames,
                               int audio_delay_milliseconds,
                               int current_volume,
@@ -103,7 +103,7 @@ class AudioTransport {
                       const void* audio_data,
                       int bits_per_sample,
                       int sample_rate,
-                      int number_of_channels,
+                      size_t number_of_channels,
                       size_t number_of_frames) {}
 
   // Method to push the captured audio data to the specific VoE channel.
@@ -116,7 +116,7 @@ class AudioTransport {
                                const void* audio_data,
                                int bits_per_sample,
                                int sample_rate,
-                               int number_of_channels,
+                               size_t number_of_channels,
                                size_t number_of_frames) {}
 
   // Method to pull mixed render audio data from all active VoE channels.
@@ -125,7 +125,7 @@ class AudioTransport {
   // channel.
   virtual void PullRenderData(int bits_per_sample,
                               int sample_rate,
-                              int number_of_channels,
+                              size_t number_of_channels,
                               size_t number_of_frames,
                               void* audio_data,
                               int64_t* elapsed_time_ms,
@@ -143,51 +143,68 @@ class AudioTransport {
 class AudioParameters {
  public:
   // This implementation does only support 16-bit PCM samples.
-  enum { kBitsPerSample = 16 };
+  static const size_t kBitsPerSample = 16;
   AudioParameters()
       : sample_rate_(0),
         channels_(0),
         frames_per_buffer_(0),
         frames_per_10ms_buffer_(0) {}
-  AudioParameters(int sample_rate, int channels, int frames_per_buffer)
+  AudioParameters(int sample_rate, size_t channels, size_t frames_per_buffer)
       : sample_rate_(sample_rate),
         channels_(channels),
         frames_per_buffer_(frames_per_buffer),
         frames_per_10ms_buffer_(static_cast<size_t>(sample_rate / 100)) {}
-  void reset(int sample_rate, int channels, int frames_per_buffer) {
+  void reset(int sample_rate, size_t channels, size_t frames_per_buffer) {
     sample_rate_ = sample_rate;
     channels_ = channels;
     frames_per_buffer_ = frames_per_buffer;
     frames_per_10ms_buffer_ = static_cast<size_t>(sample_rate / 100);
   }
-  int bits_per_sample() const { return kBitsPerSample; }
-  int sample_rate() const { return sample_rate_; }
-  int channels() const { return channels_; }
-  int frames_per_buffer() const { return frames_per_buffer_; }
-  size_t frames_per_10ms_buffer() const { return frames_per_10ms_buffer_; }
-  bool is_valid() const {
-    return ((sample_rate_ > 0) && (channels_ > 0) && (frames_per_buffer_ > 0));
+  size_t bits_per_sample() const { return kBitsPerSample; }
+  void reset(int sample_rate, size_t channels, double ms_per_buffer) {
+    reset(sample_rate, channels,
+          static_cast<size_t>(sample_rate * ms_per_buffer + 0.5));
   }
-  int GetBytesPerFrame() const { return channels_ * kBitsPerSample / 8; }
-  int GetBytesPerBuffer() const {
+  void reset(int sample_rate, size_t channels) {
+    reset(sample_rate, channels, static_cast<size_t>(0));
+  }
+  int sample_rate() const { return sample_rate_; }
+  size_t channels() const { return channels_; }
+  size_t frames_per_buffer() const { return frames_per_buffer_; }
+  size_t frames_per_10ms_buffer() const { return frames_per_10ms_buffer_; }
+  size_t GetBytesPerFrame() const { return channels_ * kBitsPerSample / 8; }
+  size_t GetBytesPerBuffer() const {
     return frames_per_buffer_ * GetBytesPerFrame();
   }
+  // The WebRTC audio device buffer (ADB) only requires that the sample rate
+  // and number of channels are configured. Hence, to be "valid", only these
+  // two attributes must be set.
+  bool is_valid() const { return ((sample_rate_ > 0) && (channels_ > 0)); }
+  // Most platforms also require that a native buffer size is defined.
+  // An audio parameter instance is considered to be "complete" if it is both
+  // "valid" (can be used by the ADB) and also has a native frame size.
+  bool is_complete() const { return (is_valid() && (frames_per_buffer_ > 0)); }
   size_t GetBytesPer10msBuffer() const {
     return frames_per_10ms_buffer_ * GetBytesPerFrame();
   }
-  float GetBufferSizeInMilliseconds() const {
+  double GetBufferSizeInMilliseconds() const {
     if (sample_rate_ == 0)
-      return 0.0f;
-    return frames_per_buffer_ / (sample_rate_ / 1000.0f);
+      return 0.0;
+    return frames_per_buffer_ / (sample_rate_ / 1000.0);
+  }
+  double GetBufferSizeInSeconds() const {
+    if (sample_rate_ == 0)
+      return 0.0;
+    return static_cast<double>(frames_per_buffer_) / (sample_rate_);
   }
 
  private:
   int sample_rate_;
-  int channels_;
-  int frames_per_buffer_;
+  size_t channels_;
+  size_t frames_per_buffer_;
   size_t frames_per_10ms_buffer_;
 };
 
 }  // namespace webrtc
 
-#endif  // WEBRTC_AUDIO_DEVICE_AUDIO_DEVICE_DEFINES_H
+#endif  // WEBRTC_MODULES_AUDIO_DEVICE_INCLUDE_AUDIO_DEVICE_DEFINES_H_

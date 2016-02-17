@@ -13,14 +13,15 @@
 #include <string>
 #include "webrtc/common_types.h"
 
-#include "webrtc/modules/video_capture/include/video_capture_factory.h"
+
+
 #include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
-#include "webrtc/modules/video_capture/include/video_capture.h"
-#include "webrtc/video/audio_receive_stream.h"
+
 #include "webrtc/video/video_receive_stream.h"
 #include "webrtc/video/video_send_stream.h"
-#include "webrtc/video_engine/vie_channel_group.h"
-#include "webrtc/modules/utility/interface/process_thread.h"
+
+//#include "webrtc/modules/utility/include/process_thread.h"
+
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
 #include "webrtc/voice_engine/include/voe_network.h"
@@ -35,11 +36,11 @@
 #include "webrtc/voice_engine/include/voe_hardware.h"
 
 #include "webrtc/engine_configurations.h"
-#include "webrtc/modules/video_render/include/video_render_defines.h"
-#include "webrtc/modules/video_render/include/video_render.h"
-#include "webrtc/modules/video_capture/include/video_capture_factory.h"
-#include "webrtc/system_wrappers/interface/tick_util.h"
-#include "webrtc/video_engine/vie_encoder.h"
+#include "webrtc/modules/video_render/video_render_defines.h"
+#include "webrtc/modules/video_render/video_render.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
+#include "webrtc/system_wrappers/include/tick_util.h"
+#include "webrtc/video/vie_encoder.h"
 
 #include "ChannelTransport.h"
 
@@ -138,9 +139,7 @@ union VideoEncoderSettings {
 }
 
 -(void)sendKeyFrame {
-    if (stream_) {
-        stream_->encoder()->SendKeyFrame();
-    }
+ 
 }
 
 - (BOOL)start {
@@ -255,7 +254,7 @@ union VideoEncoderSettings {
         encoder = webrtc::VideoEncoder::Create(webrtc::VideoEncoder::kH264);
     }
 
-    webrtc::internal::VideoSendStream::Config config;
+    webrtc::VideoSendStream::Config config(self.transport);
 
     config.encoder_settings.encoder = encoder;
     config.encoder_settings.payload_name = codec_name;

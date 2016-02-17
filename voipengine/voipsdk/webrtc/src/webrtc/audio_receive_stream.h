@@ -15,17 +15,50 @@
 #include <string>
 #include <vector>
 
+#include "webrtc/base/scoped_ptr.h"
 #include "webrtc/config.h"
 #include "webrtc/stream.h"
+#include "webrtc/transport.h"
 #include "webrtc/typedefs.h"
 
 namespace webrtc {
 
 class AudioDecoder;
+class AudioSinkInterface;
+
+// WORK IN PROGRESS
+// This class is under development and is not yet intended for for use outside
+// of WebRtc/Libjingle. Please use the VoiceEngine API instead.
+// See: https://bugs.chromium.org/p/webrtc/issues/detail?id=4690
 
 class AudioReceiveStream : public ReceiveStream {
  public:
-  struct Stats {};
+  struct Stats {
+    uint32_t remote_ssrc = 0;
+    int64_t bytes_rcvd = 0;
+    uint32_t packets_rcvd = 0;
+    uint32_t packets_lost = 0;
+    float fraction_lost = 0.0f;
+    std::string codec_name;
+    uint32_t ext_seqnum = 0;
+    uint32_t jitter_ms = 0;
+    uint32_t jitter_buffer_ms = 0;
+    uint32_t jitter_buffer_preferred_ms = 0;
+    uint32_t delay_estimate_ms = 0;
+    int32_t audio_level = -1;
+    float expand_rate = 0.0f;
+    float speech_expand_rate = 0.0f;
+    float secondary_decoded_rate = 0.0f;
+    float accelerate_rate = 0.0f;
+    float preemptive_expand_rate = 0.0f;
+    int32_t decoding_calls_to_silence_generator = 0;
+    int32_t decoding_calls_to_neteq = 0;
+    int32_t decoding_normal = 0;
+    int32_t decoding_plc = 0;
+    int32_t decoding_cng = 0;
+    int32_t decoding_plc_cng = 0;
+    int64_t capture_start_ntp_time_ms = 0;
+  };
 
   struct Config {
     std::string ToString() const;
@@ -40,13 +73,23 @@ class AudioReceiveStream : public ReceiveStream {
       // Sender SSRC used for sending RTCP (such as receiver reports).
       uint32_t local_ssrc = 0;
 
+      // Enable feedback for send side bandwidth estimation.
+      // See
+      // https://tools.ietf.org/html/draft-holmer-rmcat-transport-wide-cc-extensions
+      // for details.
+      bool transport_cc = false;
+
       // RTP header extensions used for the received stream.
       std::vector<RtpExtension> extensions;
     } rtp;
 
-    // Underlying VoiceEngine handle, used to map AudioReceiveStream to
-    // lower-level components. Temporarily used while VoiceEngine channels are
-    // created outside of Call.
+    Transport* receive_transport = nullptr;
+    Transport* rtcp_send_transport = nullptr;
+
+    // Underlying VoiceEngine handle, used to map AudioReceiveStream to lower-
+    // level components.
+    // TODO(solenberg): Remove when VoiceEngine channels are created outside
+    // of Call.
     int voe_channel_id = -1;
 
     // Identifier for an A/V synchronization group. Empty string to disable.
@@ -59,12 +102,19 @@ class AudioReceiveStream : public ReceiveStream {
     // Call::CreateReceiveStream().
     // TODO(solenberg): Use unique_ptr<> once our std lib fully supports C++11.
     std::map<uint8_t, AudioDecoder*> decoder_map;
-
-    // TODO(pbos): Remove config option once combined A/V BWE is always on.
-    bool combined_audio_video_bwe = false;
   };
 
   virtual Stats GetStats() const = 0;
+
+  // Sets an audio sink that receives unmixed audio from the receive stream.
+  // Ownership of the sink is passed to the stream and can be used by the
+  // caller to do lifetime management (i.e. when the sink's dtor is called).
+  // Only one sink can be set and passing a null sink clears an existing one.
+  // NOTE: Audio must still somehow be pulled through AudioTransport for audio
+  // to stream through this sink. In practice, this happens if mixed audio
+  // is being pulled+rendered and/or if audio is being pulled for the purposes
+  // of feeding to the AEC.
+  virtual void SetSink(rtc::scoped_ptr<AudioSinkInterface> sink) = 0;
 };
 }  // namespace webrtc
 

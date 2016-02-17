@@ -12,10 +12,10 @@
 #define WEBRTC_MODULES_AUDIO_CODING_NETEQ_TOOLS_NETEQ_QUALITY_TEST_H_
 
 #include <fstream>
+#include <memory>
 #include <gflags/gflags.h>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webrtc/base/scoped_ptr.h"
-#include "webrtc/modules/audio_coding/neteq/interface/neteq.h"
+#include "webrtc/modules/audio_coding/neteq/include/neteq.h"
 #include "webrtc/modules/audio_coding/neteq/tools/audio_sink.h"
 #include "webrtc/modules/audio_coding/neteq/tools/input_audio_file.h"
 #include "webrtc/modules/audio_coding/neteq/tools/rtp_generator.h"
@@ -58,7 +58,7 @@ class GilbertElliotLoss : public LossModel {
   // Prob. of losing current packet, when previous packet is not lost.
   double prob_trans_01_;
   bool lost_last_;
-  rtc::scoped_ptr<UniformLoss> uniform_loss_model_;
+  std::unique_ptr<UniformLoss> uniform_loss_model_;
 };
 
 class NetEqQualityTest : public ::testing::Test {
@@ -66,7 +66,7 @@ class NetEqQualityTest : public ::testing::Test {
   NetEqQualityTest(int block_duration_ms,
                    int in_sampling_khz,
                    int out_sampling_khz,
-                   enum NetEqDecoder decoder_type);
+                   NetEqDecoder decoder_type);
   virtual ~NetEqQualityTest();
 
   void SetUp() override;
@@ -98,8 +98,8 @@ class NetEqQualityTest : public ::testing::Test {
   // Write to log file. Usage Log() << ...
   std::ofstream& Log();
 
-  enum NetEqDecoder decoder_type_;
-  const int channels_;
+  NetEqDecoder decoder_type_;
+  const size_t channels_;
 
  private:
   int decoded_time_ms_;
@@ -119,17 +119,17 @@ class NetEqQualityTest : public ::testing::Test {
   size_t payload_size_bytes_;
   size_t max_payload_bytes_;
 
-  rtc::scoped_ptr<InputAudioFile> in_file_;
-  rtc::scoped_ptr<AudioSink> output_;
+  std::unique_ptr<InputAudioFile> in_file_;
+  std::unique_ptr<AudioSink> output_;
   std::ofstream log_file_;
 
-  rtc::scoped_ptr<RtpGenerator> rtp_generator_;
-  rtc::scoped_ptr<NetEq> neteq_;
-  rtc::scoped_ptr<LossModel> loss_model_;
+  std::unique_ptr<RtpGenerator> rtp_generator_;
+  std::unique_ptr<NetEq> neteq_;
+  std::unique_ptr<LossModel> loss_model_;
 
-  rtc::scoped_ptr<int16_t[]> in_data_;
-  rtc::scoped_ptr<uint8_t[]> payload_;
-  rtc::scoped_ptr<int16_t[]> out_data_;
+  std::unique_ptr<int16_t[]> in_data_;
+  std::unique_ptr<uint8_t[]> payload_;
+  std::unique_ptr<int16_t[]> out_data_;
   WebRtcRTPHeader rtp_header_;
 
   size_t total_payload_size_bytes_;

@@ -123,8 +123,8 @@ class DisposeData : public MessageData {
   T* data_;
 };
 
-const uint32 MQID_ANY = static_cast<uint32>(-1);
-const uint32 MQID_DISPOSE = static_cast<uint32>(-2);
+const uint32_t MQID_ANY = static_cast<uint32_t>(-1);
+const uint32_t MQID_DISPOSE = static_cast<uint32_t>(-2);
 
 // No destructor
 
@@ -132,14 +132,14 @@ struct Message {
   Message() {
     memset(this, 0, sizeof(*this));
   }
-  inline bool Match(MessageHandler* handler, uint32 id) const {
+  inline bool Match(MessageHandler* handler, uint32_t id) const {
     return (handler == NULL || handler == phandler)
            && (id == MQID_ANY || id == message_id);
   }
   MessageHandler *phandler;
-  uint32 message_id;
+  uint32_t message_id;
   MessageData *pdata;
-  uint32 ts_sensitive;
+  uint32_t ts_sensitive;
 };
 
 typedef std::list<Message> MessageList;
@@ -149,8 +149,8 @@ typedef std::list<Message> MessageList;
 
 class DelayedMessage {
  public:
-  DelayedMessage(int delay, uint32 trigger, uint32 num, const Message& msg)
-  : cmsDelay_(delay), msTrigger_(trigger), num_(num), msg_(msg) { }
+  DelayedMessage(int delay, uint32_t trigger, uint32_t num, const Message& msg)
+      : cmsDelay_(delay), msTrigger_(trigger), num_(num), msg_(msg) {}
 
   bool operator< (const DelayedMessage& dmsg) const {
     return (dmsg.msTrigger_ < msTrigger_)
@@ -158,8 +158,8 @@ class DelayedMessage {
   }
 
   int cmsDelay_;  // for debugging
-  uint32 msTrigger_;
-  uint32 num_;
+  uint32_t msTrigger_;
+  uint32_t num_;
   Message msg_;
 };
 
@@ -167,7 +167,18 @@ class MessageQueue {
  public:
   static const int kForever = -1;
 
-  explicit MessageQueue(SocketServer* ss = NULL);
+  // Create a new MessageQueue and optionally assign it to the passed
+  // SocketServer. Subclasses that override Clear should pass false for
+  // init_queue and call DoInit() from their constructor to prevent races
+  // with the MessageQueueManager using the object while the vtable is still
+  // being created.
+  explicit MessageQueue(SocketServer* ss = NULL,
+                        bool init_queue = true);
+
+  // NOTE: SUBCLASSES OF MessageQueue THAT OVERRIDE Clear MUST CALL
+  // DoDestroy() IN THEIR DESTRUCTORS! This is required to avoid a data race
+  // between the destructor modifying the vtable, and the MessageQueueManager
+  // calling Clear on the object from a different thread.
   virtual ~MessageQueue();
 
   SocketServer* socketserver() { return ss_; }
@@ -190,17 +201,20 @@ class MessageQueue {
   virtual bool Get(Message *pmsg, int cmsWait = kForever,
                    bool process_io = true);
   virtual bool Peek(Message *pmsg, int cmsWait = 0);
-  virtual void Post(MessageHandler *phandler, uint32 id = 0,
-                    MessageData *pdata = NULL, bool time_sensitive = false);
+  virtual void Post(MessageHandler* phandler,
+                    uint32_t id = 0,
+                    MessageData* pdata = NULL,
+                    bool time_sensitive = false);
   virtual void PostDelayed(int cmsDelay,
                            MessageHandler* phandler,
-                           uint32 id = 0,
+                           uint32_t id = 0,
                            MessageData* pdata = NULL);
-  virtual void PostAt(uint32 tstamp,
+  virtual void PostAt(uint32_t tstamp,
                       MessageHandler* phandler,
-                      uint32 id = 0,
+                      uint32_t id = 0,
                       MessageData* pdata = NULL);
-  virtual void Clear(MessageHandler *phandler, uint32 id = MQID_ANY,
+  virtual void Clear(MessageHandler* phandler,
+                     uint32_t id = MQID_ANY,
                      MessageList* removed = NULL);
   virtual void Dispatch(Message *pmsg);
   virtual void ReceiveSends();
@@ -232,8 +246,19 @@ class MessageQueue {
     void reheap() { make_heap(c.begin(), c.end(), comp); }
   };
 
-  void DoDelayPost(int cmsDelay, uint32 tstamp, MessageHandler *phandler,
-                   uint32 id, MessageData* pdata);
+  void DoDelayPost(int cmsDelay,
+                   uint32_t tstamp,
+                   MessageHandler* phandler,
+                   uint32_t id,
+                   MessageData* pdata);
+
+  // Perform initialization, subclasses must call this from their constructor
+  // if false was passed as init_queue to the MessageQueue constructor.
+  void DoInit();
+
+  // Perform cleanup, subclasses that override Clear must call this from the
+  // destructor.
+  void DoDestroy();
 
   // The SocketServer is not owned by MessageQueue.
   SocketServer* ss_;
@@ -244,11 +269,13 @@ class MessageQueue {
   Message msgPeek_;
   MessageList msgq_;
   PriorityQueue dmsgq_;
-  uint32 dmsgq_next_num_;
-  mutable CriticalSection crit_;
+  uint32_t dmsgq_next_num_;
+  CriticalSection crit_;
+  bool fInitialized_;
+  bool fDestroyed_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MessageQueue);
+  RTC_DISALLOW_COPY_AND_ASSIGN(MessageQueue);
 };
 
 }  // namespace rtc

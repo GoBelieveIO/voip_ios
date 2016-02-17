@@ -17,21 +17,23 @@
 #include <algorithm>
 #include <list>
 #include <numeric>
+#include <set>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "webrtc/base/common.h"
+#include "webrtc/base/random.h"
 #include "webrtc/base/scoped_ptr.h"
 #include "webrtc/modules/bitrate_controller/include/bitrate_controller.h"
-#include "webrtc/modules/interface/module_common_types.h"
-#include "webrtc/modules/pacing/include/paced_sender.h"
+#include "webrtc/modules/include/module_common_types.h"
+#include "webrtc/modules/pacing/paced_sender.h"
 #include "webrtc/modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/packet.h"
-#include "webrtc/modules/remote_bitrate_estimator/test/random.h"
-#include "webrtc/modules/rtp_rtcp/interface/rtp_rtcp_defines.h"
-#include "webrtc/system_wrappers/interface/clock.h"
+#include "webrtc/modules/rtp_rtcp/include/rtp_rtcp_defines.h"
+#include "webrtc/system_wrappers/include/clock.h"
 
 namespace webrtc {
 
@@ -44,7 +46,7 @@ class DelayCapHelper;
 
 class RateCounter {
  public:
-  RateCounter(int64_t window_size_ms)
+  explicit RateCounter(int64_t window_size_ms)
       : window_size_us_(1000 * window_size_ms),
         recently_received_packets_(0),
         recently_received_bytes_(0),
@@ -173,32 +175,6 @@ template<typename T> class Stats {
   T max_;
 };
 
-class Random {
- public:
-  explicit Random(uint32_t seed);
-
-  // Return pseudo random number in the interval [0.0, 1.0].
-  float Rand();
-
-  // Return pseudo rounded random number in interval [low, high].
-  int Rand(int low, int high);
-
-  // Normal Distribution.
-  int Gaussian(int mean, int standard_deviation);
-
-  // Exponential Distribution.
-  int Exponential(float lambda);
-
-  // TODO(solenberg): Random from histogram.
-  // template<typename T> int Distribution(const std::vector<T> histogram) {
-
- private:
-  uint32_t a_;
-  uint32_t b_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(Random);
-};
-
 bool IsTimeSorted(const Packets& packets);
 
 class PacketProcessor;
@@ -245,7 +221,7 @@ class PacketProcessor {
   PacketProcessorListener* listener_;
   const FlowIds flow_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(PacketProcessor);
+  RTC_DISALLOW_COPY_AND_ASSIGN(PacketProcessor);
 };
 
 class RateCounterFilter : public PacketProcessor {
@@ -278,7 +254,7 @@ class RateCounterFilter : public PacketProcessor {
   // Algorithm name if single flow, Total link utilization if all flows.
   std::string plot_name_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RateCounterFilter);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(RateCounterFilter);
 };
 
 class LossFilter : public PacketProcessor {
@@ -294,7 +270,7 @@ class LossFilter : public PacketProcessor {
   Random random_;
   float loss_fraction_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(LossFilter);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(LossFilter);
 };
 
 class DelayFilter : public PacketProcessor {
@@ -310,7 +286,7 @@ class DelayFilter : public PacketProcessor {
   int64_t one_way_delay_us_;
   int64_t last_send_time_us_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(DelayFilter);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(DelayFilter);
 };
 
 class JitterFilter : public PacketProcessor {
@@ -330,7 +306,7 @@ class JitterFilter : public PacketProcessor {
   int64_t last_send_time_us_;
   bool reordering_;  // False by default.
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(JitterFilter);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(JitterFilter);
 };
 
 // Reorders two consecutive packets with a probability of reorder_percent.
@@ -347,7 +323,7 @@ class ReorderFilter : public PacketProcessor {
   Random random_;
   float reorder_fraction_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ReorderFilter);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(ReorderFilter);
 };
 
 // Apply a bitrate choke with an infinite queue on the packet stream.
@@ -370,9 +346,8 @@ class ChokeFilter : public PacketProcessor {
   uint32_t capacity_kbps_;
   int64_t last_send_time_us_;
   rtc::scoped_ptr<DelayCapHelper> delay_cap_helper_;
-  int64_t max_delay_us_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChokeFilter);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(ChokeFilter);
 };
 
 class TraceBasedDeliveryFilter : public PacketProcessor {
@@ -410,7 +385,7 @@ class TraceBasedDeliveryFilter : public PacketProcessor {
   Stats<double> packets_per_second_stats_;
   Stats<double> kbps_stats_;
 
-  DISALLOW_COPY_AND_ASSIGN(TraceBasedDeliveryFilter);
+  RTC_DISALLOW_COPY_AND_ASSIGN(TraceBasedDeliveryFilter);
 };
 
 class VideoSource {
@@ -442,15 +417,14 @@ class VideoSource {
   uint32_t frame_size_bytes_;
 
  private:
+  Random random_;
   const int flow_id_;
   int64_t next_frame_ms_;
   int64_t next_frame_rand_ms_;
   int64_t now_ms_;
   RTPHeader prototype_header_;
-  int64_t start_plotting_ms_;
-  uint32_t previous_bitrate_bps_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(VideoSource);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(VideoSource);
 };
 
 class AdaptiveVideoSource : public VideoSource {
@@ -465,7 +439,7 @@ class AdaptiveVideoSource : public VideoSource {
   void SetBitrateBps(int bitrate_bps) override;
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveVideoSource);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(AdaptiveVideoSource);
 };
 
 class PeriodicKeyFrameSource : public AdaptiveVideoSource {
@@ -488,7 +462,7 @@ class PeriodicKeyFrameSource : public AdaptiveVideoSource {
   uint32_t frame_counter_;
   int compensation_bytes_;
   int compensation_per_frame_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PeriodicKeyFrameSource);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(PeriodicKeyFrameSource);
 };
 }  // namespace bwe
 }  // namespace testing

@@ -9,7 +9,6 @@
 #import "AVReceiveStream.h"
 #import "WebRTC.h"
 
-#include "webrtc/modules/video_capture/include/video_capture_factory.h"
 #include "webrtc/base/thread.h"
 #include "webrtc/base/scoped_ptr.h"
 #include "webrtc/base/asyncinvoker.h"
@@ -23,12 +22,11 @@
 #include "webrtc/base/thread.h"
 #include "webrtc/base/timeutils.h"
 #include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
-#include "webrtc/modules/video_capture/include/video_capture.h"
-#include "webrtc/video/audio_receive_stream.h"
+#include "webrtc/modules/video_capture/video_capture.h"
+#include "webrtc/audio/audio_receive_stream.h"
 #include "webrtc/video/video_receive_stream.h"
 #include "webrtc/video/video_send_stream.h"
-#include "webrtc/video_engine/vie_channel_group.h"
-#include "webrtc/modules/utility/interface/process_thread.h"
+//#include "webrtc/modules/utility/include/process_thread.h"
 #include "webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
 
@@ -46,10 +44,9 @@
 
 
 #include "webrtc/engine_configurations.h"
-#include "webrtc/modules/video_render/include/video_render_defines.h"
-#include "webrtc/modules/video_render/include/video_render.h"
-#include "webrtc/modules/video_capture/include/video_capture_factory.h"
-#include "webrtc/system_wrappers/interface/tick_util.h"
+#include "webrtc/modules/video_render/video_render_defines.h"
+#include "webrtc/modules/video_render/video_render.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
 #include "ChannelTransport.h"
 #import "VOIPRenderView.h"
 
@@ -129,7 +126,7 @@ private:
 }
 
 - (BOOL)start {
-    webrtc::VideoReceiveStream::Config config;
+    webrtc::VideoReceiveStream::Config config(self.transport);
 
     webrtc::VideoCodecType type;
     const char *codec_name;

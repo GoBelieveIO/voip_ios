@@ -13,14 +13,14 @@
 #include <list>
 
 #include "webrtc/base/constructormagic.h"
-#include "webrtc/modules/interface/module_common_types.h"
+#include "webrtc/modules/include/module_common_types.h"
 #include "webrtc/modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "webrtc/typedefs.h"
 
 namespace webrtc {
 enum RateControlRegion;
 
-bool AdaptiveThresholdExperimentIsEnabled();
+bool AdaptiveThresholdExperimentIsDisabled();
 
 class OveruseDetector {
  public:
@@ -45,7 +45,7 @@ class OveruseDetector {
   void UpdateThreshold(double modified_offset, int64_t now_ms);
   void InitializeExperiment();
 
-  const bool in_experiment_;
+  bool in_experiment_;
   double k_up_;
   double k_down_;
   double overusing_time_threshold_;
@@ -59,7 +59,7 @@ class OveruseDetector {
   int overuse_counter_;
   BandwidthUsage hypothesis_;
 
-  DISALLOW_COPY_AND_ASSIGN(OveruseDetector);
+  RTC_DISALLOW_COPY_AND_ASSIGN(OveruseDetector);
 };
 }  // namespace webrtc
 

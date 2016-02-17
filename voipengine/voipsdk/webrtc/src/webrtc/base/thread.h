@@ -68,7 +68,7 @@ class ThreadManager {
   DWORD key_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadManager);
+  RTC_DISALLOW_COPY_AND_ASSIGN(ThreadManager);
 };
 
 struct _SendMessage {
@@ -76,13 +76,6 @@ struct _SendMessage {
   Thread *thread;
   Message msg;
   bool *ready;
-};
-
-enum ThreadPriority {
-  PRIORITY_IDLE = -1,
-  PRIORITY_NORMAL = 0,
-  PRIORITY_ABOVE_NORMAL = 1,
-  PRIORITY_HIGH = 2,
 };
 
 class Runnable {
@@ -94,14 +87,20 @@ class Runnable {
   Runnable() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(Runnable);
+  RTC_DISALLOW_COPY_AND_ASSIGN(Runnable);
 };
 
 // WARNING! SUBCLASSES MUST CALL Stop() IN THEIR DESTRUCTORS!  See ~Thread().
 
 class Thread : public MessageQueue {
  public:
-  explicit Thread(SocketServer* ss = NULL);
+  // Create a new Thread and optionally assign it to the passed SocketServer.
+  // Subclasses that override Clear should pass false for init_queue and call
+  // DoInit() from their constructor to prevent races with the
+  // MessageQueueManager already using the object while the vtable is still
+  // being created.
+  explicit Thread(SocketServer* ss = nullptr, bool init_queue = true);
+
   // NOTE: ALL SUBCLASSES OF Thread MUST CALL Stop() IN THEIR DESTRUCTORS (or
   // guarantee Stop() is explicitly called before the subclass is destroyed).
   // This is required to avoid a data race between the destructor modifying the
@@ -137,10 +136,6 @@ class Thread : public MessageQueue {
   const std::string& name() const { return name_; }
   bool SetName(const std::string& name, const void* obj);
 
-  // Sets the thread's priority. Must be called before Start().
-  ThreadPriority priority() const { return priority_; }
-  bool SetPriority(ThreadPriority priority);
-
   // Starts the execution of the thread.
   bool Start(Runnable* runnable = NULL);
 
@@ -155,8 +150,9 @@ class Thread : public MessageQueue {
   // ProcessMessages occasionally.
   virtual void Run();
 
-  virtual void Send(MessageHandler *phandler, uint32 id = 0,
-      MessageData *pdata = NULL);
+  virtual void Send(MessageHandler* phandler,
+                    uint32_t id = 0,
+                    MessageData* pdata = NULL);
 
   // Convenience method to invoke a functor on another thread.  Caller must
   // provide the |ReturnT| template argument, which cannot (easily) be deduced.
@@ -176,7 +172,7 @@ class Thread : public MessageQueue {
 
   // From MessageQueue
   void Clear(MessageHandler* phandler,
-             uint32 id = MQID_ANY,
+             uint32_t id = MQID_ANY,
              MessageList* removed = NULL) override;
   void ReceiveSends() override;
 
@@ -270,7 +266,6 @@ class Thread : public MessageQueue {
 
   std::list<_SendMessage> sendlist_;
   std::string name_;
-  ThreadPriority priority_;
   Event running_;  // Signalled means running.
 
 #if defined(WEBRTC_POSIX)
@@ -287,7 +282,7 @@ class Thread : public MessageQueue {
 
   friend class ThreadManager;
 
-  DISALLOW_COPY_AND_ASSIGN(Thread);
+  RTC_DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 // AutoThread automatically installs itself at construction
@@ -296,11 +291,11 @@ class Thread : public MessageQueue {
 
 class AutoThread : public Thread {
  public:
-  explicit AutoThread(SocketServer* ss = 0);
+  explicit AutoThread(SocketServer* ss = nullptr);
   ~AutoThread() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AutoThread);
+  RTC_DISALLOW_COPY_AND_ASSIGN(AutoThread);
 };
 
 // Win32 extension for threads that need to use COM
@@ -308,13 +303,13 @@ class AutoThread : public Thread {
 class ComThread : public Thread {
  public:
   ComThread() {}
-  virtual ~ComThread() { Stop(); }
+  ~ComThread() override { Stop(); }
 
  protected:
-  virtual void Run();
+  void Run() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ComThread);
+  RTC_DISALLOW_COPY_AND_ASSIGN(ComThread);
 };
 #endif
 
@@ -332,7 +327,7 @@ class SocketServerScope {
  private:
   SocketServer* old_ss_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(SocketServerScope);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(SocketServerScope);
 };
 
 }  // namespace rtc

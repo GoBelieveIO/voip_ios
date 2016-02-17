@@ -18,12 +18,13 @@
 #include "webrtc/config.h"
 #include "webrtc/frame_callback.h"
 #include "webrtc/stream.h"
+#include "webrtc/transport.h"
 #include "webrtc/video_renderer.h"
 
 namespace webrtc {
 
+class LoadObserver;
 class VideoEncoder;
-class ViEEncoder;
 
 // Class to deliver captured frame to the video send stream.
 class VideoCaptureInput {
@@ -54,6 +55,7 @@ class VideoSendStream : public SendStream {
   };
 
   struct Stats {
+    std::string encoder_implementation_name = "unknown";
     int input_frame_rate = 0;
     int encode_frame_rate = 0;
     int avg_encode_time_ms = 0;
@@ -61,10 +63,15 @@ class VideoSendStream : public SendStream {
     int target_media_bitrate_bps = 0;
     int media_bitrate_bps = 0;
     bool suspended = false;
+    bool bw_limited_resolution = false;
     std::map<uint32_t, StreamStats> substreams;
   };
 
   struct Config {
+    Config() = delete;
+    explicit Config(Transport* send_transport)
+        : send_transport(send_transport) {}
+
     std::string ToString() const;
 
     struct EncoderSettings {
@@ -72,6 +79,15 @@ class VideoSendStream : public SendStream {
 
       std::string payload_name;
       int payload_type = -1;
+
+      // TODO(sophiechang): Delete this field when no one is using internal
+      // sources anymore.
+      bool internal_source = false;
+
+      // Allow 100% encoder utilization. Used for HW encoders where CPU isn't
+      // expected to be the limiting factor, but a chip could be running at
+      // 30fps (for example) exactly.
+      bool full_overuse_time = false;
 
       // Uninitialized VideoEncoder instance to be used for encoding. Will be
       // initialized from inside the VideoSendStream.
@@ -83,6 +99,9 @@ class VideoSendStream : public SendStream {
       std::string ToString() const;
 
       std::vector<uint32_t> ssrcs;
+
+      // See RtcpMode for description.
+      RtcpMode rtcp_mode = RtcpMode::kCompound;
 
       // Max RTP packet size delivered to send transport from VideoEngine.
       size_t max_packet_size = kDefaultMaxPacketSize;
@@ -111,12 +130,21 @@ class VideoSendStream : public SendStream {
       std::string c_name;
     } rtp;
 
+    // Transport for outgoing packets.
+    Transport* send_transport = nullptr;
+
+    // Callback for overuse and normal usage based on the jitter of incoming
+    // captured frames. 'nullptr' disables the callback.
+    LoadObserver* overuse_callback = nullptr;
+
     // Called for each I420 frame before encoding the frame. Can be used for
     // effects, snapshots etc. 'nullptr' disables the callback.
     I420FrameCallback* pre_encode_callback = nullptr;
 
     // Called for each encoded frame, e.g. used for file storage. 'nullptr'
-    // disables the callback.
+    // disables the callback. Also measures timing and passes the time
+    // spent on encoding. This timing will not fire if encoding takes longer
+    // than the measuring window, since the sample data will have been dropped.
     EncodedFrameObserver* post_encode_callback = nullptr;
 
     // Renderer for local preview. The local renderer will be called even if
@@ -141,8 +169,6 @@ class VideoSendStream : public SendStream {
   // Gets interface used to insert captured frames. Valid as long as the
   // VideoSendStream is valid.
   virtual VideoCaptureInput* Input() = 0;
-
-  virtual ViEEncoder *encoder() = 0;
 
   // Set which streams to send. Must have at least as many SSRCs as configured
   // in the config. Encoder settings are passed on to the encoder instance along

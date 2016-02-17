@@ -9,8 +9,8 @@
  *
  */
 
-#ifndef WEBRTC_MODULES_VIDEO_CODING_CODECS_VP9_FRAME_BUFFER_POOL_H_
-#define WEBRTC_MODULES_VIDEO_CODING_CODECS_VP9_FRAME_BUFFER_POOL_H_
+#ifndef WEBRTC_MODULES_VIDEO_CODING_CODECS_VP9_VP9_FRAME_BUFFER_POOL_H_
+#define WEBRTC_MODULES_VIDEO_CODING_CODECS_VP9_VP9_FRAME_BUFFER_POOL_H_
 
 #include <vector>
 
@@ -88,9 +88,9 @@ class Vp9FrameBufferPool {
   // |fb|        Pointer to the libvpx frame buffer object, this is updated to
   //             use the pool's buffer.
   // Returns 0 on success. Returns < 0 on failure.
-  static int32 VpxGetFrameBuffer(void* user_priv,
-                                 size_t min_size,
-                                 vpx_codec_frame_buffer* fb);
+  static int32_t VpxGetFrameBuffer(void* user_priv,
+                                   size_t min_size,
+                                   vpx_codec_frame_buffer* fb);
 
   // InitializeVpxUsePool configures libvpx to call this function when it has
   // finished using one of the pool's frame buffer. Parameters:
@@ -98,12 +98,12 @@ class Vp9FrameBufferPool {
   //             to be a pointer to the pool.
   // |fb|        Pointer to the libvpx frame buffer object, its |priv| will be
   //             a pointer to one of the pool's Vp9FrameBuffer.
-  static int32 VpxReleaseFrameBuffer(void* user_priv,
-                                     vpx_codec_frame_buffer* fb);
+  static int32_t VpxReleaseFrameBuffer(void* user_priv,
+                                       vpx_codec_frame_buffer* fb);
 
  private:
   // Protects |allocated_buffers_|.
-  mutable rtc::CriticalSection buffers_lock_;
+  rtc::CriticalSection buffers_lock_;
   // All buffers, in use or ready to be recycled.
   std::vector<rtc::scoped_refptr<Vp9FrameBuffer>> allocated_buffers_
       GUARDED_BY(buffers_lock_);
@@ -114,4 +114,4 @@ class Vp9FrameBufferPool {
 
 }  // namespace webrtc
 
-#endif  // WEBRTC_MODULES_VIDEO_CODING_CODECS_VP9_FRAME_BUFFER_POOL_H_
+#endif  // WEBRTC_MODULES_VIDEO_CODING_CODECS_VP9_VP9_FRAME_BUFFER_POOL_H_

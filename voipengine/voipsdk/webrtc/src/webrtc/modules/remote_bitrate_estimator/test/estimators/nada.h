@@ -20,7 +20,7 @@
 #include <list>
 #include <map>
 
-#include "webrtc/modules/interface/module_common_types.h"
+#include "webrtc/modules/include/module_common_types.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe.h"
 #include "webrtc/voice_engine/channel.h"
 
@@ -99,7 +99,7 @@ class NadaBweSender : public BweSender {
   int64_t min_round_trip_time_ms_ = 100;
   bool original_operating_mode_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(NadaBweSender);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(NadaBweSender);
 };
 
 }  // namespace bwe

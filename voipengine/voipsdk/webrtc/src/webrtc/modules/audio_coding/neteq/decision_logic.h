@@ -13,7 +13,7 @@
 
 #include "webrtc/base/constructormagic.h"
 #include "webrtc/modules/audio_coding/neteq/defines.h"
-#include "webrtc/modules/audio_coding/neteq/interface/neteq.h"
+#include "webrtc/modules/audio_coding/neteq/include/neteq.h"
 #include "webrtc/typedefs.h"
 
 namespace webrtc {
@@ -161,7 +161,7 @@ class DecisionLogic {
   const NetEqPlayoutMode playout_mode_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DecisionLogic);
+  RTC_DISALLOW_COPY_AND_ASSIGN(DecisionLogic);
 };
 
 }  // namespace webrtc

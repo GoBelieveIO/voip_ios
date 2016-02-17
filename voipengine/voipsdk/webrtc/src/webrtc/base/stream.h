@@ -228,7 +228,7 @@ class StreamInterface : public MessageHandler {
   void OnMessage(Message* msg) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StreamInterface);
+  RTC_DISALLOW_COPY_AND_ASSIGN(StreamInterface);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -305,7 +305,7 @@ class StreamAdapterInterface : public StreamInterface,
  private:
   StreamInterface* stream_;
   bool owned_;
-  DISALLOW_COPY_AND_ASSIGN(StreamAdapterInterface);
+  RTC_DISALLOW_COPY_AND_ASSIGN(StreamAdapterInterface);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -337,7 +337,7 @@ class StreamTap : public StreamAdapterInterface {
   scoped_ptr<StreamInterface> tap_;
   StreamResult tap_result_;
   int tap_error_;
-  DISALLOW_COPY_AND_ASSIGN(StreamTap);
+  RTC_DISALLOW_COPY_AND_ASSIGN(StreamTap);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -415,7 +415,7 @@ class FileStream : public StreamInterface {
   FILE* file_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FileStream);
+  RTC_DISALLOW_COPY_AND_ASSIGN(FileStream);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -458,7 +458,7 @@ class MemoryStreamBase : public StreamInterface {
   size_t seek_position_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MemoryStreamBase);
+  RTC_DISALLOW_COPY_AND_ASSIGN(MemoryStreamBase);
 };
 
 // MemoryStream dynamically resizes to accomodate written data.
@@ -542,21 +542,30 @@ class FifoBuffer : public StreamInterface {
   // Helper method that implements ReadOffset. Caller must acquire a lock
   // when calling this method.
   StreamResult ReadOffsetLocked(void* buffer, size_t bytes, size_t offset,
-                                size_t* bytes_read);
+                                size_t* bytes_read)
+      EXCLUSIVE_LOCKS_REQUIRED(crit_);
 
   // Helper method that implements WriteOffset. Caller must acquire a lock
   // when calling this method.
   StreamResult WriteOffsetLocked(const void* buffer, size_t bytes,
-                                 size_t offset, size_t* bytes_written);
+                                 size_t offset, size_t* bytes_written)
+      EXCLUSIVE_LOCKS_REQUIRED(crit_);
 
-  StreamState state_;  // keeps the opened/closed state of the stream
-  scoped_ptr<char[]> buffer_;  // the allocated buffer
-  size_t buffer_length_;  // size of the allocated buffer
-  size_t data_length_;  // amount of readable data in the buffer
-  size_t read_position_;  // offset to the readable data
-  Thread* owner_;  // stream callbacks are dispatched on this thread
-  mutable CriticalSection crit_;  // object lock
-  DISALLOW_COPY_AND_ASSIGN(FifoBuffer);
+  // keeps the opened/closed state of the stream
+  StreamState state_ GUARDED_BY(crit_);
+  // the allocated buffer
+  scoped_ptr<char[]> buffer_ GUARDED_BY(crit_);
+  // size of the allocated buffer
+  size_t buffer_length_ GUARDED_BY(crit_);
+  // amount of readable data in the buffer
+  size_t data_length_ GUARDED_BY(crit_);
+  // offset to the readable data
+  size_t read_position_ GUARDED_BY(crit_);
+  // stream callbacks are dispatched on this thread
+  Thread* owner_;
+  // object lock
+  CriticalSection crit_;
+  RTC_DISALLOW_COPY_AND_ASSIGN(FifoBuffer);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -587,7 +596,7 @@ class LoggingAdapter : public StreamAdapterInterface {
   bool hex_mode_;
   LogMultilineState lms_;
 
-  DISALLOW_COPY_AND_ASSIGN(LoggingAdapter);
+  RTC_DISALLOW_COPY_AND_ASSIGN(LoggingAdapter);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -670,7 +679,7 @@ class StreamReference : public StreamAdapterInterface {
     StreamInterface* stream_;
     int ref_count_;
     CriticalSection cs_;
-    DISALLOW_COPY_AND_ASSIGN(StreamRefCount);
+    RTC_DISALLOW_COPY_AND_ASSIGN(StreamRefCount);
   };
 
   // Constructor for adding references
@@ -678,7 +687,7 @@ class StreamReference : public StreamAdapterInterface {
                            StreamInterface* stream);
 
   StreamRefCount* stream_ref_count_;
-  DISALLOW_COPY_AND_ASSIGN(StreamReference);
+  RTC_DISALLOW_COPY_AND_ASSIGN(StreamReference);
 };
 
 ///////////////////////////////////////////////////////////////////////////////

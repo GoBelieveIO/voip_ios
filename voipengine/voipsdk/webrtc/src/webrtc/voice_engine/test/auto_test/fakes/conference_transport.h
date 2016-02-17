@@ -17,12 +17,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webrtc/base/basictypes.h"
+#include "webrtc/base/criticalsection.h"
+#include "webrtc/base/platform_thread.h"
 #include "webrtc/base/scoped_ptr.h"
 #include "webrtc/common_types.h"
-#include "webrtc/modules/rtp_rtcp/interface/rtp_header_parser.h"
-#include "webrtc/system_wrappers/interface/critical_section_wrapper.h"
-#include "webrtc/system_wrappers/interface/event_wrapper.h"
-#include "webrtc/system_wrappers/interface/thread_wrapper.h"
+#include "webrtc/modules/rtp_rtcp/include/rtp_header_parser.h"
+#include "webrtc/system_wrappers/include/event_wrapper.h"
 #include "webrtc/voice_engine/include/voe_base.h"
 #include "webrtc/voice_engine/include/voe_codec.h"
 #include "webrtc/voice_engine/include/voe_file.h"
@@ -98,27 +98,25 @@ class ConferenceTransport: public webrtc::Transport {
   bool GetReceiverStatistics(unsigned int id, webrtc::CallStatistics* stats);
 
   // Inherit from class webrtc::Transport.
-  int SendPacket(int channel, const void *data, size_t len) override;
-  int SendRTCPPacket(int channel, const void *data, size_t len) override;
+  bool SendRtp(const uint8_t* data,
+               size_t len,
+               const webrtc::PacketOptions& options) override;
+  bool SendRtcp(const uint8_t *data, size_t len) override;
 
  private:
   struct Packet {
     enum Type { Rtp, Rtcp, } type_;
 
     Packet() : len_(0) {}
-    Packet(Type type, int channel, const void* data, size_t len, uint32 time_ms)
-        : type_(type),
-          channel_(channel),
-          len_(len),
-          send_time_ms_(time_ms) {
+    Packet(Type type, const void* data, size_t len, uint32_t time_ms)
+        : type_(type), len_(len), send_time_ms_(time_ms) {
       EXPECT_LE(len_, kMaxPacketSizeByte);
       memcpy(data_, data, len_);
     }
 
-    int channel_;
     uint8_t data_[kMaxPacketSizeByte];
     size_t len_;
-    uint32 send_time_ms_;
+    uint32_t send_time_ms_;
   };
 
   static bool Run(void* transport) {
@@ -126,22 +124,20 @@ class ConferenceTransport: public webrtc::Transport {
   }
 
   int GetReceiverChannelForSsrc(unsigned int sender_ssrc) const;
-  void StorePacket(Packet::Type type, int channel, const void* data,
-                   size_t len);
+  void StorePacket(Packet::Type type, const void* data, size_t len);
   void SendPacket(const Packet& packet);
   bool DispatchPackets();
 
-  const rtc::scoped_ptr<webrtc::CriticalSectionWrapper> pq_crit_;
-  const rtc::scoped_ptr<webrtc::CriticalSectionWrapper> stream_crit_;
+  rtc::CriticalSection pq_crit_;
+  rtc::CriticalSection stream_crit_;
   const rtc::scoped_ptr<webrtc::EventWrapper> packet_event_;
-  const rtc::scoped_ptr<webrtc::ThreadWrapper> thread_;
+  rtc::PlatformThread thread_;
 
   unsigned int rtt_ms_;
   unsigned int stream_count_;
 
-  std::map<unsigned int, std::pair<int, int>> streams_
-    GUARDED_BY(stream_crit_.get());
-  std::deque<Packet> packet_queue_ GUARDED_BY(pq_crit_.get());
+  std::map<unsigned int, std::pair<int, int>> streams_ GUARDED_BY(stream_crit_);
+  std::deque<Packet> packet_queue_ GUARDED_BY(pq_crit_);
 
   int local_sender_;  // Channel Id of local sender
   int reflector_;

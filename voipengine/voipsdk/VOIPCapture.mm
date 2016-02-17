@@ -12,8 +12,8 @@
 #import "VOIPCapture.h"
 
 #import "WebRTC.h"
-#include "webrtc/modules/video_capture/include/video_capture_factory.h"
-#include "webrtc/modules/video_capture/include/video_capture.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
+#include "webrtc/modules/video_capture/video_capture.h"
 #include "webrtc/voice_engine/include/voe_network.h"
 #include "webrtc/voice_engine/include/voe_audio_processing.h"
 #include "webrtc/voice_engine/include/voe_hardware.h"

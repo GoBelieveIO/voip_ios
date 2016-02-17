@@ -44,7 +44,7 @@ class RembBweSender : public BweSender {
  private:
   Clock* clock_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RembBweSender);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(RembBweSender);
 };
 
 class RembReceiver : public BweReceiver, public RemoteBitrateObserver {
@@ -58,8 +58,8 @@ class RembReceiver : public BweReceiver, public RemoteBitrateObserver {
                      const MediaPacket& media_packet) override;
   FeedbackPacket* GetFeedback(int64_t now_ms) override;
   // Implements RemoteBitrateObserver.
-  void OnReceiveBitrateChanged(const std::vector<unsigned int>& ssrcs,
-                               unsigned int bitrate) override;
+  void OnReceiveBitrateChanged(const std::vector<uint32_t>& ssrcs,
+                               uint32_t bitrate) override;
 
  private:
   static RTCPReportBlock BuildReportBlock(StreamStatistician* statistician);
@@ -73,7 +73,7 @@ class RembReceiver : public BweReceiver, public RemoteBitrateObserver {
   int64_t last_feedback_ms_;
   rtc::scoped_ptr<RemoteBitrateEstimator> estimator_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RembReceiver);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(RembReceiver);
 };
 
 }  // namespace bwe

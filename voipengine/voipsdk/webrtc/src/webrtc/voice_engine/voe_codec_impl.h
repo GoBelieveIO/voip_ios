@@ -58,17 +58,13 @@ class VoECodecImpl : public VoECodec {
 
   int SetOpusDtx(int channel, bool enable_dtx) override;
 
+  RtcEventLog* GetEventLog() override;
+
  protected:
   VoECodecImpl(voe::SharedData* shared);
   ~VoECodecImpl() override;
 
  private:
-  void ACMToExternalCodecRepresentation(CodecInst& toInst,
-                                        const CodecInst& fromInst);
-
-  void ExternalToACMCodecRepresentation(CodecInst& toInst,
-                                        const CodecInst& fromInst);
-
   voe::SharedData* _shared;
 };
 

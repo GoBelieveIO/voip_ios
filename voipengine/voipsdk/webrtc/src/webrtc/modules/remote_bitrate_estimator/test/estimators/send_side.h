@@ -28,8 +28,8 @@ class FullBweSender : public BweSender, public RemoteBitrateObserver {
   int GetFeedbackIntervalMs() const override;
   void GiveFeedback(const FeedbackPacket& feedback) override;
   void OnPacketsSent(const Packets& packets) override;
-  void OnReceiveBitrateChanged(const std::vector<unsigned int>& ssrcs,
-                               unsigned int bitrate) override;
+  void OnReceiveBitrateChanged(const std::vector<uint32_t>& ssrcs,
+                               uint32_t bitrate) override;
   int64_t TimeUntilNextProcess() override;
   int Process() override;
 
@@ -45,7 +45,7 @@ class FullBweSender : public BweSender, public RemoteBitrateObserver {
   bool has_received_ack_;
   uint16_t last_acked_seq_num_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(FullBweSender);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(FullBweSender);
 };
 
 class SendSideBweReceiver : public BweReceiver {

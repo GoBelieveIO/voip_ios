@@ -13,11 +13,12 @@
 
 #include <list>
 #include <limits>
+#include <set>
 #include <string>
 
 #include "webrtc/base/constructormagic.h"
 #include "webrtc/base/scoped_ptr.h"
-#include "webrtc/modules/interface/module.h"
+#include "webrtc/modules/include/module.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe.h"
 #include "webrtc/modules/remote_bitrate_estimator/test/bwe_test_framework.h"
 
@@ -96,7 +97,7 @@ class VideoSender : public PacketSender, public BitrateObserver {
 
  private:
   uint32_t previous_sending_bitrate_;
-  DISALLOW_COPY_AND_ASSIGN(VideoSender);
+  RTC_DISALLOW_COPY_AND_ASSIGN(VideoSender);
 };
 
 class PacedVideoSender : public VideoSender, public PacedSender::Callback {
@@ -129,7 +130,7 @@ class PacedVideoSender : public VideoSender, public PacedSender::Callback {
   Packets queue_;
   Packets pacer_queue_;
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(PacedVideoSender);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(PacedVideoSender);
 };
 
 class TcpSender : public PacketSender {
@@ -149,7 +150,7 @@ class TcpSender : public PacketSender {
  private:
   struct InFlight {
    public:
-    InFlight(const MediaPacket& packet)
+    explicit InFlight(const MediaPacket& packet)
         : sequence_number(packet.header().sequenceNumber),
           time_ms(packet.send_time_ms()) {}
 

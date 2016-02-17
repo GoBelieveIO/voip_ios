@@ -8,26 +8,32 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#ifndef WEBRTC_AUDIO_DEVICE_AUDIO_DEVICE_IOS_H
-#define WEBRTC_AUDIO_DEVICE_AUDIO_DEVICE_IOS_H
+#ifndef WEBRTC_MODULES_AUDIO_DEVICE_IOS_AUDIO_DEVICE_IOS_H_
+#define WEBRTC_MODULES_AUDIO_DEVICE_IOS_AUDIO_DEVICE_IOS_H_
 
 #include <AudioUnit/AudioUnit.h>
 
+#include "webrtc/base/scoped_ptr.h"
 #include "webrtc/base/thread_checker.h"
 #include "webrtc/modules/audio_device/audio_device_generic.h"
-#include "webrtc/system_wrappers/interface/critical_section_wrapper.h"
-#include "webrtc/system_wrappers/interface/thread_wrapper.h"
 
 namespace webrtc {
-const uint32_t N_REC_SAMPLES_PER_SEC = 44100;
-const uint32_t N_PLAY_SAMPLES_PER_SEC = 44100;
 
-const uint32_t ENGINE_REC_BUF_SIZE_IN_SAMPLES = (N_REC_SAMPLES_PER_SEC / 100);
-const uint32_t ENGINE_PLAY_BUF_SIZE_IN_SAMPLES = (N_PLAY_SAMPLES_PER_SEC / 100);
+class FineAudioBuffer;
 
-// Number of 10 ms recording blocks in recording buffer
-const uint16_t N_REC_BUFFERS = 20;
-
+// Implements full duplex 16-bit mono PCM audio support for iOS using a
+// Voice-Processing (VP) I/O audio unit in Core Audio. The VP I/O audio unit
+// supports audio echo cancellation. It also adds automatic gain control,
+// adjustment of voice-processing quality and muting.
+//
+// An instance must be created and destroyed on one and the same thread.
+// All supported public methods must also be called on the same thread.
+// A thread checker will RTC_DCHECK if any supported method is called on an
+// invalid thread.
+//
+// Recorded audio will be delivered on a real-time internal I/O thread in the
+// audio unit. The audio unit will also ask for audio data to play out on this
+// same thread.
 class AudioDeviceIOS : public AudioDeviceGeneric {
  public:
   AudioDeviceIOS();
@@ -37,42 +43,47 @@ class AudioDeviceIOS : public AudioDeviceGeneric {
 
   int32_t Init() override;
   int32_t Terminate() override;
-  bool Initialized() const override { return _initialized; }
+  bool Initialized() const override { return initialized_; }
 
   int32_t InitPlayout() override;
-  bool PlayoutIsInitialized() const override { return _playIsInitialized; }
+  bool PlayoutIsInitialized() const override { return play_is_initialized_; }
 
   int32_t InitRecording() override;
-  bool RecordingIsInitialized() const override { return _recIsInitialized; }
+  bool RecordingIsInitialized() const override { return rec_is_initialized_; }
 
   int32_t StartPlayout() override;
   int32_t StopPlayout() override;
-  bool Playing() const override { return _playing; }
+  bool Playing() const override { return playing_; }
 
   int32_t StartRecording() override;
   int32_t StopRecording() override;
-  bool Recording() const override { return _recording; }
+  bool Recording() const override { return recording_; }
 
   int32_t SetLoudspeakerStatus(bool enable) override;
   int32_t GetLoudspeakerStatus(bool& enabled) const override;
 
-  // TODO(henrika): investigate if we can reduce the complexity here.
-  // Do we even need delay estimates?
+  // These methods returns hard-coded delay values and not dynamic delay
+  // estimates. The reason is that iOS supports a built-in AEC and the WebRTC
+  // AEC will always be disabled in the Libjingle layer to avoid running two
+  // AEC implementations at the same time. And, it saves resources to avoid
+  // updating these delay values continuously.
+  // TODO(henrika): it would be possible to mark these two methods as not
+  // implemented since they are only called for A/V-sync purposes today and
+  // A/V-sync is not supported on iOS. However, we avoid adding error messages
+  // the log by using these dummy implementations instead.
   int32_t PlayoutDelay(uint16_t& delayMS) const override;
   int32_t RecordingDelay(uint16_t& delayMS) const override;
 
-  int32_t PlayoutBuffer(AudioDeviceModule::BufferType& type,
-                        uint16_t& sizeMS) const override;
-
-  // These methods are unique for the iOS implementation.
-
   // Native audio parameters stored during construction.
+  // These methods are unique for the iOS implementation.
   int GetPlayoutAudioParameters(AudioParameters* params) const override;
   int GetRecordAudioParameters(AudioParameters* params) const override;
 
-  // These methods are currently not implemented on iOS.
-  // See audio_device_not_implemented_ios.mm for dummy implementations.
+  // These methods are currently not fully implemented on iOS:
 
+  // See audio_device_not_implemented.cc for trivial implementations.
+  int32_t PlayoutBuffer(AudioDeviceModule::BufferType& type,
+                        uint16_t& sizeMS) const override;
   int32_t ActiveAudioLayer(AudioDeviceModule::AudioLayer& audioLayer) const;
   int32_t ResetAudioDevice() override;
   int32_t PlayoutIsAvailable(bool& available) override;
@@ -134,54 +145,77 @@ class AudioDeviceIOS : public AudioDeviceGeneric {
   bool PlayoutError() const override;
   bool RecordingWarning() const override;
   bool RecordingError() const override;
-  void ClearPlayoutWarning() override{};
-  void ClearPlayoutError() override{};
-  void ClearRecordingWarning() override{};
-  void ClearRecordingError() override{};
+  void ClearPlayoutWarning() override {}
+  void ClearPlayoutError() override {}
+  void ClearRecordingWarning() override {}
+  void ClearRecordingError() override {}
 
  private:
-  // TODO(henrika): try to remove these.
-  void Lock() {
-    _critSect.Enter();
-  }
+  // Uses current |playout_parameters_| and |record_parameters_| to inform the
+  // audio device buffer (ADB) about our internal audio parameters.
+  void UpdateAudioDeviceBuffer();
 
-  void UnLock() {
-    _critSect.Leave();
-  }
+  // Registers observers for the AVAudioSessionRouteChangeNotification and
+  // AVAudioSessionInterruptionNotification notifications.
+  void RegisterNotificationObservers();
+  void UnregisterNotificationObservers();
 
-  // Init and shutdown
-  int32_t InitPlayOrRecord();
-  int32_t ShutdownPlayOrRecord();
+  // Since the preferred audio parameters are only hints to the OS, the actual
+  // values may be different once the AVAudioSession has been activated.
+  // This method asks for the current hardware parameters and takes actions
+  // if they should differ from what we have asked for initially. It also
+  // defines |playout_parameters_| and |record_parameters_|.
+  void SetupAudioBuffersForActiveAudioSession();
 
-  void UpdateRecordingDelay();
-  void UpdatePlayoutDelay();
+  // Creates a Voice-Processing I/O unit and configures it for full-duplex
+  // audio. The selected stream format is selected to avoid internal resampling
+  // and to match the 10ms callback rate for WebRTC as well as possible.
+  // This method also initializes the created audio unit.
+  bool SetupAndInitializeVoiceProcessingAudioUnit();
 
-  static OSStatus RecordProcess(void *inRefCon,
-                                AudioUnitRenderActionFlags *ioActionFlags,
-                                const AudioTimeStamp *timeStamp,
-                                UInt32 inBusNumber,
-                                UInt32 inNumberFrames,
-                                AudioBufferList *ioData);
+  // Restarts active audio streams using a new sample rate. Required when e.g.
+  // a BT headset is enabled or disabled.
+  bool RestartAudioUnitWithNewFormat(float sample_rate);
 
-  static OSStatus PlayoutProcess(void *inRefCon,
-                                 AudioUnitRenderActionFlags *ioActionFlags,
-                                 const AudioTimeStamp *timeStamp,
-                                 UInt32 inBusNumber,
-                                 UInt32 inNumberFrames,
-                                 AudioBufferList *ioData);
+  // Activates our audio session, creates and initializes the voice-processing
+  // audio unit and verifies that we got the preferred native audio parameters.
+  bool InitPlayOrRecord();
 
-  OSStatus RecordProcessImpl(AudioUnitRenderActionFlags *ioActionFlags,
-                             const AudioTimeStamp *timeStamp,
-                             uint32_t inBusNumber,
-                             uint32_t inNumberFrames);
+  // Closes and deletes the voice-processing I/O unit.
+  void ShutdownPlayOrRecord();
 
-  OSStatus PlayoutProcessImpl(uint32_t inNumberFrames,
-                              AudioBufferList *ioData);
+  // Helper method for destroying the existing audio unit.
+  void DisposeAudioUnit();
 
-  static bool RunCapture(void* ptrThis);
-  bool CaptureWorkerThread();
+  // Callback function called on a real-time priority I/O thread from the audio
+  // unit. This method is used to signal that recorded audio is available.
+  static OSStatus RecordedDataIsAvailable(
+      void* in_ref_con,
+      AudioUnitRenderActionFlags* io_action_flags,
+      const AudioTimeStamp* time_stamp,
+      UInt32 in_bus_number,
+      UInt32 in_number_frames,
+      AudioBufferList* io_data);
+  OSStatus OnRecordedDataIsAvailable(
+      AudioUnitRenderActionFlags* io_action_flags,
+      const AudioTimeStamp* time_stamp,
+      UInt32 in_bus_number,
+      UInt32 in_number_frames);
 
- private:
+  // Callback function called on a real-time priority I/O thread from the audio
+  // unit. This method is used to provide audio samples to the audio unit.
+  static OSStatus GetPlayoutData(void* in_ref_con,
+                                 AudioUnitRenderActionFlags* io_action_flags,
+                                 const AudioTimeStamp* time_stamp,
+                                 UInt32 in_bus_number,
+                                 UInt32 in_number_frames,
+                                 AudioBufferList* io_data);
+  OSStatus OnGetPlayoutData(AudioUnitRenderActionFlags* io_action_flags,
+                            UInt32 in_number_frames,
+                            AudioBufferList* io_data);
+
+  // Ensures that methods are called from the same thread as this object is
+  // created on.
   rtc::ThreadChecker thread_checker_;
 
   // Raw pointer handle provided to us in AttachAudioBuffer(). Owned by the
@@ -190,47 +224,75 @@ class AudioDeviceIOS : public AudioDeviceGeneric {
   // and therefore outlives this object.
   AudioDeviceBuffer* audio_device_buffer_;
 
-  CriticalSectionWrapper& _critSect;
-
+  // Contains audio parameters (sample rate, #channels, buffer size etc.) for
+  // the playout and recording sides. These structure is set in two steps:
+  // first, native sample rate and #channels are defined in Init(). Next, the
+  // audio session is activated and we verify that the preferred parameters
+  // were granted by the OS. At this stage it is also possible to add a third
+  // component to the parameters; the native I/O buffer duration.
+  // A RTC_CHECK will be hit if we for some reason fail to open an audio session
+  // using the specified parameters.
   AudioParameters playout_parameters_;
   AudioParameters record_parameters_;
 
-  rtc::scoped_ptr<ThreadWrapper> _captureWorkerThread;
+  // The Voice-Processing I/O unit has the same characteristics as the
+  // Remote I/O unit (supports full duplex low-latency audio input and output)
+  // and adds AEC for for two-way duplex communication. It also adds AGC,
+  // adjustment of voice-processing quality, and muting. Hence, ideal for
+  // VoIP applications.
+  AudioUnit vpio_unit_;
 
-  AudioUnit _auVoiceProcessing;
-  void* _audioInterruptionObserver;
+  // FineAudioBuffer takes an AudioDeviceBuffer which delivers audio data
+  // in chunks of 10ms. It then allows for this data to be pulled in
+  // a finer or coarser granularity. I.e. interacting with this class instead
+  // of directly with the AudioDeviceBuffer one can ask for any number of
+  // audio data samples. Is also supports a similar scheme for the recording
+  // side.
+  // Example: native buffer size can be 128 audio frames at 16kHz sample rate.
+  // WebRTC will provide 480 audio frames per 10ms but iOS asks for 128
+  // in each callback (one every 8ms). This class can then ask for 128 and the
+  // FineAudioBuffer will ask WebRTC for new data only when needed and also
+  // cache non-utilized audio between callbacks. On the recording side, iOS
+  // can provide audio data frames of size 128 and these are accumulated until
+  // enough data to supply one 10ms call exists. This 10ms chunk is then sent
+  // to WebRTC and the remaining part is stored.
+  rtc::scoped_ptr<FineAudioBuffer> fine_audio_buffer_;
 
-  bool _initialized;
-  bool _isShutDown;
-  bool _recording;
-  bool _playing;
-  bool _recIsInitialized;
-  bool _playIsInitialized;
+  // Extra audio buffer to be used by the playout side for rendering audio.
+  // The buffer size is given by FineAudioBuffer::RequiredBufferSizeBytes().
+  rtc::scoped_ptr<SInt8[]> playout_audio_buffer_;
 
-  // The sampling rate to use with Audio Device Buffer
-  int _adbSampFreq;
+  // Provides a mechanism for encapsulating one or more buffers of audio data.
+  // Only used on the recording side.
+  AudioBufferList audio_record_buffer_list_;
 
-  // Delay calculation
-  uint32_t _recordingDelay;
-  uint32_t _playoutDelay;
-  uint32_t _playoutDelayMeasurementCounter;
-  uint32_t _recordingDelayHWAndOS;
-  uint32_t _recordingDelayMeasurementCounter;
+  // Temporary storage for recorded data. AudioUnitRender() renders into this
+  // array as soon as a frame of the desired buffer size has been recorded.
+  rtc::scoped_ptr<SInt8[]> record_audio_buffer_;
 
-  // Playout buffer, needed for 44.0 / 44.1 kHz mismatch
-  int16_t _playoutBuffer[ENGINE_PLAY_BUF_SIZE_IN_SAMPLES];
-  uint32_t  _playoutBufferUsed;  // How much is filled
+  // Set to 1 when recording is active and 0 otherwise.
+  volatile int recording_;
 
-  // Recording buffers
-  int16_t _recordingBuffer[N_REC_BUFFERS][ENGINE_REC_BUF_SIZE_IN_SAMPLES];
-  uint32_t _recordingLength[N_REC_BUFFERS];
-  uint32_t _recordingSeqNumber[N_REC_BUFFERS];
-  uint32_t _recordingCurrentSeq;
+  // Set to 1 when playout is active and 0 otherwise.
+  volatile int playing_;
 
-  // Current total size all data in buffers, used for delay estimate
-  uint32_t _recordingBufferTotalSize;
+  // Set to true after successful call to Init(), false otherwise.
+  bool initialized_;
+
+  // Set to true after successful call to InitRecording(), false otherwise.
+  bool rec_is_initialized_;
+
+  // Set to true after successful call to InitPlayout(), false otherwise.
+  bool play_is_initialized_;
+
+  // Audio interruption observer instance.
+  void* audio_interruption_observer_;
+  void* route_change_observer_;
+
+  // Contains the audio data format specification for a stream of audio.
+  AudioStreamBasicDescription application_format_;
 };
 
 }  // namespace webrtc
 
-#endif  // WEBRTC_AUDIO_DEVICE_AUDIO_DEVICE_IOS_H
+#endif  // WEBRTC_MODULES_AUDIO_DEVICE_IOS_AUDIO_DEVICE_IOS_H_

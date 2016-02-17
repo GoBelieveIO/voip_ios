@@ -11,10 +11,11 @@
 #ifndef WEBRTC_VOICE_ENGINE_SHARED_DATA_H
 #define WEBRTC_VOICE_ENGINE_SHARED_DATA_H
 
+#include "webrtc/base/criticalsection.h"
 #include "webrtc/base/scoped_ptr.h"
 #include "webrtc/modules/audio_device/include/audio_device.h"
 #include "webrtc/modules/audio_processing/include/audio_processing.h"
-#include "webrtc/modules/utility/interface/process_thread.h"
+#include "webrtc/modules/utility/include/process_thread.h"
 #include "webrtc/voice_engine/channel_manager.h"
 #include "webrtc/voice_engine/statistics.h"
 #include "webrtc/voice_engine/voice_engine_defines.h"
@@ -23,7 +24,6 @@ class ProcessThread;
 
 namespace webrtc {
 class Config;
-class CriticalSectionWrapper;
 
 namespace voe {
 
@@ -43,11 +43,7 @@ public:
     void set_audio_processing(AudioProcessing* audio_processing);
     TransmitMixer* transmit_mixer() { return _transmitMixerPtr; }
     OutputMixer* output_mixer() { return _outputMixerPtr; }
-    CriticalSectionWrapper* crit_sec() { return _apiCritPtr; }
-    bool ext_recording() const { return _externalRecording; }
-    void set_ext_recording(bool value) { _externalRecording = value; }
-    bool ext_playout() const { return _externalPlayout; }
-    void set_ext_playout(bool value) { _externalPlayout = value; }
+    rtc::CriticalSection* crit_sec() { return &_apiCritPtr; }
     ProcessThread* process_thread() { return _moduleProcessThreadPtr.get(); }
     AudioDeviceModule::AudioLayer audio_device_layer() const {
       return _audioDeviceLayer;
@@ -67,7 +63,7 @@ public:
 
 protected:
     const uint32_t _instanceId;
-    CriticalSectionWrapper* _apiCritPtr;
+    rtc::CriticalSection _apiCritPtr;
     ChannelManager _channelManager;
     Statistics _engineStatistics;
     AudioDeviceModule* _audioDevicePtr;
@@ -75,9 +71,6 @@ protected:
     TransmitMixer* _transmitMixerPtr;
     rtc::scoped_ptr<AudioProcessing> audioproc_;
     rtc::scoped_ptr<ProcessThread> _moduleProcessThreadPtr;
-
-    bool _externalRecording;
-    bool _externalPlayout;
 
     AudioDeviceModule::AudioLayer _audioDeviceLayer;
 

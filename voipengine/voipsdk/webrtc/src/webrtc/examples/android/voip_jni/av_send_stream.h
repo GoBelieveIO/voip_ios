@@ -17,13 +17,12 @@ namespace webrtc {
     class Call;
     class VideoSendStream;
     class VideoEncoder;
+    class VideoRenderer;
 }
-
-class WebRtcVcmFactory;
 
 class AVSendStream : public webrtc::VideoCaptureDataCallback {
 public:
-    AVSendStream(int32_t ssrc, VoiceTransport *t);
+    AVSendStream(int32_t ssrc, int32_t rtxSSRC, VoiceTransport *t);
     virtual ~AVSendStream();
 
     void start();
@@ -36,6 +35,8 @@ public:
     void setCall(webrtc::Call *c) {
         call_ = c;
     }
+
+    void switchCamera();
 
     //implement VideoCaptureDataCallback
     virtual void OnIncomingCapturedFrame(const int32_t id,
@@ -52,6 +53,8 @@ private:
 
     void startSendStream();
     void startAudioStream();
+
+    void startCapture(bool front);
 private:
 
     union VideoEncoderSettings {
@@ -65,13 +68,11 @@ private:
     VoiceTransport *voiceTransport;
 
     int32_t ssrc;
+    int32_t rtxSSRC;
 
     int voiceChannel;
 
     VoiceChannelTransport *voiceChannelTransport;
-
-    WebRtcVcmFactory *factory_;
-    webrtc::VideoCaptureModule* module_;
 
     int captured_frames_;
     std::vector<uint8_t> capture_buffer_;
@@ -81,8 +82,6 @@ private:
     
     webrtc::VideoSendStream *stream_;
     webrtc::VideoEncoder *encoder_;
-
-
 };
 
 

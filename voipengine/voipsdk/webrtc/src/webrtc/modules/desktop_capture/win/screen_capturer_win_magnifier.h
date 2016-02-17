@@ -21,7 +21,7 @@
 #include "webrtc/modules/desktop_capture/screen_capturer.h"
 #include "webrtc/modules/desktop_capture/screen_capturer_helper.h"
 #include "webrtc/modules/desktop_capture/win/scoped_thread_desktop.h"
-#include "webrtc/system_wrappers/interface/atomic32.h"
+#include "webrtc/system_wrappers/include/atomic32.h"
 
 namespace webrtc {
 
@@ -44,6 +44,8 @@ class ScreenCapturerWinMagnifier : public ScreenCapturer {
 
   // Overridden from ScreenCapturer:
   void Start(Callback* callback) override;
+  void SetSharedMemoryFactory(
+      rtc::scoped_ptr<SharedMemoryFactory> shared_memory_factory) override;
   void Capture(const DesktopRegion& region) override;
   bool GetScreenList(ScreenList* screens) override;
   bool SelectScreen(ScreenId id) override;
@@ -104,6 +106,7 @@ class ScreenCapturerWinMagnifier : public ScreenCapturer {
   rtc::scoped_ptr<ScreenCapturer> fallback_capturer_;
   bool fallback_capturer_started_;
   Callback* callback_;
+  rtc::scoped_ptr<SharedMemoryFactory> shared_memory_factory_;
   ScreenId current_screen_id_;
   std::wstring current_device_key_;
   HWND excluded_window_;
@@ -145,7 +148,7 @@ class ScreenCapturerWinMagnifier : public ScreenCapturer {
   // successfully. Reset at the beginning of each CaptureImage call.
   bool magnifier_capture_succeeded_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenCapturerWinMagnifier);
+  RTC_DISALLOW_COPY_AND_ASSIGN(ScreenCapturerWinMagnifier);
 };
 
 }  // namespace webrtc

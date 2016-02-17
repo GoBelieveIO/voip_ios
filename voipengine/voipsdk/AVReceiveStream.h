@@ -13,12 +13,17 @@
 
 @class VOIPRenderView;
 
+namespace webrtc {
+    class Transport;
+}
+
 @interface AVReceiveStream : NSObject {
     
 }
 @property (weak, nonatomic) VOIPRenderView *render;
 @property (assign) uint64_t uid;
 @property (weak, nonatomic) id<VoiceTransport> voiceTransport;
+@property(assign, nonatomic) webrtc::Transport *transport;
 @property (assign, nonatomic) int voiceChannel;
 @property (nonatomic) int32_t localVideoSSRC;
 @property (nonatomic) int32_t remoteVideoSSRC;

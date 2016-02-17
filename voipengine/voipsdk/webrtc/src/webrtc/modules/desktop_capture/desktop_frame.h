@@ -91,33 +91,41 @@ class DesktopFrame {
   rtc::scoped_ptr<DesktopRegion> shape_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DesktopFrame);
+  RTC_DISALLOW_COPY_AND_ASSIGN(DesktopFrame);
 };
 
 // A DesktopFrame that stores data in the heap.
 class BasicDesktopFrame : public DesktopFrame {
  public:
   explicit BasicDesktopFrame(DesktopSize size);
-  virtual ~BasicDesktopFrame();
+  ~BasicDesktopFrame() override;
 
   // Creates a BasicDesktopFrame that contains copy of |frame|.
   static DesktopFrame* CopyOf(const DesktopFrame& frame);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BasicDesktopFrame);
+  RTC_DISALLOW_COPY_AND_ASSIGN(BasicDesktopFrame);
 };
 
 // A DesktopFrame that stores data in shared memory.
 class SharedMemoryDesktopFrame : public DesktopFrame {
  public:
+  static rtc::scoped_ptr<DesktopFrame> Create(
+      DesktopSize size,
+      SharedMemoryFactory* shared_memory_factory);
+
   // Takes ownership of |shared_memory|.
+  // TODO(sergeyu): Remove this constructor and keep the second one.
   SharedMemoryDesktopFrame(DesktopSize size,
                            int stride,
                            SharedMemory* shared_memory);
-  virtual ~SharedMemoryDesktopFrame();
+  SharedMemoryDesktopFrame(DesktopSize size,
+                           int stride,
+                           rtc::scoped_ptr<SharedMemory> shared_memory);
+  ~SharedMemoryDesktopFrame() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SharedMemoryDesktopFrame);
+  RTC_DISALLOW_COPY_AND_ASSIGN(SharedMemoryDesktopFrame);
 };
 
 }  // namespace webrtc

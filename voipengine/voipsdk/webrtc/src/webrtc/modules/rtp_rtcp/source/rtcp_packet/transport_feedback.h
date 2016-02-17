@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "webrtc/base/constructormagic.h"
-#include "webrtc/modules/interface/module_common_types.h"
+#include "webrtc/modules/include/module_common_types.h"
 #include "webrtc/modules/rtp_rtcp/source/rtcp_packet.h"
 
 namespace webrtc {
@@ -43,7 +43,6 @@ class TransportFeedback : public RtcpPacket {
   };
 
   uint16_t GetBaseSequence() const;
-  int32_t GetBaseTime() const;
   std::vector<TransportFeedback::StatusSymbol> GetStatusVector() const;
   std::vector<int16_t> GetReceiveDeltas() const;
 
@@ -53,6 +52,8 @@ class TransportFeedback : public RtcpPacket {
   // is relative the base time.
   std::vector<int64_t> GetReceiveDeltasUs() const;
 
+  uint32_t GetPacketSenderSsrc() const;
+  uint32_t GetMediaSourceSsrc() const;
   static const int kDeltaScaleFactor = 250;  // Convert to multiples of 0.25ms.
   static const uint8_t kFeedbackMessageType = 15;  // TODO(sprang): IANA reg?
   static const uint8_t kPayloadType = 205;         // RTPFB, see RFC4585.
@@ -96,7 +97,7 @@ class TransportFeedback : public RtcpPacket {
   bool vec_needs_two_bit_symbols_;
   uint32_t size_bytes_;
 
-  DISALLOW_COPY_AND_ASSIGN(TransportFeedback);
+  RTC_DISALLOW_COPY_AND_ASSIGN(TransportFeedback);
 };
 
 }  // namespace rtcp

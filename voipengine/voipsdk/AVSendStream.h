@@ -15,12 +15,14 @@
 
 namespace webrtc {
     class VideoFrame;
+    class Transport;
 }
 
 @interface AVSendStream : NSObject {
 }
 
 @property(weak, nonatomic) id<VoiceTransport> voiceTransport;
+@property(assign, nonatomic) webrtc::Transport *transport;
 @property(assign, nonatomic) int voiceChannel;
 
 @property(nonatomic) int32_t videoSSRC;

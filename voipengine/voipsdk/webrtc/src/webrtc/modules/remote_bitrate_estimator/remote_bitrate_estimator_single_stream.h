@@ -17,15 +17,14 @@
 #include "webrtc/modules/remote_bitrate_estimator/aimd_rate_control.h"
 #include "webrtc/modules/remote_bitrate_estimator/include/remote_bitrate_estimator.h"
 #include "webrtc/modules/remote_bitrate_estimator/rate_statistics.h"
-#include "webrtc/system_wrappers/interface/critical_section_wrapper.h"
+#include "webrtc/system_wrappers/include/critical_section_wrapper.h"
 
 namespace webrtc {
 
 class RemoteBitrateEstimatorSingleStream : public RemoteBitrateEstimator {
  public:
   RemoteBitrateEstimatorSingleStream(RemoteBitrateObserver* observer,
-                                     Clock* clock,
-                                     uint32_t min_bitrate_bps);
+                                     Clock* clock);
   virtual ~RemoteBitrateEstimatorSingleStream();
 
   void IncomingPacket(int64_t arrival_time_ms,
@@ -35,21 +34,21 @@ class RemoteBitrateEstimatorSingleStream : public RemoteBitrateEstimator {
   int32_t Process() override;
   int64_t TimeUntilNextProcess() override;
   void OnRttUpdate(int64_t avg_rtt_ms, int64_t max_rtt_ms) override;
-  void RemoveStream(unsigned int ssrc) override;
-  bool LatestEstimate(std::vector<unsigned int>* ssrcs,
-                      unsigned int* bitrate_bps) const override;
-  bool GetStats(ReceiveBandwidthEstimatorStats* output) const override;
+  void RemoveStream(uint32_t ssrc) override;
+  bool LatestEstimate(std::vector<uint32_t>* ssrcs,
+                      uint32_t* bitrate_bps) const override;
+  void SetMinBitrate(int min_bitrate_bps) override;
 
  private:
   struct Detector;
 
-  typedef std::map<unsigned int, Detector*> SsrcOveruseEstimatorMap;
+  typedef std::map<uint32_t, Detector*> SsrcOveruseEstimatorMap;
 
   // Triggers a new estimate calculation.
   void UpdateEstimate(int64_t time_now)
       EXCLUSIVE_LOCKS_REQUIRED(crit_sect_.get());
 
-  void GetSsrcs(std::vector<unsigned int>* ssrcs) const
+  void GetSsrcs(std::vector<uint32_t>* ssrcs) const
       SHARED_LOCKS_REQUIRED(crit_sect_.get());
 
   Clock* clock_;
@@ -61,7 +60,7 @@ class RemoteBitrateEstimatorSingleStream : public RemoteBitrateEstimator {
   int64_t last_process_time_;
   int64_t process_interval_ms_ GUARDED_BY(crit_sect_.get());
 
-  DISALLOW_IMPLICIT_CONSTRUCTORS(RemoteBitrateEstimatorSingleStream);
+  RTC_DISALLOW_IMPLICIT_CONSTRUCTORS(RemoteBitrateEstimatorSingleStream);
 };
 
 }  // namespace webrtc

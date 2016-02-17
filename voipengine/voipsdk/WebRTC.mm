@@ -9,7 +9,6 @@
 #import "WebRTC.h"
 
 #include "webrtc/common_types.h"
-#include "webrtc/system_wrappers/interface/field_trial_default.h"
 #include "webrtc/voice_engine/include/voe_network.h"
 #include "webrtc/voice_engine/include/voe_base.h"
 #include "webrtc/voice_engine/include/voe_audio_processing.h"
@@ -23,10 +22,10 @@
 
 
 #include "webrtc/engine_configurations.h"
-#include "webrtc/modules/video_render/include/video_render_defines.h"
-#include "webrtc/modules/video_render/include/video_render.h"
-#include "webrtc/modules/video_capture/include/video_capture_factory.h"
-#include "webrtc/system_wrappers/interface/tick_util.h"
+#include "webrtc/modules/video_render/video_render_defines.h"
+#include "webrtc/modules/video_render/video_render.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
+#include "webrtc/system_wrappers/include/tick_util.h"
 
 #define EXPECT_EQ(a, b) do {if ((a)!=(b)) assert(0);} while(0)
 #define EXPECT_TRUE(a) do {BOOL c = (a); assert(c);} while(0)
@@ -69,9 +68,6 @@
         self.voe_apm = webrtc::VoEAudioProcessing::GetInterface(voe);
         
         self.voe_rtp_rtcp = webrtc::VoERTP_RTCP::GetInterface(voe);
-        
-         webrtc::field_trial::InitFieldTrialsFromString("");
-
     }
     return self;
 }

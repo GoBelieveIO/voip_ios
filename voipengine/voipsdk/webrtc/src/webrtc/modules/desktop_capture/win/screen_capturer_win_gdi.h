@@ -34,6 +34,8 @@ class ScreenCapturerWinGdi : public ScreenCapturer {
 
   // Overridden from ScreenCapturer:
   void Start(Callback* callback) override;
+  void SetSharedMemoryFactory(
+      rtc::scoped_ptr<SharedMemoryFactory> shared_memory_factory) override;
   void Capture(const DesktopRegion& region) override;
   bool GetScreenList(ScreenList* screens) override;
   bool SelectScreen(ScreenId id) override;
@@ -52,6 +54,7 @@ class ScreenCapturerWinGdi : public ScreenCapturer {
   void CaptureCursor();
 
   Callback* callback_;
+  rtc::scoped_ptr<SharedMemoryFactory> shared_memory_factory_;
   ScreenId current_screen_id_;
   std::wstring current_device_key_;
 
@@ -81,7 +84,7 @@ class ScreenCapturerWinGdi : public ScreenCapturer {
   // Used to suppress duplicate logging of SetThreadExecutionState errors.
   bool set_thread_execution_state_failed_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScreenCapturerWinGdi);
+  RTC_DISALLOW_COPY_AND_ASSIGN(ScreenCapturerWinGdi);
 };
 
 }  // namespace webrtc

@@ -13,12 +13,13 @@
 
 #include <string>
 
+#include "webrtc/base/checks.h"
 #include "webrtc/common_video/libyuv/include/scaler.h"
 #include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
-#include "webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
+#include "webrtc/modules/video_coding/include/video_codec_interface.h"
 #include "webrtc/modules/video_coding/codecs/test/packet_manipulator.h"
 #include "webrtc/modules/video_coding/codecs/test/stats.h"
-#include "webrtc/system_wrappers/interface/tick_util.h"
+#include "webrtc/system_wrappers/include/tick_util.h"
 #include "webrtc/test/testsupport/frame_reader.h"
 #include "webrtc/test/testsupport/frame_writer.h"
 #include "webrtc/video_frame.h"
@@ -146,6 +147,9 @@ class VideoProcessor {
   // encoder are regarded as zero size.
   virtual size_t EncodedFrameSize() = 0;
 
+  // Return the encoded frame type (key or delta).
+  virtual FrameType EncodedFrameType() = 0;
+
   // Return the number of dropped frames.
   virtual int NumberDroppedFrames() = 0;
 
@@ -168,7 +172,9 @@ class VideoProcessorImpl : public VideoProcessor {
 
  private:
   // Invoked by the callback when a frame has completed encoding.
-  void FrameEncoded(const webrtc::EncodedImage& encodedImage);
+  void FrameEncoded(webrtc::VideoCodecType codec,
+                    const webrtc::EncodedImage& encodedImage,
+                    const webrtc::RTPFragmentationHeader* fragmentation);
   // Invoked by the callback when a frame has completed decoding.
   void FrameDecoded(const webrtc::VideoFrame& image);
   // Used for getting a 32-bit integer representing time
@@ -179,6 +185,8 @@ class VideoProcessorImpl : public VideoProcessor {
   void SetRates(int bit_rate, int frame_rate) override;
   // Return the size of the encoded frame in bytes.
   size_t EncodedFrameSize() override;
+  // Return the encoded frame type (key or delta).
+  FrameType EncodedFrameType() override;
   // Return the number of dropped frames.
   int NumberDroppedFrames() override;
   // Return the number of spatial resizes.
@@ -207,6 +215,7 @@ class VideoProcessorImpl : public VideoProcessor {
   // If Init() has executed successfully.
   bool initialized_;
   size_t encoded_frame_size_;
+  FrameType encoded_frame_type_;
   int prev_time_stamp_;
   int num_dropped_frames_;
   int num_spatial_resizes_;
@@ -236,12 +245,16 @@ class VideoProcessorImpl : public VideoProcessor {
 
   // Callback class required to implement according to the VideoDecoder API.
   class VideoProcessorDecodeCompleteCallback
-    : public webrtc::DecodedImageCallback {
+      : public webrtc::DecodedImageCallback {
    public:
-      explicit VideoProcessorDecodeCompleteCallback(VideoProcessorImpl* vp)
-      : video_processor_(vp) {
+    explicit VideoProcessorDecodeCompleteCallback(VideoProcessorImpl* vp)
+        : video_processor_(vp) {}
+    int32_t Decoded(webrtc::VideoFrame& image) override;
+    int32_t Decoded(webrtc::VideoFrame& image,
+                    int64_t decode_time_ms) override {
+      RTC_NOTREACHED();
+      return -1;
     }
-      int32_t Decoded(webrtc::VideoFrame& image) override;
 
    private:
     VideoProcessorImpl* video_processor_;

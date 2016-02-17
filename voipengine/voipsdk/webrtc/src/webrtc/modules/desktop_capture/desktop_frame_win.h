@@ -25,7 +25,7 @@ class DesktopFrameWin : public DesktopFrame {
  public:
   virtual ~DesktopFrameWin();
   static DesktopFrameWin* Create(DesktopSize size,
-                                 SharedMemory* shared_memory,
+                                 SharedMemoryFactory* shared_memory_factory,
                                  HDC hdc);
 
   HBITMAP bitmap() { return bitmap_; }
@@ -34,13 +34,13 @@ class DesktopFrameWin : public DesktopFrame {
   DesktopFrameWin(DesktopSize size,
                   int stride,
                   uint8_t* data,
-                  SharedMemory* shared_memory,
+                  rtc::scoped_ptr<SharedMemory> shared_memory,
                   HBITMAP bitmap);
 
   HBITMAP bitmap_;
   rtc::scoped_ptr<SharedMemory> owned_shared_memory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopFrameWin);
+  RTC_DISALLOW_COPY_AND_ASSIGN(DesktopFrameWin);
 };
 
 }  // namespace webrtc

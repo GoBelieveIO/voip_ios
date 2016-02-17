@@ -17,8 +17,8 @@
 #include "webrtc/modules/audio_device/android/audio_manager.h"
 #include "webrtc/modules/audio_device/include/audio_device_defines.h"
 #include "webrtc/modules/audio_device/audio_device_generic.h"
-#include "webrtc/modules/utility/interface/helpers_android.h"
-#include "webrtc/modules/utility/interface/jvm_android.h"
+#include "webrtc/modules/utility/include/helpers_android.h"
+#include "webrtc/modules/utility/include/jvm_android.h"
 
 namespace webrtc {
 
@@ -35,7 +35,7 @@ namespace webrtc {
 //
 // An instance must be created and destroyed on one and the same thread.
 // All public methods must also be called on the same thread. A thread checker
-// will DCHECK if any method is called on an invalid thread.
+// will RTC_DCHECK if any method is called on an invalid thread.
 //
 // This class uses AttachCurrentThreadIfNeeded to attach to a Java VM if needed
 // and detach when the object goes out of scope. Additional thread checking
@@ -49,10 +49,12 @@ class AudioRecordJni {
                    rtc::scoped_ptr<GlobalRef> audio_track);
     ~JavaAudioRecord();
 
-    int InitRecording(int sample_rate, int channels);
+    int InitRecording(int sample_rate, size_t channels);
     bool StartRecording();
     bool StopRecording();
     bool EnableBuiltInAEC(bool enable);
+    bool EnableBuiltInAGC(bool enable);
+    bool EnableBuiltInNS(bool enable);
 
    private:
     rtc::scoped_ptr<GlobalRef> audio_record_;
@@ -60,6 +62,8 @@ class AudioRecordJni {
     jmethodID start_recording_;
     jmethodID stop_recording_;
     jmethodID enable_built_in_aec_;
+    jmethodID enable_built_in_agc_;
+    jmethodID enable_built_in_ns_;
   };
 
   explicit AudioRecordJni(AudioManager* audio_manager);
@@ -78,6 +82,8 @@ class AudioRecordJni {
   void AttachAudioBuffer(AudioDeviceBuffer* audioBuffer);
 
   int32_t EnableBuiltInAEC(bool enable);
+  int32_t EnableBuiltInAGC(bool enable);
+  int32_t EnableBuiltInNS(bool enable);
 
  private:
   // Called from Java side so we can cache the address of the Java-manged
