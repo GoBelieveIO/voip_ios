@@ -10,11 +10,10 @@
 #include <arpa/inet.h>
 #import <AVFoundation/AVAudioSession.h>
 #import <UIKit/UIKit.h>
-#import <voipengine/VOIPEngine.h>
-#import <voipengine/VOIPRenderView.h>
 #import "VOIPViewController.h"
 
 #import <voipsession/VOIPSession.h>
+#import <WebRTC/WebRTC.h>
 
 #import "ReflectionView.h"
 #import "UIView+Toast.h"
@@ -50,6 +49,7 @@
 @property(nonatomic) AVAudioPlayer *player;
 
 @property(nonatomic) BOOL isConnected;
+
 
 @end
 
@@ -87,6 +87,11 @@
 {
     [super viewDidLoad];
 
+    self.factory = [[RTCPeerConnectionFactory alloc] init];
+    
+    
+    
+    
     
     self.conversationDuration = 0;
     
@@ -181,6 +186,27 @@
     [self.voip holePunch];
     [[VOIPService instance] pushVOIPObserver:self.voip];
     [[VOIPService instance] addRTMessageObserver:self];
+    
+    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    if(authStatus == AVAuthorizationStatusAuthorized) {
+        // do your logic
+    } else if(authStatus == AVAuthorizationStatusDenied){
+        // denied
+    } else if(authStatus == AVAuthorizationStatusRestricted){
+        // restricted, normally won't happen
+    } else if(authStatus == AVAuthorizationStatusNotDetermined){
+        // not determined?!
+        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+            if(granted){
+                NSLog(@"Granted access to %@", AVMediaTypeVideo);
+            } else {
+                NSLog(@"Not granted access to %@", AVMediaTypeVideo);
+            }
+        }];
+    } else {
+        // impossible, unknown authorization status
+    }
+    
     
     [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
         if (granted) {
@@ -409,7 +435,7 @@
     rt.receiver = self.peerUID;
     //自定义格式
     rt.content = @"ping";
-    [[VOIPService instance] sendRTMessage:rt];
+//    [[VOIPService instance] sendRTMessage:rt];
 }
 
 -(void)onRTMessage:(RTMessage *)rt {
@@ -423,7 +449,7 @@
             rt.sender = self.currentUID;
             rt.receiver = self.peerUID;
             rt.content = @"pong";
-            [[VOIPService instance] sendRTMessage:rt];
+//            [[VOIPService instance] sendRTMessage:rt];
         }
     }
 }

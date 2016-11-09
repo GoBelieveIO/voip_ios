@@ -10,7 +10,6 @@
 #import "ViewController.h"
 #import "MBProgressHUD.h"
 #import <voipsession/VOIPSession.h>
-#import <voipengine/VOIPEngine.h>
 #import <voipsession/VOIPService.h>
 #import "VOIPViewController.h"
 #import "VOIPVideoViewController.h"

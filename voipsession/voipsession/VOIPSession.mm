@@ -124,21 +124,21 @@ enum SessionMode {
 -(void)holePunch {
     self.natType = StunTypeUnknown;
     self.hairpin = NO;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        StunAddress4 addr;
-        BOOL hairpin = NO;
-        NatType stype = [self mapNatAddress:&addr hairpin:&hairpin];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            self.natType = stype;
-            self.mappedAddr = addr;
-            
-            if (self.localNatMap == nil) {
-                self.localNatMap = [[NatPortMap alloc] init];
-                self.localNatMap.ip = self.mappedAddr.addr;
-                self.localNatMap.port = self.mappedAddr.port;
-            }
-        });
-    });
+//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+//        StunAddress4 addr;
+//        BOOL hairpin = NO;
+//        NatType stype = [self mapNatAddress:&addr hairpin:&hairpin];
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            self.natType = stype;
+//            self.mappedAddr = addr;
+//            
+//            if (self.localNatMap == nil) {
+//                self.localNatMap = [[NatPortMap alloc] init];
+//                self.localNatMap.ip = self.mappedAddr.addr;
+//                self.localNatMap.port = self.mappedAddr.port;
+//            }
+//        });
+//    });
     
     [self refreshHost];
 }

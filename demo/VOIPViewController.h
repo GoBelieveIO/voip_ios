@@ -12,6 +12,8 @@
 
 @class VOIPEngine;
 @class VOIPSession;
+@class RTCPeerConnectionFactory;
+@class RTCPeerConnection;
 
 @interface VOIPViewController : UIViewController<AVAudioPlayerDelegate>
 @property(nonatomic) int64_t currentUID;
@@ -21,8 +23,12 @@
 //当前用户是否是主动呼叫方
 @property(nonatomic) BOOL isCaller;
 
-@property(nonatomic) VOIPEngine *engine;
 @property(nonatomic) VOIPSession *voip;
+
+@property(nonatomic, strong) RTCPeerConnectionFactory *factory;
+
+@property(nonatomic, strong) RTCPeerConnection *peerConnection;
+
 
 -(BOOL)isP2P;
 -(int)SetLoudspeakerStatus:(BOOL)enable;
