@@ -5,19 +5,11 @@
 //  Created by houxh on 15/9/7.
 //  Copyright (c) 2015年 beetle. All rights reserved.
 //
-
 #import "VOIPVoiceViewController.h"
-#include <arpa/inet.h>
-#import <AVFoundation/AVAudioSession.h>
-#import <UIKit/UIKit.h>
 #import <voipsession/VOIPSession.h>
-
 #import <WebRTC/WebRTC.h>
 #import "ARDSDPUtils.h"
-
 #import "ARDSignalingMessage.h"
-
-
 
 
 static NSString * const kARDDefaultSTUNServerUrl =
@@ -64,46 +56,16 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 }
 
 - (void)startStream {
-    if (self.voip.localNatMap != nil) {
-        struct in_addr addr;
-        addr.s_addr = htonl(self.voip.localNatMap.ip);
-        NSLog(@"local nat map:%s:%d", inet_ntoa(addr), self.voip.localNatMap.port);
-    }
-    if (self.voip.peerNatMap != nil) {
-        struct in_addr addr;
-        addr.s_addr = htonl(self.voip.peerNatMap.ip);
-        NSLog(@"peer nat map:%s:%d", inet_ntoa(addr), self.voip.peerNatMap.port);
-    }
-    
-    if (self.isP2P) {
-        struct in_addr addr;
-        addr.s_addr = htonl(self.voip.peerNatMap.ip);
-        NSLog(@"peer address:%s:%d", inet_ntoa(addr), self.voip.peerNatMap.port);
-        NSLog(@"start p2p stream");
-    } else {
-        NSLog(@"start stream");
-    }
-    
-//    if (self.engine != nil) {
-//        return;
-//    }
-//    
-
-    
     [self SetLoudspeakerStatus:YES];
-    
-    
-
     
     RTCMediaConstraints *constraints = [self defaultPeerConnectionConstraints];
     RTCConfiguration *config = [[RTCConfiguration alloc] init];
-     RTCIceServer *server = [[RTCIceServer alloc] initWithURLStrings:@[@"stun:stun.counterpath.net:3478"]];
+    RTCIceServer *server = [[RTCIceServer alloc] initWithURLStrings:@[@"stun:stun.counterpath.net:3478"]];
     NSString *username = @"hxh:123456";
     NSString *credential = @"";
-      RTCIceServer *server2 = [[RTCIceServer alloc] initWithURLStrings:@[@"turn:192.168.1.106:3478?transport=udp"]
-                                                             username:username
-                                                           credential:credential];
-//    RTCIceServer *server = [[RTCIceServer alloc] initWithURLStrings:@[@"stun:stun.l.google.com:19302"]];
+    RTCIceServer *server2 = [[RTCIceServer alloc] initWithURLStrings:@[@"turn:192.168.1.106:3478?transport=udp"]
+                                                            username:username
+                                                          credential:credential];
   
     config.iceServers =  @[server, server2];
     self.peerConnection = [self.factory peerConnectionWithConfiguration:config

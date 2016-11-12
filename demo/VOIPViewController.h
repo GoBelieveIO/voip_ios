@@ -30,7 +30,6 @@
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
 
 
--(BOOL)isP2P;
 -(int)SetLoudspeakerStatus:(BOOL)enable;
 -(void)dismiss;
 @end

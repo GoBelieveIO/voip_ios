@@ -7,11 +7,7 @@
   of patent rights can be found in the PATENTS file in the same directory.
 */
 
-#include <arpa/inet.h>
-#import <AVFoundation/AVAudioSession.h>
-#import <UIKit/UIKit.h>
 #import "VOIPViewController.h"
-
 #import <voipsession/VOIPSession.h>
 #import <WebRTC/WebRTC.h>
 
@@ -69,13 +65,7 @@
     NSLog(@"voip view controller dealloc");
 }
 
--(BOOL)isP2P {
-    if (self.voip.localNatMap.ip != 0 && self.voip.peerNatMap.ip != 0 ) {
-        return YES;
-    }
 
-    return NO;
-}
 
 - (void)didReceiveMemoryWarning
 {
@@ -183,7 +173,6 @@
     self.voip.currentUID = self.currentUID;
     self.voip.peerUID = self.peerUID;
     self.voip.delegate = self;
-    [self.voip holePunch];
     [[VOIPService instance] pushVOIPObserver:self.voip];
     [[VOIPService instance] addRTMessageObserver:self];
     

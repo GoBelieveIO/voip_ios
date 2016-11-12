@@ -8,11 +8,7 @@
 
 #import "VOIPVideoViewController.h"
 
-#include <arpa/inet.h>
-#import <AVFoundation/AVAudioSession.h>
-#import <UIKit/UIKit.h>
 #import <voipsession/VOIPSession.h>
-
 #import <WebRTC/WebRTC.h>
 #import "ARDSDPUtils.h"
 
@@ -147,35 +143,8 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 
 
 - (void)startStream {
-    if (self.voip.localNatMap != nil) {
-        struct in_addr addr;
-        addr.s_addr = htonl(self.voip.localNatMap.ip);
-        NSLog(@"local nat map:%s:%d", inet_ntoa(addr), self.voip.localNatMap.port);
-    }
-    if (self.voip.peerNatMap != nil) {
-        struct in_addr addr;
-        addr.s_addr = htonl(self.voip.peerNatMap.ip);
-        NSLog(@"peer nat map:%s:%d", inet_ntoa(addr), self.voip.peerNatMap.port);
-    }
-    
-    if (self.isP2P) {
-        struct in_addr addr;
-        addr.s_addr = htonl(self.voip.peerNatMap.ip);
-        NSLog(@"peer address:%s:%d", inet_ntoa(addr), self.voip.peerNatMap.port);
-        NSLog(@"start p2p stream");
-    } else {
-        NSLog(@"start stream");
-    }
-
-    
     [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
-    
-
-    
     [self SetLoudspeakerStatus:YES];
-    
-    
-    
     
     RTCMediaConstraints *constraints = [self defaultPeerConnectionConstraints];
     RTCConfiguration *config = [[RTCConfiguration alloc] init];

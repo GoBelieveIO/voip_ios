@@ -38,24 +38,17 @@ enum VOIPState {
 
 @interface VOIPSession : NSObject<VOIPObserver>
 
-+(void)setVOIPHost:(NSString*)voipHost;
 
 @property(nonatomic, weak) NSObject<VOIPSessionDelegate> *delegate;
 
 @property(nonatomic, assign) enum VOIPState state;
 
-@property(nonatomic, copy) NSString *voipHost;
-@property(nonatomic, copy) NSString *relayIP;
-
-@property(nonatomic, assign) int voipPort;
-@property(nonatomic, copy) NSString *stunServer;
 @property(nonatomic, assign) int64_t currentUID;
 @property(nonatomic, assign) int64_t peerUID;
 
-@property(nonatomic) NatPortMap *peerNatMap;
-@property(nonatomic) NatPortMap *localNatMap;
 
--(void)holePunch;
+
+
 -(void)dial;
 -(void)dialVideo;
 -(void)accept;

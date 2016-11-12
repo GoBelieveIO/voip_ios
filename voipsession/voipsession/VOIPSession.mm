@@ -11,13 +11,12 @@
 #include <netinet/in.h>
 #import "VOIPSession.h"
 #import "VOIPService.h"
-#import "stun.h"
 
-#define VOIP_HOST @"voipnode.gobelieve.io"
-#define VOIP_PORT 20002
-#define STUN_SERVER  @"stun.counterpath.net"
+//#define VOIP_HOST @"voipnode.gobelieve.io"
+//#define VOIP_PORT 20002
+//#define STUN_SERVER  @"stun.counterpath.net"
 
-static NSString *g_voipHost = VOIP_HOST;
+//static NSString *g_voipHost = VOIP_HOST;
 
 enum SessionMode {
     SESSION_VOICE,
@@ -36,10 +35,6 @@ enum SessionMode {
 @property(nonatomic, assign) time_t refuseTimestamp;
 @property(nonatomic) NSTimer *refuseTimer;
 
-@property(atomic, assign) StunAddress4 mappedAddr;
-@property(atomic, assign) NatType natType;
-@property(nonatomic) BOOL hairpin;
-
 @property(atomic, copy) NSString *voipHostIP;
 @property(atomic) BOOL refreshing;
 
@@ -47,18 +42,11 @@ enum SessionMode {
 
 @implementation VOIPSession
 
-+(void)setVOIPHost:(NSString*)voipHost {
-    g_voipHost = [voipHost copy];
-}
 
 -(id)init {
     self = [super init];
     if (self) {
         self.state = VOIP_ACCEPTING;
-        
-        self.voipHost = g_voipHost;
-        self.voipPort = VOIP_PORT;
-        self.stunServer = STUN_SERVER;
         self.refreshing = NO;
     }
     return self;
@@ -103,110 +91,8 @@ enum SessionMode {
     return ip;
 }
 
--(void)refreshHost {
-    if (self.voipHostIP.length > 0 || self.refreshing) {
-        return;
-    }
-    self.refreshing = YES;
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        for (int i = 0; i < 10; i++) {
-            self.voipHostIP = [self resolveIP:self.voipHost];
-            if (self.voipHostIP.length > 0) {
-                break;
-            }
-            [NSThread sleepForTimeInterval:0.05];
-        }
-        NSLog(@"voip host:%@ ip:%@", self.voipHost, self.voipHostIP);
-        self.refreshing = NO;
-    });
-}
-
--(void)holePunch {
-    self.natType = StunTypeUnknown;
-    self.hairpin = NO;
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//        StunAddress4 addr;
-//        BOOL hairpin = NO;
-//        NatType stype = [self mapNatAddress:&addr hairpin:&hairpin];
-//        dispatch_async(dispatch_get_main_queue(), ^{
-//            self.natType = stype;
-//            self.mappedAddr = addr;
-//            
-//            if (self.localNatMap == nil) {
-//                self.localNatMap = [[NatPortMap alloc] init];
-//                self.localNatMap.ip = self.mappedAddr.addr;
-//                self.localNatMap.port = self.mappedAddr.port;
-//            }
-//        });
-//    });
-    
-    [self refreshHost];
-}
 
 
-
-#define VERBOSE false
--(NatType)mapNatAddress:(StunAddress4*)eaddr hairpin:(BOOL*)ph{
-    int fd = -1;
-    StunAddress4 mappedAddr;
-    StunAddress4 stunServerAddr;
-    NSString *stunServer = self.stunServer;
-    stunParseServerName( (char*)[stunServer UTF8String], stunServerAddr);
-    
-    NSLog(@"nat mapping...");
-    bool presPort = false, hairpin = false;
-    NatType stype = stunNatType( stunServerAddr, VERBOSE, &presPort, &hairpin,
-                                0, NULL);
-    
-    NSLog(@"nat type:%d", stype);
-    *ph = hairpin;
-    
-    BOOL isOpen = NO;
-    switch (stype)
-    {
-        case StunTypeFailure:
-            break;
-        case StunTypeUnknown:
-            break;
-        case StunTypeBlocked:
-            break;
-            
-        case StunTypeOpen:
-        case StunTypeFirewall:
-            //todo get local address
-        case StunTypeIndependentFilter:
-        case StunTypeDependentFilter:
-        case StunTypePortDependedFilter:
-            isOpen = YES;
-            break;
-        case StunTypeDependentMapping:
-            break;
-        default:
-            break;
-    }
-    
-    
-    if (!isOpen) {
-        return stype;
-    }
-    for (int i = 0; i < 8; i++) {
-        fd = stunOpenSocket(stunServerAddr, &mappedAddr, self.voipPort, NULL, VERBOSE);
-        if (fd == -1) {
-            continue;
-        }
-        break;
-    }
-    if (fd != -1) {
-        close(fd);
-        struct in_addr addr;
-        addr.s_addr = htonl(mappedAddr.addr);
-        NSLog(@"mapped address:%s:%d", inet_ntoa(addr), mappedAddr.port);
-        *eaddr = mappedAddr;
-    } else {
-        NSLog(@"map nat address fail");
-    }
-    return stype;
-}
 
 
 - (void)sendDial {
@@ -229,17 +115,14 @@ enum SessionMode {
     
     ctl.content = command.content;
     
-    if (self.voipHostIP.length > 0) {
-        BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
-        if (r) {
-            self.dialCount = self.dialCount + 1;
-        } else {
-            NSLog(@"dial fail");
-        }
+    
+    BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
+    if (r) {
+        self.dialCount = self.dialCount + 1;
     } else {
-        NSLog(@"voip host ip is empty");
-        [self refreshHost];
+        NSLog(@"dial fail");
     }
+    
     
     time_t now = time(NULL);
     if (now - self.dialBeginTimestamp >= 60) {
@@ -285,12 +168,8 @@ enum SessionMode {
 -(void)sendConnected {
     VOIPCommand *command = [[VOIPCommand alloc] init];
     command.cmd = VOIP_COMMAND_CONNECTED;
-    command.natMap = self.localNatMap;
-    
-    if (self.relayIP.length > 0) {
-        in_addr_t addr = inet_addr([self.relayIP UTF8String]);
-        command.relayIP = ntohl(addr);
-    }
+
+
     
     [self sendCommand:command];
 }
@@ -298,7 +177,6 @@ enum SessionMode {
 -(void)sendDialAccept {
     VOIPCommand *command = [[VOIPCommand alloc] init];
     command.cmd = VOIP_COMMAND_ACCEPT;
-    command.natMap = self.localNatMap;
     [self sendCommand:command];
     
     time_t now = time(NULL);
@@ -347,16 +225,6 @@ enum SessionMode {
 
     if (voip.state == VOIP_DIALING) {
         if (command.cmd == VOIP_COMMAND_ACCEPT) {
-            self.peerNatMap = command.natMap;
-            
-            if (self.localNatMap == nil) {
-                self.localNatMap = [[NatPortMap alloc] init];
-            }
-            
-            if (self.relayIP == nil) {
-                self.relayIP = self.voipHostIP;
-            }
-            
             [self sendConnected];
             voip.state = VOIP_CONNECTED;
             [self.dialTimer invalidate];
@@ -392,18 +260,6 @@ enum SessionMode {
     } else if (voip.state == VOIP_ACCEPTED) {
         if (command.cmd == VOIP_COMMAND_CONNECTED) {
             NSLog(@"called voip connected");
-
-            self.peerNatMap = command.natMap;
-            if (command.relayIP > 0) {
-                in_addr addr;
-                addr.s_addr = htonl(command.relayIP);
-                char buff[64] = {0};
-                const char *str = inet_ntop(AF_INET, &addr, buff, 64);
-                self.relayIP = [NSString stringWithUTF8String:str];
-            } else {
-                self.relayIP = self.voipHostIP;
-            }
-            
             [self.acceptTimer invalidate];
             voip.state = VOIP_CONNECTED;
             
@@ -460,10 +316,6 @@ enum SessionMode {
 -(void)accept {
     VOIPSession *voip = self;
     voip.state = VOIP_ACCEPTED;
-    
-    if (self.localNatMap == nil) {
-        self.localNatMap = [[NatPortMap alloc] init];
-    }
     
     self.acceptTimestamp = time(NULL);
     self.acceptTimer = [NSTimer scheduledTimerWithTimeInterval: 1

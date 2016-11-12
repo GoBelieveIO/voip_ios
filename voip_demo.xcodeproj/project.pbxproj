@@ -71,20 +71,6 @@
 			remoteGlobalIDString = 6D401BD41AAC7D2F0041ABC6;
 			remoteInfo = voipsession;
 		};
-		6D5C196B1AD2B8530047A9A3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 6D0331771AAB73E3004AA39F;
-			remoteInfo = voipengine;
-		};
-		6D5C196D1AD2B8530047A9A3 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 6D0331821AAB73E3004AA39F;
-			remoteInfo = voipengineTests;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -119,7 +105,6 @@
 		6D5C18B21AC8FDB70047A9A3 /* voip_demoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voip_demoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D5C18B71AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D5C18B81AC8FDB70047A9A3 /* demoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = demoTests.m; sourceTree = "<group>"; };
-		6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipengine.xcodeproj; path = voipengine/voipengine.xcodeproj; sourceTree = "<group>"; };
 		6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = voipsession.xcodeproj; path = voipsession/voipsession.xcodeproj; sourceTree = "<group>"; };
 		6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPViewController.h; sourceTree = "<group>"; };
 		6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPViewController.m; sourceTree = "<group>"; };
@@ -266,7 +251,6 @@
 			isa = PBXGroup;
 			children = (
 				6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */,
-				6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */,
 			);
 			name = Projects;
 			sourceTree = "<group>";
@@ -354,15 +338,6 @@
 			path = sound;
 			sourceTree = "<group>";
 		};
-		6D5C19661AD2B8530047A9A3 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				6D5C196C1AD2B8530047A9A3 /* libvoipengine.a */,
-				6D5C196E1AD2B8530047A9A3 /* voipengineTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -435,10 +410,6 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 6D5C19661AD2B8530047A9A3 /* Products */;
-					ProjectRef = 6D5C18C91AC903ED0047A9A3 /* voipengine.xcodeproj */;
-				},
-				{
 					ProductGroup = 6D5C18D31AC903F70047A9A3 /* Products */;
 					ProjectRef = 6D5C18D21AC903F70047A9A3 /* voipsession.xcodeproj */;
 				},
@@ -464,20 +435,6 @@
 			fileType = wrapper.cfbundle;
 			path = voipsessionTests.xctest;
 			remoteRef = 6D5C18D91AC903F70047A9A3 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		6D5C196C1AD2B8530047A9A3 /* libvoipengine.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libvoipengine.a;
-			remoteRef = 6D5C196B1AD2B8530047A9A3 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		6D5C196E1AD2B8530047A9A3 /* voipengineTests.xctest */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.cfbundle;
-			path = voipengineTests.xctest;
-			remoteRef = 6D5C196D1AD2B8530047A9A3 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */

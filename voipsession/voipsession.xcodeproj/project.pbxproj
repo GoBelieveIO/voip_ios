@@ -25,8 +25,6 @@
 		6D401C061AAC7D540041ABC6 /* VOIPSession.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C051AAC7D540041ABC6 /* VOIPSession.mm */; };
 		6D401C111AAC7E6F0041ABC6 /* VOIPSession.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401C041AAC7D540041ABC6 /* VOIPSession.h */; };
 		6D401C121AAC7E6F0041ABC6 /* VOIPService.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6D401BFA1AAC7D460041ABC6 /* VOIPService.h */; };
-		6D401C141AAC7FC80041ABC6 /* stun.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C081AAC7D970041ABC6 /* stun.cxx */; };
-		6D401C151AAC7FCC0041ABC6 /* udp.cxx in Sources */ = {isa = PBXBuildFile; fileRef = 6D401C0A1AAC7D970041ABC6 /* udp.cxx */; };
 		6DA547431C43B4310067332C /* libimsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DA5473E1C43B41F0067332C /* libimsdk.a */; };
 		6DE4CE481C5FD9D900B4315D /* VOIPCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DE4CE471C5FD9D900B4315D /* VOIPCommand.m */; };
 		6DE4CE4B1C5FE07400B4315D /* VOIPCommand.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 6DE4CE461C5FD9D900B4315D /* VOIPCommand.h */; };
@@ -85,10 +83,6 @@
 		6D401BFA1AAC7D460041ABC6 /* VOIPService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPService.h; sourceTree = "<group>"; };
 		6D401C041AAC7D540041ABC6 /* VOIPSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPSession.h; sourceTree = "<group>"; };
 		6D401C051AAC7D540041ABC6 /* VOIPSession.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VOIPSession.mm; sourceTree = "<group>"; };
-		6D401C081AAC7D970041ABC6 /* stun.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = stun.cxx; sourceTree = "<group>"; };
-		6D401C091AAC7D970041ABC6 /* stun.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stun.h; sourceTree = "<group>"; };
-		6D401C0A1AAC7D970041ABC6 /* udp.cxx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = udp.cxx; sourceTree = "<group>"; };
-		6D401C0B1AAC7D970041ABC6 /* udp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = udp.h; sourceTree = "<group>"; };
 		6DA547371C43B41F0067332C /* imsdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = imsdk.xcodeproj; path = ../imsdk/imsdk.xcodeproj; sourceTree = "<group>"; };
 		6DE4CE461C5FD9D900B4315D /* VOIPCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPCommand.h; sourceTree = "<group>"; };
 		6DE4CE471C5FD9D900B4315D /* VOIPCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPCommand.m; sourceTree = "<group>"; };
@@ -136,7 +130,6 @@
 		6D401BD71AAC7D2F0041ABC6 /* voipsession */ = {
 			isa = PBXGroup;
 			children = (
-				6D401C071AAC7D970041ABC6 /* stund */,
 				6D401C041AAC7D540041ABC6 /* VOIPSession.h */,
 				6D401C051AAC7D540041ABC6 /* VOIPSession.mm */,
 				6D401BFA1AAC7D460041ABC6 /* VOIPService.h */,
@@ -160,17 +153,6 @@
 				6D401BE61AAC7D2F0041ABC6 /* Info.plist */,
 			);
 			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
-		6D401C071AAC7D970041ABC6 /* stund */ = {
-			isa = PBXGroup;
-			children = (
-				6D401C081AAC7D970041ABC6 /* stun.cxx */,
-				6D401C091AAC7D970041ABC6 /* stun.h */,
-				6D401C0A1AAC7D970041ABC6 /* udp.cxx */,
-				6D401C0B1AAC7D970041ABC6 /* udp.h */,
-			);
-			path = stund;
 			sourceTree = "<group>";
 		};
 		6DA547361C43B40B0067332C /* projects */ = {
@@ -235,7 +217,7 @@
 		6D401BCD1AAC7D2F0041ABC6 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = beetle;
 				TargetAttributes = {
 					6D401BD41AAC7D2F0041ABC6 = {
@@ -322,10 +304,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6D401C151AAC7FCC0041ABC6 /* udp.cxx in Sources */,
 				6DE4CE481C5FD9D900B4315D /* VOIPCommand.m in Sources */,
 				6D401C061AAC7D540041ABC6 /* VOIPSession.mm in Sources */,
-				6D401C141AAC7FC80041ABC6 /* stun.cxx in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,14 +345,18 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -385,7 +369,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -405,21 +389,24 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -459,6 +446,7 @@
 				);
 				INFOPLIST_FILE = voipsessionTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.beetle.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -473,6 +461,7 @@
 				);
 				INFOPLIST_FILE = voipsessionTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.beetle.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
