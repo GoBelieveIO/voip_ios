@@ -90,6 +90,12 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 
 -(void)switchCamera:(id)sender {
     NSLog(@"switch camera");
+    
+    RTCVideoSource* source = self.localVideoTrack.source;
+    if ([source isKindOfClass:[RTCAVFoundationVideoSource class]]) {
+        RTCAVFoundationVideoSource* avSource = (RTCAVFoundationVideoSource*)source;
+        avSource.useBackCamera = !avSource.useBackCamera;
+    }
 }
 
 - (void)videoView:(RTCEAGLVideoView *)videoView didChangeVideoSize:(CGSize)size {
