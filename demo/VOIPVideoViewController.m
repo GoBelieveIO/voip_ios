@@ -311,42 +311,6 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 
 
 
-
-- (void)peerConnection:(RTCPeerConnection *)peerConnection
-didSetSessionDescriptionWithError:(NSError *)error {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (error) {
-            NSLog(@"Failed to set session description. Error: %@", error);
-            NSDictionary *userInfo = @{
-                                       NSLocalizedDescriptionKey: @"Failed to set session description.",
-                                       };
-            NSError *sdpError =
-            [[NSError alloc] initWithDomain:kARDAppClientErrorDomain
-                                       code:kARDAppClientErrorSetSDP
-                                   userInfo:userInfo];
-            NSLog(@"sdp error:%@", sdpError);
-            //            [_delegate appClient:self didError:sdpError];
-            return;
-        }
-        // If we're answering and we've just set the remote offer we need to create
-        // an answer and set the local description.
-        if (!self.isCaller && !self.peerConnection.localDescription) {
-            RTCMediaConstraints *constraints = [self defaultAnswerConstraints];
-            __weak VOIPVideoViewController *weakSelf = self;
-            [self.peerConnection answerForConstraints:constraints
-                                    completionHandler:^(RTCSessionDescription *sdp,
-                                                        NSError *error) {
-                                        VOIPVideoViewController *strongSelf = weakSelf;
-                                        [strongSelf peerConnection:strongSelf.peerConnection
-                                       didCreateSessionDescription:sdp
-                                                             error:error];
-                                    }];
-        }
-    });
-}
-
-
-
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
 didCreateSessionDescription:(RTCSessionDescription *)sdp
                  error:(NSError *)error {
@@ -368,12 +332,9 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
         RTCSessionDescription *sdpPreferringH264 =
         [ARDSDPUtils descriptionForDescription:sdp
                            preferredVideoCodec:@"H264"];
-        __weak VOIPVideoViewController *weakSelf = self;
         [self.peerConnection setLocalDescription:sdpPreferringH264
                                completionHandler:^(NSError *error) {
-                                   VOIPVideoViewController *strongSelf = weakSelf;
-                                   [strongSelf peerConnection:strongSelf.peerConnection
-                            didSetSessionDescriptionWithError:error];
+                        
                                    
                                }];
         
@@ -383,6 +344,7 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
         [self sendSignalingMessage:message];
     });
 }
+
 
 -(void)onRTMessage:(RTMessage*)rt {
     if (rt.sender != self.peerUID) {
@@ -447,8 +409,6 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
         
     }
 }
-
-
 
 
 - (void)sendSignalingMessage:(ARDSignalingMessage*)msg {
