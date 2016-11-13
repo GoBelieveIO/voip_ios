@@ -12,8 +12,8 @@
 #import "ARDSignalingMessage.h"
 
 
-static NSString * const kARDDefaultSTUNServerUrl =
-@"stun:stun.l.google.com:19302";
+//static NSString * const kARDDefaultSTUNServerUrl =
+//@"stun:stun.l.google.com:19302";
 // TODO(tkchin): figure out a better username for CEOD statistics.
 static NSString * const kARDTurnRequestUrl =
 @"https://computeengineondemand.appspot.com"

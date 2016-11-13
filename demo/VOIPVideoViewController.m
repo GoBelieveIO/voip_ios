@@ -17,8 +17,8 @@
 
 
 
-static NSString * const kARDDefaultSTUNServerUrl =
-@"stun:stun.l.google.com:19302";
+//static NSString * const kARDDefaultSTUNServerUrl =
+//@"stun:stun.l.google.com:19302";
 // TODO(tkchin): figure out a better username for CEOD statistics.
 static NSString * const kARDTurnRequestUrl =
 @"https://computeengineondemand.appspot.com"
@@ -149,13 +149,16 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
     RTCMediaConstraints *constraints = [self defaultPeerConnectionConstraints];
     RTCConfiguration *config = [[RTCConfiguration alloc] init];
     RTCIceServer *server = [[RTCIceServer alloc] initWithURLStrings:@[@"stun:stun.counterpath.net:3478"]];
-    NSString *username = @"hxh:123456";
-    NSString *credential = @"";
     
-    RTCIceServer *server2 = [[RTCIceServer alloc] initWithURLStrings:@[@"turn:192.168.1.106:3478?transport=udp"]
+    int64_t appid = 7;
+    int64_t uid = self.currentUID;
+    NSString *username = [NSString stringWithFormat:@"%lld_%lld", appid, uid];
+    NSString *credential = self.token;
+    
+    RTCIceServer *server2 = [[RTCIceServer alloc] initWithURLStrings:@[@"turn:turn.gobelieve.io:3478?transport=udp"]
                                                             username:username
                                                           credential:credential];
-    config.iceServers =  @[server, server2];
+    config.iceServers =  @[server2];
     self.peerConnection = [self.factory peerConnectionWithConfiguration:config
                                                             constraints:constraints
                                                                delegate:self];
