@@ -28,7 +28,7 @@
 //RGB颜色
 #define RGBCOLOR(r,g,b) [UIColor colorWithRed:(r)/255.0f green:(g)/255.0f blue:(b)/255.0f alpha:1]
 
-@interface VOIPViewController ()<VOIPSessionDelegate, RTMessageObserver>
+@interface VOIPViewController ()<VOIPSessionDelegate>
 
 @property(nonatomic) UIButton *hangUpButton;
 @property(nonatomic) UIButton *acceptButton;
@@ -38,7 +38,6 @@
 @property(nonatomic) ReflectionView *headView;
 @property(nonatomic) NSTimer *refreshTimer;
 
-@property(nonatomic) NSTimer *pingTimer;
 
 @property(nonatomic) UInt64  conversationDuration;
 
@@ -77,26 +76,17 @@
 {
     [super viewDidLoad];
 
-    self.factory = [[RTCPeerConnectionFactory alloc] init];
-    
-    
-    
-    
-    
     self.conversationDuration = 0;
     
     // Do any additional setup after loading the view, typically from a nib.
     [self.view setBackgroundColor:[UIColor whiteColor]];
     
-
-    
     UIImageView *imgView = [[UIImageView alloc]
                             initWithFrame:CGRectMake(0,0, KheaderViewWH,
                                                      KheaderViewWH)];
-    
 
     imgView.image = [UIImage imageNamed:@"PersonalChat"];
-    
+
     CALayer *imageLayer = [imgView layer];  //获取ImageView的层
     [imageLayer setMasksToBounds:YES];
     [imageLayer setCornerRadius:imgView.frame.size.width / 2];
@@ -122,9 +112,7 @@
     
     
     self.acceptButton = [UIButton buttonWithType:UIButtonTypeCustom];
-
-    self.acceptButton.frame = CGRectMake(30.0f, self.view.frame.size.height - kBtnHeight - kBtnHeight, kBtnWidth, kBtnHeight);
-    
+    self.acceptButton.frame = CGRectMake(0,0, kBtnWidth, kBtnHeight);
     [self.acceptButton setBackgroundImage: [UIImage imageNamed:@"Call_Ans"] forState:UIControlStateNormal];
     
     [self.acceptButton setBackgroundImage:[UIImage imageNamed:@"Call_Ans_p"] forState:UIControlStateHighlighted];
@@ -137,9 +125,7 @@
     
     
     self.refuseButton = [UIButton buttonWithType:UIButtonTypeCustom];
-
-    self.refuseButton.frame = CGRectMake(0,0, kBtnWidth, kBtnHeight);
-    
+    self.refuseButton.frame = CGRectMake(30.0f, self.view.frame.size.height - kBtnHeight - kBtnHeight, kBtnWidth, kBtnHeight);
     [self.refuseButton setBackgroundImage:[UIImage imageNamed:@"Call_hangup"] forState:UIControlStateNormal];
     [self.refuseButton setBackgroundImage:[UIImage imageNamed:@"Call_hangup_p"] forState:UIControlStateHighlighted];
     [self.refuseButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
@@ -162,66 +148,17 @@
     [self.view addSubview:self.hangUpButton];
     [self.hangUpButton setCenter:CGPointMake(self.view.frame.size.width / 2, kBtnYposition)];
 
-    if (self.isCaller) {
-        self.acceptButton.hidden = YES;
-        self.refuseButton.hidden = YES;
-    } else {
-        self.hangUpButton.hidden = YES;
-    }
-    
+
     self.voip = [[VOIPSession alloc] init];
     self.voip.currentUID = self.currentUID;
     self.voip.peerUID = self.peerUID;
     self.voip.delegate = self;
     [[VOIPService instance] pushVOIPObserver:self.voip];
     [[VOIPService instance] addRTMessageObserver:self];
-    
-    AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-    if(authStatus == AVAuthorizationStatusAuthorized) {
-        // do your logic
-    } else if(authStatus == AVAuthorizationStatusDenied){
-        // denied
-    } else if(authStatus == AVAuthorizationStatusRestricted){
-        // restricted, normally won't happen
-    } else if(authStatus == AVAuthorizationStatusNotDetermined){
-        // not determined?!
-        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
-            if(granted){
-                NSLog(@"Granted access to %@", AVMediaTypeVideo);
-            } else {
-                NSLog(@"Not granted access to %@", AVMediaTypeVideo);
-            }
-        }];
-    } else {
-        // impossible, unknown authorization status
-    }
-    
-    
-    [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
-        if (granted) {
-            [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
-            if (self.isCaller) {
-                [self makeDialing:self.voip];
-            } else {
-                [self playDialIn];
-            }
-        } else {
-            NSLog(@"can't grant record permission");
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self dismissViewControllerAnimated:NO completion:^{
-                    [[VOIPService instance] popVOIPObserver:self.voip];
-                    [[VOIPService instance] stop];
-                }];
-            });
-        }
-    }];
 }
 
 -(void)dismiss {
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
-
-    [self.pingTimer invalidate];
-    self.pingTimer = nil;
     [self dismissViewControllerAnimated:YES completion:^{
         [[VOIPService instance] popVOIPObserver:self.voip];
         [[VOIPService instance] removeRTMessageObserver:self];
@@ -293,20 +230,18 @@
     return headphonesLocated;
 }
 
--(void)dial {
-    
-}
 
 - (void)startStream {
-    
+    [super startStream];
 }
 
 
 -(void)stopStream {
+    [super stopStream];
 }
 
 
--(int)SetLoudspeakerStatus:(BOOL)enable {
+-(int)setLoudspeakerStatus:(BOOL)enable {
     AVAudioSession* session = [AVAudioSession sharedInstance];
     NSString* category = session.category;
     AVAudioSessionCategoryOptions options = session.categoryOptions;
@@ -349,7 +284,7 @@
 
 
 -(void)playDialIn {
-    [self SetLoudspeakerStatus:YES];
+    [self setLoudspeakerStatus:YES];
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"start.mp3"];
     NSURL *u = [NSURL fileURLWithPath:path];
     self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:u error:nil];
@@ -379,11 +314,16 @@
  *
  *  @param voip  VOIP
  */
--(void) makeDialing:(VOIPSession*)voip{
-    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(ping) userInfo:nil repeats:YES];
-    [self.pingTimer fire];
-    
-    [self dial];
+-(void) dial {
+    [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
+    self.acceptButton.hidden = YES;
+    self.refuseButton.hidden = YES;
+    [self playDialOut];
+}
+
+-(void)waitAccept {
+    [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
+    self.hangUpButton.hidden = YES;
     [self playDialOut];
 }
 
@@ -418,30 +358,6 @@
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
 }
 
--(void)ping {
-    RTMessage *rt = [[RTMessage alloc] init];
-    rt.sender = self.currentUID;
-    rt.receiver = self.peerUID;
-    //自定义格式
-    rt.content = @"ping";
-//    [[VOIPService instance] sendRTMessage:rt];
-}
-
--(void)onRTMessage:(RTMessage *)rt {
-    if (rt.sender == self.peerUID) {
-        if ([rt.content isEqualToString:@"pong"]) {
-            NSLog(@"对方在线");
-            [self.pingTimer invalidate];
-            self.pingTimer = nil;
-        } else if ([rt.content isEqualToString:@"ping"]) {
-            RTMessage *rt = [[RTMessage alloc] init];
-            rt.sender = self.currentUID;
-            rt.receiver = self.peerUID;
-            rt.content = @"pong";
-//            [[VOIPService instance] sendRTMessage:rt];
-        }
-    }
-}
 #pragma mark - VOIPStateDelegate
 -(void)onRefuse {
     [self.player stop];
@@ -500,7 +416,6 @@
     
     NSLog(@"call voip connected");
     [self startStream];
-    
     
     self.hangUpButton.hidden = NO;
     self.acceptButton.hidden = YES;
