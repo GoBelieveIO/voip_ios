@@ -73,6 +73,7 @@
         self.host = HOST;
         self.port = PORT;
         self.heartbeatHZ = HEARTBEAT_HZ;
+        self.isSync = YES;
     }
     return self;
 }
@@ -726,6 +727,9 @@
         [self sendEnterRoom:self.roomID];
     }
     
+    if (!self.isSync) {
+        return;
+    }
     //send sync
     [self sendSync:self.syncKey];
     

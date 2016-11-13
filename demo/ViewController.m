@@ -35,7 +35,8 @@
 
     //app可以单独部署服务器，给予第三方应用更多的灵活性
     //在开发阶段也可以配置成测试环境的地址 "sandbox.imnode.gobelieve.io", "sandbox.voipnode.gobelieve.io"
-    [VOIPService instance].host = @"imnode.gobelieve.io";
+    [VOIPService instance].host = @"imnode2.gobelieve.io";
+    [VOIPService instance].isSync = NO;
     [VOIPService instance].deviceID = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     [[VOIPService instance] startRechabilityNotifier];
 }

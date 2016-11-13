@@ -116,6 +116,8 @@
 //客服app需要设置，普通app不需要设置
 @property(nonatomic) int64_t appID;
 
+//是否同步离线消息
+@property(nonatomic) BOOL isSync;
 //离线消息的同步key
 @property(nonatomic) int64_t syncKey;
 
