@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6D2A40D81B9D6C9200FB6A5A /* VOIPVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A40D71B9D6C9200FB6A5A /* VOIPVideoViewController.m */; };
-		6D2A40DB1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D2A40DA1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m */; };
 		6D5C189F1AC8FDB70047A9A3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C189E1AC8FDB70047A9A3 /* main.m */; };
 		6D5C18A21AC8FDB70047A9A3 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18A11AC8FDB70047A9A3 /* AppDelegate.m */; };
 		6D5C18A51AC8FDB70047A9A3 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18A41AC8FDB70047A9A3 /* ViewController.m */; };
@@ -16,7 +14,6 @@
 		6D5C18AA1AC8FDB70047A9A3 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */; };
 		6D5C18AD1AC8FDB70047A9A3 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */; };
 		6D5C18B91AC8FDB70047A9A3 /* demoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C18B81AC8FDB70047A9A3 /* demoTests.m */; };
-		6D5C19021AC9296E0047A9A3 /* VOIPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */; };
 		6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */; };
 		6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19401AC92A440047A9A3 /* ReflectionView.m */; };
 		6D5C19451AC92A560047A9A3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19441AC92A560047A9A3 /* UIView+Toast.m */; };
@@ -32,15 +29,18 @@
 		6D5C195E1AC935360047A9A3 /* end.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195A1AC935360047A9A3 /* end.mp3 */; };
 		6D5C195F1AC935360047A9A3 /* start.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 6D5C195B1AC935360047A9A3 /* start.mp3 */; };
 		6D8DC80E1DD3524700803380 /* WebRTC.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6D8DC8071DD3520100803380 /* WebRTC.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		6D8DC8121DD35C3800803380 /* ARDSDPUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D8DC8111DD35C3800803380 /* ARDSDPUtils.m */; };
 		6D8DC8141DD3607000803380 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D8DC8131DD3607000803380 /* WebKit.framework */; };
-		6D8DC8191DD370AB00803380 /* RTCIceCandidate+JSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D8DC8161DD370AB00803380 /* RTCIceCandidate+JSON.m */; };
-		6D8DC81A1DD370AB00803380 /* RTCSessionDescription+JSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D8DC8181DD370AB00803380 /* RTCSessionDescription+JSON.m */; };
-		6D8DC81D1DD370C400803380 /* ARDSignalingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D8DC81C1DD370C400803380 /* ARDSignalingMessage.m */; };
-		6D8DC8201DD3711A00803380 /* ARDUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D8DC81F1DD3711A00803380 /* ARDUtilities.m */; };
-		6DBEBCDB1E0ED6A20052BFF9 /* VOIPCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCDA1E0ED6A20052BFF9 /* VOIPCommand.m */; };
 		6DBEBCEB1E0ED6F10052BFF9 /* libimsdk.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DBEBCE61E0ED6E10052BFF9 /* libimsdk.a */; };
-		6DD491E81DD87D0700A7ABE3 /* WebRTCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DD491E71DD87D0700A7ABE3 /* WebRTCViewController.m */; };
+		6DBEBD021E0ED8140052BFF9 /* ARDSDPUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCEE1E0ED8140052BFF9 /* ARDSDPUtils.m */; };
+		6DBEBD031E0ED8140052BFF9 /* ARDSignalingMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCF01E0ED8140052BFF9 /* ARDSignalingMessage.m */; };
+		6DBEBD041E0ED8140052BFF9 /* ARDUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCF21E0ED8140052BFF9 /* ARDUtilities.m */; };
+		6DBEBD051E0ED8140052BFF9 /* RTCIceCandidate+JSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCF41E0ED8140052BFF9 /* RTCIceCandidate+JSON.m */; };
+		6DBEBD061E0ED8140052BFF9 /* RTCSessionDescription+JSON.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCF61E0ED8140052BFF9 /* RTCSessionDescription+JSON.m */; };
+		6DBEBD071E0ED8140052BFF9 /* VOIPCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCF81E0ED8140052BFF9 /* VOIPCommand.m */; };
+		6DBEBD081E0ED8140052BFF9 /* VOIPVideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCFB1E0ED8140052BFF9 /* VOIPVideoViewController.m */; };
+		6DBEBD091E0ED8140052BFF9 /* VOIPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCFD1E0ED8140052BFF9 /* VOIPViewController.m */; };
+		6DBEBD0A1E0ED8140052BFF9 /* VOIPVoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCFF1E0ED8140052BFF9 /* VOIPVoiceViewController.m */; };
+		6DBEBD0B1E0ED8140052BFF9 /* WebRTCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBD011E0ED8140052BFF9 /* WebRTCViewController.m */; };
 		6DF6F78F1B92CBF600774961 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */; };
 /* End PBXBuildFile section */
 
@@ -90,10 +90,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6D2A40D61B9D6C9200FB6A5A /* VOIPVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPVideoViewController.h; sourceTree = "<group>"; };
-		6D2A40D71B9D6C9200FB6A5A /* VOIPVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVideoViewController.m; sourceTree = "<group>"; };
-		6D2A40D91B9D6D4B00FB6A5A /* VOIPVoiceViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPVoiceViewController.h; sourceTree = "<group>"; };
-		6D2A40DA1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVoiceViewController.m; sourceTree = "<group>"; };
 		6D5C18991AC8FDB70047A9A3 /* voip_demo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = voip_demo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D5C189D1AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D5C189E1AC8FDB70047A9A3 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -107,8 +103,6 @@
 		6D5C18B21AC8FDB70047A9A3 /* voip_demoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = voip_demoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D5C18B71AC8FDB70047A9A3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		6D5C18B81AC8FDB70047A9A3 /* demoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = demoTests.m; sourceTree = "<group>"; };
-		6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPViewController.h; sourceTree = "<group>"; };
-		6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPViewController.m; sourceTree = "<group>"; };
 		6D5C193B1AC92A330047A9A3 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		6D5C193F1AC92A440047A9A3 /* ReflectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReflectionView.h; sourceTree = "<group>"; };
@@ -128,24 +122,30 @@
 		6D5C195A1AC935360047A9A3 /* end.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = end.mp3; sourceTree = "<group>"; };
 		6D5C195B1AC935360047A9A3 /* start.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = start.mp3; sourceTree = "<group>"; };
 		6D8DC8071DD3520100803380 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
-		6D8DC8101DD35C3800803380 /* ARDSDPUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDSDPUtils.h; sourceTree = "<group>"; };
-		6D8DC8111DD35C3800803380 /* ARDSDPUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDSDPUtils.m; sourceTree = "<group>"; };
 		6D8DC8131DD3607000803380 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		6D8DC8151DD370AB00803380 /* RTCIceCandidate+JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RTCIceCandidate+JSON.h"; sourceTree = "<group>"; };
-		6D8DC8161DD370AB00803380 /* RTCIceCandidate+JSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RTCIceCandidate+JSON.m"; sourceTree = "<group>"; };
-		6D8DC8171DD370AB00803380 /* RTCSessionDescription+JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RTCSessionDescription+JSON.h"; sourceTree = "<group>"; };
-		6D8DC8181DD370AB00803380 /* RTCSessionDescription+JSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RTCSessionDescription+JSON.m"; sourceTree = "<group>"; };
-		6D8DC81B1DD370C400803380 /* ARDSignalingMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDSignalingMessage.h; sourceTree = "<group>"; };
-		6D8DC81C1DD370C400803380 /* ARDSignalingMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDSignalingMessage.m; sourceTree = "<group>"; };
-		6D8DC81E1DD3711A00803380 /* ARDUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDUtilities.h; sourceTree = "<group>"; };
-		6D8DC81F1DD3711A00803380 /* ARDUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDUtilities.m; sourceTree = "<group>"; };
 		6DBEBCC11E0A510E0052BFF9 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		6DBEBCD91E0ED6A20052BFF9 /* VOIPCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPCommand.h; sourceTree = "<group>"; };
-		6DBEBCDA1E0ED6A20052BFF9 /* VOIPCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPCommand.m; sourceTree = "<group>"; };
-		6DBEBCDE1E0ED6B30052BFF9 /* VOIPService.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VOIPService.h; sourceTree = "<group>"; };
 		6DBEBCDF1E0ED6E10052BFF9 /* imsdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = imsdk.xcodeproj; path = imsdk/imsdk.xcodeproj; sourceTree = "<group>"; };
-		6DD491E61DD87D0700A7ABE3 /* WebRTCViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebRTCViewController.h; sourceTree = "<group>"; };
-		6DD491E71DD87D0700A7ABE3 /* WebRTCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebRTCViewController.m; sourceTree = "<group>"; };
+		6DBEBCED1E0ED8140052BFF9 /* ARDSDPUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDSDPUtils.h; sourceTree = "<group>"; };
+		6DBEBCEE1E0ED8140052BFF9 /* ARDSDPUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDSDPUtils.m; sourceTree = "<group>"; };
+		6DBEBCEF1E0ED8140052BFF9 /* ARDSignalingMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDSignalingMessage.h; sourceTree = "<group>"; };
+		6DBEBCF01E0ED8140052BFF9 /* ARDSignalingMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDSignalingMessage.m; sourceTree = "<group>"; };
+		6DBEBCF11E0ED8140052BFF9 /* ARDUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDUtilities.h; sourceTree = "<group>"; };
+		6DBEBCF21E0ED8140052BFF9 /* ARDUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDUtilities.m; sourceTree = "<group>"; };
+		6DBEBCF31E0ED8140052BFF9 /* RTCIceCandidate+JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RTCIceCandidate+JSON.h"; sourceTree = "<group>"; };
+		6DBEBCF41E0ED8140052BFF9 /* RTCIceCandidate+JSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RTCIceCandidate+JSON.m"; sourceTree = "<group>"; };
+		6DBEBCF51E0ED8140052BFF9 /* RTCSessionDescription+JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "RTCSessionDescription+JSON.h"; sourceTree = "<group>"; };
+		6DBEBCF61E0ED8140052BFF9 /* RTCSessionDescription+JSON.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "RTCSessionDescription+JSON.m"; sourceTree = "<group>"; };
+		6DBEBCF71E0ED8140052BFF9 /* VOIPCommand.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPCommand.h; sourceTree = "<group>"; };
+		6DBEBCF81E0ED8140052BFF9 /* VOIPCommand.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPCommand.m; sourceTree = "<group>"; };
+		6DBEBCF91E0ED8140052BFF9 /* VOIPService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPService.h; sourceTree = "<group>"; };
+		6DBEBCFA1E0ED8140052BFF9 /* VOIPVideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPVideoViewController.h; sourceTree = "<group>"; };
+		6DBEBCFB1E0ED8140052BFF9 /* VOIPVideoViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVideoViewController.m; sourceTree = "<group>"; };
+		6DBEBCFC1E0ED8140052BFF9 /* VOIPViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPViewController.h; sourceTree = "<group>"; };
+		6DBEBCFD1E0ED8140052BFF9 /* VOIPViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPViewController.m; sourceTree = "<group>"; };
+		6DBEBCFE1E0ED8140052BFF9 /* VOIPVoiceViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VOIPVoiceViewController.h; sourceTree = "<group>"; };
+		6DBEBCFF1E0ED8140052BFF9 /* VOIPVoiceViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVoiceViewController.m; sourceTree = "<group>"; };
+		6DBEBD001E0ED8140052BFF9 /* WebRTCViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebRTCViewController.h; sourceTree = "<group>"; };
+		6DBEBD011E0ED8140052BFF9 /* WebRTCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebRTCViewController.m; sourceTree = "<group>"; };
 		6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -199,33 +199,13 @@
 		6D5C189B1AC8FDB70047A9A3 /* demo */ = {
 			isa = PBXGroup;
 			children = (
+				6DBEBCEC1E0ED8140052BFF9 /* voip */,
 				6D5C19571AC935360047A9A3 /* sound */,
 				6D5C19071AC92A180047A9A3 /* third_party */,
 				6D5C18A01AC8FDB70047A9A3 /* AppDelegate.h */,
 				6D5C18A11AC8FDB70047A9A3 /* AppDelegate.m */,
-				6D8DC81E1DD3711A00803380 /* ARDUtilities.h */,
-				6D8DC81F1DD3711A00803380 /* ARDUtilities.m */,
-				6D8DC81B1DD370C400803380 /* ARDSignalingMessage.h */,
-				6D8DC81C1DD370C400803380 /* ARDSignalingMessage.m */,
-				6D8DC8151DD370AB00803380 /* RTCIceCandidate+JSON.h */,
-				6D8DC8161DD370AB00803380 /* RTCIceCandidate+JSON.m */,
-				6D8DC8171DD370AB00803380 /* RTCSessionDescription+JSON.h */,
-				6D8DC8181DD370AB00803380 /* RTCSessionDescription+JSON.m */,
-				6D8DC8101DD35C3800803380 /* ARDSDPUtils.h */,
-				6D8DC8111DD35C3800803380 /* ARDSDPUtils.m */,
 				6D5C18A31AC8FDB70047A9A3 /* ViewController.h */,
 				6D5C18A41AC8FDB70047A9A3 /* ViewController.m */,
-				6DBEBCDE1E0ED6B30052BFF9 /* VOIPService.h */,
-				6DBEBCD91E0ED6A20052BFF9 /* VOIPCommand.h */,
-				6DBEBCDA1E0ED6A20052BFF9 /* VOIPCommand.m */,
-				6DD491E61DD87D0700A7ABE3 /* WebRTCViewController.h */,
-				6DD491E71DD87D0700A7ABE3 /* WebRTCViewController.m */,
-				6D5C19001AC9296E0047A9A3 /* VOIPViewController.h */,
-				6D5C19011AC9296E0047A9A3 /* VOIPViewController.m */,
-				6D2A40D61B9D6C9200FB6A5A /* VOIPVideoViewController.h */,
-				6D2A40D71B9D6C9200FB6A5A /* VOIPVideoViewController.m */,
-				6D2A40D91B9D6D4B00FB6A5A /* VOIPVoiceViewController.h */,
-				6D2A40DA1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m */,
 				6D5C18A61AC8FDB70047A9A3 /* Main.storyboard */,
 				6D5C18A91AC8FDB70047A9A3 /* Images.xcassets */,
 				6D5C18AB1AC8FDB70047A9A3 /* LaunchScreen.xib */,
@@ -350,6 +330,34 @@
 				6DBEBCE81E0ED6E10052BFF9 /* imsdkTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		6DBEBCEC1E0ED8140052BFF9 /* voip */ = {
+			isa = PBXGroup;
+			children = (
+				6DBEBCED1E0ED8140052BFF9 /* ARDSDPUtils.h */,
+				6DBEBCEE1E0ED8140052BFF9 /* ARDSDPUtils.m */,
+				6DBEBCEF1E0ED8140052BFF9 /* ARDSignalingMessage.h */,
+				6DBEBCF01E0ED8140052BFF9 /* ARDSignalingMessage.m */,
+				6DBEBCF11E0ED8140052BFF9 /* ARDUtilities.h */,
+				6DBEBCF21E0ED8140052BFF9 /* ARDUtilities.m */,
+				6DBEBCF31E0ED8140052BFF9 /* RTCIceCandidate+JSON.h */,
+				6DBEBCF41E0ED8140052BFF9 /* RTCIceCandidate+JSON.m */,
+				6DBEBCF51E0ED8140052BFF9 /* RTCSessionDescription+JSON.h */,
+				6DBEBCF61E0ED8140052BFF9 /* RTCSessionDescription+JSON.m */,
+				6DBEBCF71E0ED8140052BFF9 /* VOIPCommand.h */,
+				6DBEBCF81E0ED8140052BFF9 /* VOIPCommand.m */,
+				6DBEBCF91E0ED8140052BFF9 /* VOIPService.h */,
+				6DBEBCFA1E0ED8140052BFF9 /* VOIPVideoViewController.h */,
+				6DBEBCFB1E0ED8140052BFF9 /* VOIPVideoViewController.m */,
+				6DBEBCFC1E0ED8140052BFF9 /* VOIPViewController.h */,
+				6DBEBCFD1E0ED8140052BFF9 /* VOIPViewController.m */,
+				6DBEBCFE1E0ED8140052BFF9 /* VOIPVoiceViewController.h */,
+				6DBEBCFF1E0ED8140052BFF9 /* VOIPVoiceViewController.m */,
+				6DBEBD001E0ED8140052BFF9 /* WebRTCViewController.h */,
+				6DBEBD011E0ED8140052BFF9 /* WebRTCViewController.m */,
+			);
+			path = voip;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -482,23 +490,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6DBEBD0B1E0ED8140052BFF9 /* WebRTCViewController.m in Sources */,
 				6D5C18A51AC8FDB70047A9A3 /* ViewController.m in Sources */,
-				6D8DC8191DD370AB00803380 /* RTCIceCandidate+JSON.m in Sources */,
-				6D8DC81D1DD370C400803380 /* ARDSignalingMessage.m in Sources */,
+				6DBEBD031E0ED8140052BFF9 /* ARDSignalingMessage.m in Sources */,
+				6DBEBD071E0ED8140052BFF9 /* VOIPCommand.m in Sources */,
+				6DBEBD041E0ED8140052BFF9 /* ARDUtilities.m in Sources */,
 				6D5C18A21AC8FDB70047A9A3 /* AppDelegate.m in Sources */,
-				6D8DC8121DD35C3800803380 /* ARDSDPUtils.m in Sources */,
 				6D5C19451AC92A560047A9A3 /* UIView+Toast.m in Sources */,
-				6D2A40DB1B9D6D4B00FB6A5A /* VOIPVoiceViewController.m in Sources */,
-				6DD491E81DD87D0700A7ABE3 /* WebRTCViewController.m in Sources */,
-				6D8DC8201DD3711A00803380 /* ARDUtilities.m in Sources */,
+				6DBEBD081E0ED8140052BFF9 /* VOIPVideoViewController.m in Sources */,
+				6DBEBD0A1E0ED8140052BFF9 /* VOIPVoiceViewController.m in Sources */,
+				6DBEBD051E0ED8140052BFF9 /* RTCIceCandidate+JSON.m in Sources */,
 				6D5C189F1AC8FDB70047A9A3 /* main.m in Sources */,
-				6D8DC81A1DD370AB00803380 /* RTCSessionDescription+JSON.m in Sources */,
 				6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */,
 				6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */,
+				6DBEBD061E0ED8140052BFF9 /* RTCSessionDescription+JSON.m in Sources */,
 				6D5C19491AC92A860047A9A3 /* VWWWaterView.m in Sources */,
-				6DBEBCDB1E0ED6A20052BFF9 /* VOIPCommand.m in Sources */,
-				6D2A40D81B9D6C9200FB6A5A /* VOIPVideoViewController.m in Sources */,
-				6D5C19021AC9296E0047A9A3 /* VOIPViewController.m in Sources */,
+				6DBEBD021E0ED8140052BFF9 /* ARDSDPUtils.m in Sources */,
+				6DBEBD091E0ED8140052BFF9 /* VOIPViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
