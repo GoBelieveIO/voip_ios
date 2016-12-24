@@ -12,9 +12,6 @@
 #import "WebRTCViewController.h"
 #import "VOIPService.h"
 
-@class RTCPeerConnectionFactory;
-@class RTCPeerConnection;
-
 #define APPID 7
 @interface VOIPViewController : WebRTCViewController<AVAudioPlayerDelegate, RTMessageObserver>
 
