@@ -12,37 +12,25 @@
 #import "ARDSignalingMessage.h"
 
 
-
-static NSString * const kARDAppClientErrorDomain = @"ARDAppClient";
-static NSInteger const kARDAppClientErrorUnknown = -1;
-static NSInteger const kARDAppClientErrorRoomFull = -2;
-static NSInteger const kARDAppClientErrorCreateSDP = -3;
-static NSInteger const kARDAppClientErrorSetSDP = -4;
-static NSInteger const kARDAppClientErrorInvalidClient = -5;
-static NSInteger const kARDAppClientErrorInvalidRoom = -6;
 static NSString * const kARDMediaStreamId = @"ARDAMS";
 static NSString * const kARDAudioTrackId = @"ARDAMSa0";
 static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 
 
-
 @interface WebRTCViewController ()<RTCPeerConnectionDelegate>
 @property(nonatomic) BOOL shouldUseLevelControl;
 @property(nonatomic) BOOL isLoopback;
-
 @end
 
 @implementation WebRTCViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     self.factory = [[RTCPeerConnectionFactory alloc] init];
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 
@@ -86,10 +74,6 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
     
     NSString *username = self.turnUserName;
     NSString *credential = self.turnPassword;
-    
-
-    
-    
     RTCIceServer *server2 = [[RTCIceServer alloc] initWithURLStrings:@[@"turn:turn.gobelieve.io:3478?transport=udp"]
                                                             username:username
                                                           credential:credential];
@@ -224,25 +208,12 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
     return constraints;
 }
 
-
-
-
-
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
 didCreateSessionDescription:(RTCSessionDescription *)sdp
                  error:(NSError *)error {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (error) {
             NSLog(@"Failed to create session description. Error: %@", error);
-            NSDictionary *userInfo = @{
-                                       NSLocalizedDescriptionKey: @"Failed to create session description.",
-                                       };
-            NSError *sdpError =
-            [[NSError alloc] initWithDomain:kARDAppClientErrorDomain
-                                       code:kARDAppClientErrorCreateSDP
-                                   userInfo:userInfo];
-            NSLog(@"sdp error:%@", sdpError);
-            //[_delegate appClient:self didError:sdpError];
             return;
         }
         // Prefer H264 if available.
@@ -326,7 +297,6 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
 #pragma mark - RTCPeerConnectionDelegate
 // Callbacks for this delegate occur on non-main thread and need to be
 // dispatched back to main queue as needed.
-
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
 didChangeSignalingState:(RTCSignalingState)stateChanged {
     NSLog(@"Signaling state changed: %ld", (long)stateChanged);
@@ -388,11 +358,6 @@ didRemoveIceCandidates:(NSArray<RTCIceCandidate *> *)candidates {
     didOpenDataChannel:(RTCDataChannel *)dataChannel {
     NSLog(@"did open data channel");
 }
-
-
-
-
-
 @end
 
 

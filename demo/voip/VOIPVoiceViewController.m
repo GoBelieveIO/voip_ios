@@ -32,10 +32,10 @@
 
 @property(nonatomic) UILabel *durationLabel;
 @property(nonatomic) ReflectionView *headView;
+
 @property(nonatomic) NSTimer *refreshTimer;
 
-
-@property(nonatomic) UInt64  conversationDuration;
+@property(nonatomic) int duration;
 @end
 
 @implementation VOIPVoiceViewController
@@ -44,7 +44,7 @@
     [super viewDidLoad];
 
     self.isAudioOnly = YES;
-    self.conversationDuration = 0;
+    self.duration = 0;
     
     // Do any additional setup after loading the view, typically from a nib.
     [self.view setBackgroundColor:[UIColor whiteColor]];
@@ -134,7 +134,6 @@
 }
 
 - (void)requestPermission {
-    
     AVAuthorizationStatus audioAuthStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio];
     if(audioAuthStatus == AVAuthorizationStatusAuthorized) {
         
@@ -151,13 +150,8 @@
     }
 }
 
--(void)playDialOut {
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:0 error: nil];
-    [super playDialOut];
-}
 
--(NSString*) getTimeStrFromSeconds:(UInt64)seconds{
+- (NSString*)getTimeStrFromSeconds:(UInt64)seconds {
     if (seconds >= 3600) {
         return [NSString stringWithFormat:@"%02lld:%02lld:%02lld",seconds/3600,(seconds%3600)/60,seconds%60];
     }else{
@@ -170,16 +164,14 @@
  *  刷新时间显示
  */
 -(void) refreshDuration{
-    self.conversationDuration += 1;
-    [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    self.duration += 1;
+    [self.durationLabel setText:[self getTimeStrFromSeconds:self.duration]];
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
 }
 
 -(void)refuseCall:(UIButton*)button {
     [self refuse];
-    [self.player stop];
-    self.player = nil;
     
     self.refuseButton.enabled = NO;
     self.acceptButton.enabled = NO;
@@ -188,18 +180,7 @@
 }
 
 -(void)acceptCall:(UIButton*)button {
-    //关闭外方
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord
-                   error:nil];
-    
-    [session overrideOutputAudioPort:AVAudioSessionPortOverrideNone
-                               error:nil];
-    
-    
     [self accept];
-    
     self.refuseButton.enabled = NO;
     self.acceptButton.enabled = NO;
 }
@@ -207,20 +188,9 @@
 -(void)hangUp:(UIButton*)button {
     [self hangUp];
     if (self.isConnected) {
-        self.conversationDuration = 0;
-        if (self.refreshTimer && [self.refreshTimer isValid]) {
-            [self.refreshTimer invalidate];
-            self.refreshTimer = nil;
-            
-        }
         [self stopStream];
-        
         [self dismiss];
     } else {
-        [self.player stop];
-        self.player = nil;
-        
-        
         [self dismiss];
     }
 }
@@ -244,9 +214,9 @@
 -(void)onConnected {
     [super onConnected];
     
-    self.conversationDuration = 0;
+    self.duration = 0;
     [self.durationLabel setHidden:NO];
-    [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    [self.durationLabel setText:[self getTimeStrFromSeconds:self.duration]];
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
     self.hangUpButton.hidden = NO;

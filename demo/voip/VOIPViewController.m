@@ -159,10 +159,8 @@ enum SessionMode {
     NSLog(@"player decode error");
 }
 
-
--(void)playDialIn {
-    [self setLoudspeakerStatus:YES];
-    NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"start.mp3"];
+-(void)playResource:(NSString*)name {
+    NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:name];
     NSURL *u = [NSURL fileURLWithPath:path];
     self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:u error:nil];
     [self.player setDelegate:self];
@@ -170,19 +168,14 @@ enum SessionMode {
     [self.player play];
 }
 
+-(void)playDialIn {
+    [self setLoudspeakerStatus:YES];
+    [self playResource:@"start.mp3"];
+}
+
 -(void)playDialOut {
-    NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"call.mp3"];
-    BOOL r = [[NSFileManager defaultManager] fileExistsAtPath:path];
-    NSLog(@"exist:%d", r);
-    
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
-    
-    NSURL *u = [NSURL fileURLWithPath:path];
-    self.player = [[AVAudioPlayer alloc] initWithContentsOfURL:u error:nil];
-    [self.player setDelegate:self];
-    
-    [self.player play];
+    [self setLoudspeakerStatus:!self.isAudioOnly];
+    [self playResource:@"call.mpd3"];
 }
 
 

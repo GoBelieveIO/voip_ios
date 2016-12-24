@@ -29,14 +29,12 @@
 @property(nonatomic) UIButton *acceptButton;
 @property(nonatomic) UIButton *refuseButton;
 @property(nonatomic) UIButton *switchButton;
-
 @property(nonatomic) UILabel *durationLabel;
 @property(nonatomic) ReflectionView *headView;
+
 @property(nonatomic) NSTimer *refreshTimer;
 
-
-@property(nonatomic) UInt64  conversationDuration;
-
+@property(nonatomic) int duration;
 @property(nonatomic) BOOL showCancel;
 @end
 
@@ -47,7 +45,7 @@
     
     self.isAudioOnly = NO;
     self.showCancel = YES;
-    self.conversationDuration = 0;
+    self.duration = 0;
     
     // Do any additional setup after loading the view, typically from a nib.
     [self.view setBackgroundColor:[UIColor whiteColor]];
@@ -213,7 +211,6 @@
 -(void)tapAction:(id)sender{
     if (self.showCancel) {
         self.showCancel = NO;
-
         
         [UIView animateWithDuration:1.0 animations:^{
             [self.hangUpButton setAlpha:0.0];
@@ -261,16 +258,6 @@
     }
 }
 
--(void)dismiss {
-    [super dismiss];
-}
-
-- (void)playDialOut {
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error: nil];
-    [super playDialOut];
-}
-
 -(NSString*) getTimeStrFromSeconds:(UInt64)seconds{
     if (seconds >= 3600) {
         return [NSString stringWithFormat:@"%02lld:%02lld:%02lld",seconds/3600,(seconds%3600)/60,seconds%60];
@@ -284,8 +271,8 @@
  *  刷新时间显示
  */
 -(void) refreshDuration{
-    self.conversationDuration += 1;
-    [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    self.duration += 1;
+    [self.durationLabel setText:[self getTimeStrFromSeconds:self.duration]];
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
 }
@@ -321,8 +308,7 @@
     AVAudioSessionRouteDescription *route = [[AVAudioSession sharedInstance] currentRoute];
     
     BOOL headphonesLocated = NO;
-    for( AVAudioSessionPortDescription *portDescription in route.outputs )
-    {
+    for (AVAudioSessionPortDescription *portDescription in route.outputs) {
         headphonesLocated |= ( [portDescription.portType isEqualToString:AVAudioSessionPortHeadphones] );
     }
     return headphonesLocated;
@@ -369,12 +355,12 @@
 -(void)onConnected {
     [super onConnected];
     
-    self.conversationDuration = 0;
+    self.duration = 0;
     
     self.localVideoView.hidden = NO;
     self.remoteVideoView.hidden = NO;
     [self.durationLabel setHidden:NO];
-    [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    [self.durationLabel setText:[self getTimeStrFromSeconds:self.duration]];
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
     self.hangUpButton.hidden = NO;

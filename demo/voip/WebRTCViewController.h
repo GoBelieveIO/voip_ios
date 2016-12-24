@@ -12,17 +12,12 @@
 #import "ARDSignalingMessage.h"
 
 @interface WebRTCViewController : UIViewController
-
 //当前用户是否是主动呼叫方
 @property(nonatomic) BOOL isCaller;
-
 @property(nonatomic, assign) BOOL isAudioOnly;
 
-
 @property(nonatomic, strong) RTCPeerConnectionFactory *factory;
-
 @property(nonatomic, strong) RTCPeerConnection *peerConnection;
-
 
 @property(nonatomic, strong) RTCVideoTrack *localVideoTrack;
 @property(nonatomic, strong) RTCVideoTrack *remoteVideoTrack;
