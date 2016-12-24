@@ -46,7 +46,6 @@
 
 @property(nonatomic) BOOL isConnected;
 
-
 @end
 
 @implementation VOIPViewController
@@ -111,9 +110,9 @@
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel setBackgroundColor:[UIColor clearColor]];
     
-    
     self.acceptButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.acceptButton.frame = CGRectMake(0,0, kBtnWidth, kBtnHeight);
+    self.acceptButton.frame = CGRectMake(30.0f, self.view.frame.size.height - kBtnHeight - kBtnHeight, kBtnWidth, kBtnHeight);
+    [self.acceptButton setCenter:CGPointMake(self.view.frame.size.width/4 + self.view.frame.size.width/2, kBtnYposition)];
     [self.acceptButton setBackgroundImage: [UIImage imageNamed:@"Call_Ans"] forState:UIControlStateNormal];
     
     [self.acceptButton setBackgroundImage:[UIImage imageNamed:@"Call_Ans_p"] forState:UIControlStateHighlighted];
@@ -121,21 +120,19 @@
     [self.acceptButton addTarget:self
                    action:@selector(acceptCall:)
          forControlEvents:UIControlEventTouchUpInside];
+
     [self.view addSubview:self.acceptButton];
-    [self.acceptButton setCenter:CGPointMake(self.view.frame.size.width/4, kBtnYposition)];
-    
     
     self.refuseButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.refuseButton.frame = CGRectMake(30.0f, self.view.frame.size.height - kBtnHeight - kBtnHeight, kBtnWidth, kBtnHeight);
+    self.refuseButton.frame = CGRectMake(0,0, kBtnWidth, kBtnHeight);
+    [self.refuseButton setCenter:CGPointMake(self.view.frame.size.width/4, kBtnYposition)];
     [self.refuseButton setBackgroundImage:[UIImage imageNamed:@"Call_hangup"] forState:UIControlStateNormal];
     [self.refuseButton setBackgroundImage:[UIImage imageNamed:@"Call_hangup_p"] forState:UIControlStateHighlighted];
     [self.refuseButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.refuseButton addTarget:self
-                   action:@selector(refuseCall:)
-         forControlEvents:UIControlEventTouchUpInside];
+                          action:@selector(refuseCall:)
+                forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.refuseButton];
-    [self.refuseButton setCenter:CGPointMake(self.view.frame.size.width/4 + self.view.frame.size.width/2, kBtnYposition)];
-    
     
     self.hangUpButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, kBtnSqureWidth, kBtnSqureHeight)];
     [self.hangUpButton setBackgroundImage:[UIImage imageNamed:@"refuse_nor"] forState:UIControlStateNormal];
@@ -148,13 +145,15 @@
          forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.hangUpButton];
     [self.hangUpButton setCenter:CGPointMake(self.view.frame.size.width / 2, kBtnYposition)];
-
+    
 
     self.voip = [[VOIPSession alloc] init];
     self.voip.currentUID = self.currentUID;
     self.voip.peerUID = self.peerUID;
+    self.voip.channelID = self.channelID;
     self.voip.delegate = self;
-    [[VOIPService instance] pushVOIPObserver:self.voip];
+    
+    [[VOIPService instance] addRTMessageObserver:self.voip];
     [[VOIPService instance] addRTMessageObserver:self];
     
     int64_t appid = 7;
@@ -167,7 +166,7 @@
 -(void)dismiss {
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
     [self dismissViewControllerAnimated:YES completion:^{
-        [[VOIPService instance] popVOIPObserver:self.voip];
+        [[VOIPService instance] removeRTMessageObserver:self.voip];
         [[VOIPService instance] removeRTMessageObserver:self];
         [[VOIPService instance] stop];
     }];

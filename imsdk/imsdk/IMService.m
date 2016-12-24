@@ -184,7 +184,8 @@
 
 -(void)handleRTMessage:(Message*)msg {
     RTMessage *rt = (RTMessage*)msg.body;
-    for (id<RTMessageObserver> ob in self.rtObservers) {
+    NSArray *array = [NSArray arrayWithArray:self.rtObservers];
+    for (id<RTMessageObserver> ob in array) {
         if ([ob respondsToSelector:@selector(onRTMessage:)]) {
             [ob onRTMessage:rt];
         }

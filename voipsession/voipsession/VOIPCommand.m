@@ -10,25 +10,18 @@
 #import <imsdk/util.h>
 
 @implementation VOIPCommand
--(VOIPCommand*)initWithContent:(NSData*)content {
+-(VOIPCommand*)initWithContent:(NSDictionary*)dict {
     self = [super init];
     if (self) {
-        const char *p = [content bytes];
-        self.cmd = readInt32(p);
-        p += 4;
-        if (content.length >= 12) {
-            self.channelID = readInt64(p);
-        }
+        self.cmd = [[dict objectForKey:@"command"] intValue];
+        self.channelID = [dict objectForKey:@"channel_id"];
      }
     return self;
 }
 
--(NSData*)content {
-    char buf[64*1024] = {0};
-    char *p = buf;
-    writeInt32(self.cmd, p);
-    p += 4;
-    writeInt64(self.channelID, p);
-    return [NSData dataWithBytes:buf length:12];
+-(NSDictionary*)jsonDictionary {
+    NSDictionary *dict = @{ @"command":[NSNumber numberWithInt:self.cmd],
+                            @"channel_id":self.channelID };
+    return dict;
 }
 @end

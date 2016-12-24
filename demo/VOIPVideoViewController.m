@@ -49,6 +49,11 @@
         AVAuthorizationStatus audioAuthStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio];
         if(audioAuthStatus == AVAuthorizationStatusAuthorized) {
             if (self.isCaller) {
+                if (self.channelID.length == 0){
+                    //todo 异步从服务器接口获取
+                    self.channelID = [[NSUUID UUID] UUIDString];
+                    self.voip.channelID = self.channelID;
+                }
                 [self dial];
             } else {
                 [self waitAccept];
@@ -61,6 +66,11 @@
             [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
                 if (granted) {
                     if (self.isCaller) {
+                        if (self.channelID.length == 0){
+                            //todo 异步从服务器接口获取
+                            self.channelID = [[NSUUID UUID] UUIDString];
+                            self.voip.channelID = self.channelID;
+                        }
                         [self dial];
                     } else {
                         [self waitAccept];
@@ -84,6 +94,11 @@
                 AVAuthorizationStatus audioAuthStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeAudio];
                 if(audioAuthStatus == AVAuthorizationStatusAuthorized) {
                     if (self.isCaller) {
+                        if (self.channelID.length == 0){
+                            //todo 异步从服务器接口获取
+                            self.channelID = [[NSUUID UUID] UUIDString];
+                            self.voip.channelID = self.channelID;
+                        }
                         [self dial];
                     } else {
                         [self waitAccept];
@@ -97,6 +112,11 @@
                         if (granted) {
                             
                             if (self.isCaller) {
+                                if (self.channelID.length == 0){
+                                    //todo 异步从服务器接口获取
+                                    self.channelID = [[NSUUID UUID] UUIDString];
+                                    self.voip.channelID = self.channelID;
+                                }
                                 [self dial];
                             } else {
                                 [self waitAccept];

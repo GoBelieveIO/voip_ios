@@ -18,7 +18,7 @@ enum SessionMode {
 };
 @interface VOIPSession()
 
-@property(nonatomic, assign) SessionMode mode;
+@property(nonatomic, assign) enum SessionMode mode;
 @property(nonatomic, assign) time_t dialBeginTimestamp;
 @property(nonatomic) NSTimer *dialTimer;
 
@@ -81,11 +81,16 @@ enum SessionMode {
 }
 
 -(void)sendCommand:(VOIPCommand*)command {
-    VOIPControl *ctl = [[VOIPControl alloc] init];
-    ctl.sender = self.currentUID;
-    ctl.receiver = self.peerUID;
-    ctl.content = command.content;
-    [[VOIPService instance] sendVOIPControl:ctl];
+    RTMessage *rt = [[RTMessage alloc] init];
+    rt.sender = self.currentUID;
+    rt.receiver = self.peerUID;
+    
+    NSDictionary *dict = @{@"voip":command.jsonDictionary};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:nil];
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    rt.content = s;
+    
+    [[VOIPService instance] sendRTMessage:rt];
 }
 
 -(void)sendControlCommand:(enum EVOIPCommand)cmd {
@@ -100,14 +105,19 @@ enum SessionMode {
 }
 
 -(void)sendTalking:(int64_t)receiver {
-    VOIPControl *ctl = [[VOIPControl alloc] init];
-    ctl.sender = self.currentUID;
-    ctl.receiver = receiver;
+    RTMessage *rt = [[RTMessage alloc] init];
+    rt.sender = self.currentUID;
+    rt.receiver = self.peerUID;
+
     VOIPCommand *command = [[VOIPCommand alloc] init];
     command.cmd = VOIP_COMMAND_TALKING;
     command.channelID = self.channelID;
-    ctl.content = command.content;
-    [[VOIPService instance] sendVOIPControl:ctl];
+ 
+    NSDictionary *dict = @{@"voip":command.jsonDictionary};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:nil];
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    rt.content = s;
+    [[VOIPService instance] sendRTMessage:rt];
 }
 
 -(void)sendReset {
@@ -140,16 +150,26 @@ enum SessionMode {
     [self sendControlCommand:VOIP_COMMAND_HANG_UP];
 }
 
-#pragma mark - VOIPObserver
--(void)onVOIPControl:(VOIPControl*)ctl {
+#pragma mark - RTMessageObserver
+-(void)onRTMessage:(RTMessage*)rt {
     VOIPSession *voip = self;
+    NSData *data = [rt.content dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
     
-    if (ctl.sender != self.peerUID) {
-        [self sendTalking:ctl.sender];
+    NSDictionary *obj = [dict objectForKey:@"voip"];
+    if (!obj) {
         return;
     }
     
-    VOIPCommand *command = [[VOIPCommand alloc] initWithContent:ctl.content];
+    
+    if (rt.sender != self.peerUID) {
+        [self sendTalking:rt.sender];
+        return;
+    }
+    
+    
+    VOIPCommand *command = [[VOIPCommand alloc] initWithContent:obj];
     
     NSLog(@"voip state:%d command:%d", voip.state, command.cmd);
     

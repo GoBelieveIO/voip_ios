@@ -24,7 +24,7 @@
 @property(nonatomic) int64_t peerUID;
 @property(nonatomic, copy) NSString *peerName;
 @property(nonatomic, copy) NSString *token;
-
+@property(nonatomic) NSString *channelID;
 
 -(int)setLoudspeakerStatus:(BOOL)enable;
 -(void)dismiss;

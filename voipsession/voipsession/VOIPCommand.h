@@ -29,8 +29,8 @@ enum EVOIPCommand {
 
 
 @interface VOIPCommand : NSObject
--(VOIPCommand*)initWithContent:(NSData*)content;
-@property(nonatomic, readonly) NSData *content;
+-(VOIPCommand*)initWithContent:(NSDictionary*)content;
+@property(nonatomic, readonly) NSDictionary *jsonDictionary;
 @property(nonatomic, assign) int32_t cmd;
-@property(nonatomic, assign) int64_t channelID;
+@property(nonatomic, copy) NSString *channelID;
 @end

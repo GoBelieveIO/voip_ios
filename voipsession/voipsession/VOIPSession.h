@@ -36,7 +36,7 @@ enum VOIPState {
 
 @end
 
-@interface VOIPSession : NSObject<VOIPObserver>
+@interface VOIPSession : NSObject<RTMessageObserver>
 
 
 @property(nonatomic, weak) NSObject<VOIPSessionDelegate> *delegate;
@@ -45,7 +45,7 @@ enum VOIPState {
 
 @property(nonatomic, assign) int64_t currentUID;
 @property(nonatomic, assign) int64_t peerUID;
-@property(nonatomic, assign) int64_t channelID;
+@property(nonatomic, copy) NSString *channelID;
 
 -(void)close;
 

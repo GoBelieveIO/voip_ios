@@ -15,7 +15,7 @@
 #import "VOIPVideoViewController.h"
 #import "VOIPVoiceViewController.h"
 
-@interface ViewController ()<VOIPObserver>
+@interface ViewController ()<RTMessageObserver>
 @property (weak, nonatomic) IBOutlet UITextField *myTextField;
 
 @property (weak, nonatomic) IBOutlet UITextField *peerTextField;
@@ -25,6 +25,8 @@
 @property(nonatomic) int64_t peerUID;
 @property(nonatomic, copy) NSString *token;
 
+@property(nonatomic) NSMutableArray *channelIDs;
+
 @end
 
 @implementation ViewController
@@ -33,6 +35,8 @@
     [super viewDidLoad];
 
 
+    self.channelIDs = [NSMutableArray array];
+    
     //app可以单独部署服务器，给予第三方应用更多的灵活性
     //在开发阶段也可以配置成测试环境的地址 "sandbox.imnode.gobelieve.io", "sandbox.voipnode.gobelieve.io"
     [VOIPService instance].host = @"imnode2.gobelieve.io";
@@ -146,7 +150,7 @@
             
             self.hud.labelText = @"等待中...";
             //等待呼叫
-            [[VOIPService instance] pushVOIPObserver:self];
+            [[VOIPService instance] addRTMessageObserver:self];
             
             self.myUID = myUID;
             self.peerUID = peerUID;
@@ -156,38 +160,50 @@
     
 }
 
--(void)onVOIPControl:(VOIPControl*)ctl {
-    VOIPCommand *command = [[VOIPCommand alloc] initWithContent:ctl.content];
+- (void)onRTMessage:(RTMessage *)rt {
+    NSData *data = [rt.content dataUsingEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    
+    NSDictionary *obj = [dict objectForKey:@"voip"];
+    if (!obj) {
+        return;
+    }
+    if (rt.sender != self.peerUID) {
+        return;
+    }
+    VOIPCommand *command = [[VOIPCommand alloc] initWithContent:obj];
+    if ([self.channelIDs containsObject:command.channelID]) {
+        return;
+    }
+    
     if (command.cmd == VOIP_COMMAND_DIAL) {
-        if (ctl.sender == self.peerUID) {
-            
-            [self.hud hide:NO];
-            
-            
-            VOIPViewController *controller = [[VOIPVoiceViewController alloc] init];
-            controller.currentUID = self.myUID;
-            controller.peerUID = self.peerUID;
-            controller.peerName = @"测试";
-            controller.token = self.token;
-            controller.isCaller = NO;
-            
-            [self presentViewController:controller animated:YES completion:nil];
-        }
+        [self.hud hide:NO];
+        
+        [self.channelIDs addObject:command.channelID];
+        VOIPViewController *controller = [[VOIPVoiceViewController alloc] init];
+        controller.currentUID = self.myUID;
+        controller.peerUID = self.peerUID;
+        controller.peerName = @"测试";
+        controller.token = self.token;
+        controller.isCaller = NO;
+        controller.channelID = command.channelID;
+        
+        [self presentViewController:controller animated:YES completion:nil];
+        
     } else if (command.cmd == VOIP_COMMAND_DIAL_VIDEO) {
-        if (ctl.sender == self.peerUID) {
-            
-            [self.hud hide:NO];
-            
-            
-            VOIPViewController *controller = [[VOIPVideoViewController alloc] init];
-            controller.currentUID = self.myUID;
-            controller.peerUID = self.peerUID;
-            controller.peerName = @"测试";
-            controller.token = self.token;
-            controller.isCaller = NO;
-            
-            [self presentViewController:controller animated:YES completion:nil];
-        }
+        [self.hud hide:NO];
+        
+        [self.channelIDs addObject:command.channelID];
+        VOIPViewController *controller = [[VOIPVideoViewController alloc] init];
+        controller.currentUID = self.myUID;
+        controller.peerUID = self.peerUID;
+        controller.peerName = @"测试";
+        controller.token = self.token;
+        controller.isCaller = NO;
+        controller.channelID = command.channelID;
+        
+        [self presentViewController:controller animated:YES completion:nil];
     }
 }
 
