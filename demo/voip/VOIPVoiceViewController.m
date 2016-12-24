@@ -43,6 +43,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
 
+    self.isAudioOnly = YES;
     self.conversationDuration = 0;
     
     // Do any additional setup after loading the view, typically from a nib.
@@ -113,10 +114,6 @@
     [self.view addSubview:self.hangUpButton];
     [self.hangUpButton setCenter:CGPointMake(self.view.frame.size.width / 2, kBtnYposition)];
     
-    self.isAudioOnly = YES;
-    
-    
-    
     [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
     if (self.isCaller) {
         self.acceptButton.hidden = YES;
@@ -154,6 +151,12 @@
     }
 }
 
+-(void)playDialOut {
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:0 error: nil];
+    [super playDialOut];
+}
+
 -(NSString*) getTimeStrFromSeconds:(UInt64)seconds{
     if (seconds >= 3600) {
         return [NSString stringWithFormat:@"%02lld:%02lld:%02lld",seconds/3600,(seconds%3600)/60,seconds%60];
@@ -169,6 +172,7 @@
 -(void) refreshDuration{
     self.conversationDuration += 1;
     [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
 }
 
@@ -243,6 +247,7 @@
     self.conversationDuration = 0;
     [self.durationLabel setHidden:NO];
     [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
     self.hangUpButton.hidden = NO;
     self.acceptButton.hidden = YES;

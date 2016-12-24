@@ -28,6 +28,7 @@
 @property(nonatomic) UIButton *hangUpButton;
 @property(nonatomic) UIButton *acceptButton;
 @property(nonatomic) UIButton *refuseButton;
+@property(nonatomic) UIButton *switchButton;
 
 @property(nonatomic) UILabel *durationLabel;
 @property(nonatomic) ReflectionView *headView;
@@ -35,6 +36,8 @@
 
 
 @property(nonatomic) UInt64  conversationDuration;
+
+@property(nonatomic) BOOL showCancel;
 @end
 
 @implementation VOIPVideoViewController
@@ -42,6 +45,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.isAudioOnly = NO;
+    self.showCancel = YES;
     self.conversationDuration = 0;
     
     // Do any additional setup after loading the view, typically from a nib.
@@ -111,18 +116,18 @@
                 forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.hangUpButton];
     [self.hangUpButton setCenter:CGPointMake(self.view.frame.size.width / 2, kBtnYposition)];
+    [self.hangUpButton setAlpha:0.6f];
     
+
     
-    self.isAudioOnly = NO;
-    
-    UIButton *switchButton = [[UIButton alloc] initWithFrame:CGRectMake(240, 50, 80, 40)];
-    
-    [switchButton setTitle:@"切换" forState:UIControlStateNormal];
-    [switchButton addTarget:self
-                     action:@selector(switchCamera:)
-           forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:switchButton];
-    
+    self.switchButton = [[UIButton alloc] initWithFrame:CGRectMake(240,27,42,24)];
+    [self.switchButton setImage:[UIImage imageNamed:@"switch"] forState:UIControlStateNormal];
+    [self.switchButton addTarget:self
+                          action:@selector(switchCamera:)
+                forControlEvents:UIControlEventTouchUpInside];
+    [self.switchButton setHidden:YES];
+    [self.view addSubview:self.switchButton];
+
     
     RTCEAGLVideoView *remoteVideoView = [[RTCEAGLVideoView alloc] initWithFrame:self.view.bounds];
     remoteVideoView.delegate = self;
@@ -130,9 +135,20 @@
     self.remoteVideoView = remoteVideoView;
     [self.view insertSubview:self.remoteVideoView atIndex:0];
     
-    RTCCameraPreviewView *localVideoView = [[RTCCameraPreviewView alloc] initWithFrame:CGRectMake(200, 380, 72, 96)];
+    
+    CGRect rect = self.view.bounds;
+    CGRect frame = CGRectMake(rect.size.width*0.72, rect.size.height*0.72, rect.size.width*0.25, rect.size.height*0.25);
+    RTCCameraPreviewView *localVideoView = [[RTCCameraPreviewView alloc] initWithFrame:frame];
     self.localVideoView = localVideoView;
     [self.view insertSubview:self.localVideoView aboveSubview:self.remoteVideoView];
+    
+    
+    self.localVideoView.hidden = YES;
+    self.remoteVideoView.hidden = YES;
+    
+    
+    UITapGestureRecognizer*tapGesture = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(tapAction:)];
+    [self.remoteVideoView addGestureRecognizer:tapGesture];
     
     [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
     if (self.isCaller) {
@@ -193,6 +209,49 @@
     
 }
 
+
+-(void)tapAction:(id)sender{
+    if (self.showCancel) {
+        self.showCancel = NO;
+
+        
+        [UIView animateWithDuration:1.0 animations:^{
+            [self.hangUpButton setAlpha:0.0];
+            [self.durationLabel setAlpha:0.0];
+            [self.switchButton setAlpha:0.0];
+            [self.switchButton setAlpha:0.0];
+            [self.headView setAlpha:0.0];
+        } completion:^(BOOL finished){
+            [self.hangUpButton setHidden:YES];
+            [self.durationLabel setHidden:YES];
+            [self.switchButton setHidden:YES];
+            [self.switchButton setHidden:YES];
+            
+            [self.headView setHidden:YES];
+        }];
+    }else {
+        
+        self.showCancel = YES;
+        
+        [self.headView setHidden:NO];
+        [self.hangUpButton setHidden:NO];
+        [self.durationLabel setHidden:NO];
+        [self.switchButton setHidden:NO];
+        [self.switchButton setHidden:NO];
+        
+        [UIView animateWithDuration:1.0 animations:^{
+            [self.hangUpButton setAlpha:0.6f];
+            [self.durationLabel setAlpha:1.0];
+            [self.switchButton setAlpha:1.0];
+            [self.switchButton setAlpha:1.0];
+            [self.headView setAlpha:1.0];
+        } completion:^(BOOL finished){
+            
+        }];
+    }
+}
+
+
 -(void)switchCamera:(id)sender {
     NSLog(@"switch camera");
     RTCVideoSource* source = self.localVideoTrack.source;
@@ -206,6 +265,11 @@
     [super dismiss];
 }
 
+- (void)playDialOut {
+    AVAudioSession *session = [AVAudioSession sharedInstance];
+    [session setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionDefaultToSpeaker error: nil];
+    [super playDialOut];
+}
 
 -(NSString*) getTimeStrFromSeconds:(UInt64)seconds{
     if (seconds >= 3600) {
@@ -222,6 +286,7 @@
 -(void) refreshDuration{
     self.conversationDuration += 1;
     [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
 }
 
@@ -242,7 +307,7 @@
     self.acceptButton.enabled = NO;
 }
 
--(void)hangUp:(UIButton*)button {
+- (void)hangUp:(UIButton*)button {
     [self hangUp];
     if (self.isConnected) {
         [self stopStream];
@@ -252,19 +317,48 @@
     }
 }
 
+- (BOOL)isHeadsetPluggedIn {
+    AVAudioSessionRouteDescription *route = [[AVAudioSession sharedInstance] currentRoute];
+    
+    BOOL headphonesLocated = NO;
+    for( AVAudioSessionPortDescription *portDescription in route.outputs )
+    {
+        headphonesLocated |= ( [portDescription.portType isEqualToString:AVAudioSessionPortHeadphones] );
+    }
+    return headphonesLocated;
+}
+
+- (BOOL)isLoudSpeaker {
+    AVAudioSession* session = [AVAudioSession sharedInstance];
+    AVAudioSessionCategoryOptions options = session.categoryOptions;
+    BOOL enabled = options & AVAudioSessionCategoryOptionDefaultToSpeaker;
+    return enabled;
+}
+
+//http://stackoverflow.com/questions/24595579/how-to-redirect-audio-to-speakers-in-the-apprtc-ios-example
+- (void)didSessionRouteChange:(NSNotification *)notification {
+    NSDictionary *interuptionDict = notification.userInfo;
+    NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
+    NSLog(@"route change:%zd", routeChangeReason);
+    if (![self isHeadsetPluggedIn] && ![self isLoudSpeaker]) {
+        NSError* error;
+        [[AVAudioSession sharedInstance] overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&error];
+    }
+}
 
 - (void)startStream {
     [[UIApplication sharedApplication] setIdleTimerDisabled:YES];
     [self setLoudspeakerStatus:YES];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(didSessionRouteChange:) name:AVAudioSessionRouteChangeNotification object:nil];
     self.refreshTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(refreshDuration) userInfo:nil repeats:YES];
     [self.refreshTimer fire];
-    
-    [super startStream];
 
+    [super startStream];
 }
 
 - (void)stopStream {
     [[UIApplication sharedApplication] setIdleTimerDisabled:NO];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:AVAudioSessionRouteChangeNotification object:nil];
     if (self.refreshTimer && [self.refreshTimer isValid]) {
         [self.refreshTimer invalidate];
         self.refreshTimer = nil;
@@ -276,11 +370,18 @@
     [super onConnected];
     
     self.conversationDuration = 0;
+    
+    self.localVideoView.hidden = NO;
+    self.remoteVideoView.hidden = NO;
     [self.durationLabel setHidden:NO];
     [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
+    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
     [self.durationLabel sizeToFit];
     self.hangUpButton.hidden = NO;
     self.acceptButton.hidden = YES;
     self.refuseButton.hidden = YES;
+    
+    //隐藏hangup按钮
+    [self tapAction:nil];
 }
 @end

@@ -77,8 +77,6 @@ enum SessionMode {
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-
-    
     [[VOIPService instance] addRTMessageObserver:self];
     
     int64_t appid = APPID;
@@ -95,11 +93,9 @@ enum SessionMode {
 }
 
 -(void)dismiss {
-    if (self.player) {
-        [self.player stop];
-        self.player = nil;
-    }
-    
+    [self.player stop];
+    self.player = nil;
+
     [self close];
     
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
@@ -110,17 +106,6 @@ enum SessionMode {
 }
 
 
-- (BOOL)isHeadsetPluggedIn
-{
-    AVAudioSessionRouteDescription *route = [[AVAudioSession sharedInstance] currentRoute];
-    
-    BOOL headphonesLocated = NO;
-    for( AVAudioSessionPortDescription *portDescription in route.outputs )
-    {
-        headphonesLocated |= ( [portDescription.portType isEqualToString:AVAudioSessionPortHeadphones] );
-    }
-    return headphonesLocated;
-}
 
 
 - (void)startStream {

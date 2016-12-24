@@ -30,6 +30,8 @@
 -(int)setLoudspeakerStatus:(BOOL)enable;
 -(void)dismiss;
 
+-(void)playDialOut;
+
 -(void)dialVoice;
 -(void)dialVideo;
 -(void)accept;
