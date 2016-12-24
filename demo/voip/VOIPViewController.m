@@ -32,18 +32,11 @@ enum SessionMode {
 };
 
 @interface VOIPViewController ()
+@property(nonatomic) AVAudioPlayer *player;
 
 @property(nonatomic, assign) enum VOIPState state;
-
--(void)close;
-
--(void)dialVoice;
--(void)dialVideo;
--(void)accept;
--(void)refuse;
--(void)hangUp;
-
 @property(nonatomic, assign) enum SessionMode mode;
+
 @property(nonatomic, assign) time_t dialBeginTimestamp;
 @property(nonatomic) NSTimer *dialTimer;
 
@@ -55,6 +48,16 @@ enum SessionMode {
 
 @property(atomic, copy) NSString *voipHostIP;
 @property(atomic) BOOL refreshing;
+
+
+-(void)close;
+
+-(void)dialVoice;
+-(void)dialVideo;
+-(void)accept;
+-(void)refuse;
+-(void)hangUp;
+
 @end
 
 @implementation VOIPViewController
