@@ -17,7 +17,6 @@
 		6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C193C1AC92A330047A9A3 /* MBProgressHUD.m */; };
 		6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19401AC92A440047A9A3 /* ReflectionView.m */; };
 		6D5C19451AC92A560047A9A3 /* UIView+Toast.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19441AC92A560047A9A3 /* UIView+Toast.m */; };
-		6D5C19491AC92A860047A9A3 /* VWWWaterView.m in Sources */ = {isa = PBXBuildFile; fileRef = 6D5C19481AC92A860047A9A3 /* VWWWaterView.m */; };
 		6D5C194B1AC92DB40047A9A3 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C194A1AC92DB40047A9A3 /* libsqlite3.dylib */; };
 		6D5C194D1AC92DD00047A9A3 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C194C1AC92DD00047A9A3 /* UIKit.framework */; };
 		6D5C194F1AC92DD60047A9A3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6D5C194E1AC92DD60047A9A3 /* Foundation.framework */; };
@@ -109,8 +108,6 @@
 		6D5C19401AC92A440047A9A3 /* ReflectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReflectionView.m; sourceTree = "<group>"; };
 		6D5C19431AC92A560047A9A3 /* UIView+Toast.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+Toast.h"; sourceTree = "<group>"; };
 		6D5C19441AC92A560047A9A3 /* UIView+Toast.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+Toast.m"; sourceTree = "<group>"; };
-		6D5C19471AC92A860047A9A3 /* VWWWaterView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VWWWaterView.h; sourceTree = "<group>"; };
-		6D5C19481AC92A860047A9A3 /* VWWWaterView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VWWWaterView.m; sourceTree = "<group>"; };
 		6D5C194A1AC92DB40047A9A3 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		6D5C194C1AC92DD00047A9A3 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		6D5C194E1AC92DD60047A9A3 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -123,7 +120,6 @@
 		6D5C195B1AC935360047A9A3 /* start.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = start.mp3; sourceTree = "<group>"; };
 		6D8DC8071DD3520100803380 /* WebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = WebRTC.framework; sourceTree = "<group>"; };
 		6D8DC8131DD3607000803380 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
-		6DBEBCC11E0A510E0052BFF9 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		6DBEBCDF1E0ED6E10052BFF9 /* imsdk.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = imsdk.xcodeproj; path = imsdk/imsdk.xcodeproj; sourceTree = "<group>"; };
 		6DBEBCED1E0ED8140052BFF9 /* ARDSDPUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDSDPUtils.h; sourceTree = "<group>"; };
 		6DBEBCEE1E0ED8140052BFF9 /* ARDSDPUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDSDPUtils.m; sourceTree = "<group>"; };
@@ -251,7 +247,6 @@
 		6D5C19071AC92A180047A9A3 /* third_party */ = {
 			isa = PBXGroup;
 			children = (
-				6D5C19461AC92A860047A9A3 /* water_wave */,
 				6D5C19421AC92A560047A9A3 /* Toast */,
 				6D5C193E1AC92A440047A9A3 /* ReflectionView */,
 				6D5C193A1AC92A330047A9A3 /* MBProgressHUD */,
@@ -286,19 +281,9 @@
 			path = Toast;
 			sourceTree = "<group>";
 		};
-		6D5C19461AC92A860047A9A3 /* water_wave */ = {
-			isa = PBXGroup;
-			children = (
-				6D5C19471AC92A860047A9A3 /* VWWWaterView.h */,
-				6D5C19481AC92A860047A9A3 /* VWWWaterView.m */,
-			);
-			path = water_wave;
-			sourceTree = "<group>";
-		};
 		6D5C19561AC931B30047A9A3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				6DBEBCC11E0A510E0052BFF9 /* JavaScriptCore.framework */,
 				6D8DC8131DD3607000803380 /* WebKit.framework */,
 				6D8DC8071DD3520100803380 /* WebRTC.framework */,
 				6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */,
@@ -504,7 +489,6 @@
 				6D5C19411AC92A440047A9A3 /* ReflectionView.m in Sources */,
 				6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */,
 				6DBEBD061E0ED8140052BFF9 /* RTCSessionDescription+JSON.m in Sources */,
-				6D5C19491AC92A860047A9A3 /* VWWWaterView.m in Sources */,
 				6DBEBD021E0ED8140052BFF9 /* ARDSDPUtils.m in Sources */,
 				6DBEBD091E0ED8140052BFF9 /* VOIPViewController.m in Sources */,
 			);
