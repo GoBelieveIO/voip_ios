@@ -171,7 +171,7 @@ enum SessionMode {
 }
 
 -(void)playDialOut {
-    NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"CallConnected.mp3"];
+    NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"call.mp3"];
     BOOL r = [[NSFileManager defaultManager] fileExistsAtPath:path];
     NSLog(@"exist:%d", r);
     
