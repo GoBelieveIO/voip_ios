@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <WebRTC/WebRTC.h>
 
-#import <voipsession/VOIPSession.h>
 #import "ARDSignalingMessage.h"
 
 @interface WebRTCViewController : UIViewController

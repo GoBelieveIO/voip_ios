@@ -9,8 +9,8 @@
 
 #import "ViewController.h"
 #import "MBProgressHUD.h"
-#import <voipsession/VOIPSession.h>
-#import <voipsession/VOIPService.h>
+#import "VOIPCommand.h"
+#import "VOIPService.h"
 #import "VOIPViewController.h"
 #import "VOIPVideoViewController.h"
 #import "VOIPVoiceViewController.h"
@@ -71,7 +71,7 @@
             self.token = token;
             [self.hud hide:NO];
             
-            VOIPViewController *controller = [[VOIPVideoViewController alloc] init];
+            VOIPVideoViewController *controller = [[VOIPVideoViewController alloc] init];
             controller.currentUID = self.myUID;
             controller.peerUID = self.peerUID;
             controller.peerName = @"测试";
@@ -111,7 +111,7 @@
             self.token = token;
             [self.hud hide:NO];
             
-            VOIPViewController *controller = [[VOIPVoiceViewController alloc] init];
+            VOIPVoiceViewController *controller = [[VOIPVoiceViewController alloc] init];
             controller.currentUID = self.myUID;
             controller.peerUID = self.peerUID;
             controller.peerName = @"测试";
@@ -181,7 +181,7 @@
         [self.hud hide:NO];
         
         [self.channelIDs addObject:command.channelID];
-        VOIPViewController *controller = [[VOIPVoiceViewController alloc] init];
+        VOIPVoiceViewController *controller = [[VOIPVoiceViewController alloc] init];
         controller.currentUID = self.myUID;
         controller.peerUID = self.peerUID;
         controller.peerName = @"测试";
@@ -195,7 +195,7 @@
         [self.hud hide:NO];
         
         [self.channelIDs addObject:command.channelID];
-        VOIPViewController *controller = [[VOIPVideoViewController alloc] init];
+        VOIPVideoViewController *controller = [[VOIPVideoViewController alloc] init];
         controller.currentUID = self.myUID;
         controller.peerUID = self.peerUID;
         controller.peerName = @"测试";

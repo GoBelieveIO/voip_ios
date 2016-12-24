@@ -8,44 +8,53 @@
 */
 
 #import "VOIPViewController.h"
-#import <voipsession/VOIPSession.h>
 #import <WebRTC/WebRTC.h>
-
-#import "ReflectionView.h"
 #import "UIView+Toast.h"
-
 #import "ARDUtilities.h"
+#import "VOIPCommand.h"
 
-#define kBtnWidth  72
-#define kBtnHeight 72
-
-#define kBtnSqureWidth  200
-#define kBtnSqureHeight 50
-
-#define KheaderViewWH  100
-
-#define kBtnYposition  (self.view.frame.size.height - 2.5*kBtnSqureHeight)
-
-//RGB颜色
-#define RGBCOLOR(r,g,b) [UIColor colorWithRed:(r)/255.0f green:(g)/255.0f blue:(b)/255.0f alpha:1]
-
-@interface VOIPViewController ()<VOIPSessionDelegate>
-
-@property(nonatomic) UIButton *hangUpButton;
-@property(nonatomic) UIButton *acceptButton;
-@property(nonatomic) UIButton *refuseButton;
-
-@property(nonatomic) UILabel *durationLabel;
-@property(nonatomic) ReflectionView *headView;
-@property(nonatomic) NSTimer *refreshTimer;
+//todo 状态变迁图
+enum VOIPState {
+    VOIP_LISTENING,
+    VOIP_DIALING,//呼叫对方
+    VOIP_CONNECTED,//通话连接成功
+    VOIP_ACCEPTING,//询问用户是否接听来电
+    VOIP_ACCEPTED,//用户接听来电
+    VOIP_REFUSED,//(来/去)电已被拒
+    VOIP_HANGED_UP,//通话被挂断
+    VOIP_SHUTDOWN,//对方正在通话中，连接被终止
+};
 
 
-@property(nonatomic) UInt64  conversationDuration;
+enum SessionMode {
+    SESSION_VOICE,
+    SESSION_VIDEO,
+};
 
-@property(nonatomic) AVAudioPlayer *player;
+@interface VOIPViewController ()
 
-@property(nonatomic) BOOL isConnected;
+@property(nonatomic, assign) enum VOIPState state;
 
+-(void)close;
+
+-(void)dialVoice;
+-(void)dialVideo;
+-(void)accept;
+-(void)refuse;
+-(void)hangUp;
+
+@property(nonatomic, assign) enum SessionMode mode;
+@property(nonatomic, assign) time_t dialBeginTimestamp;
+@property(nonatomic) NSTimer *dialTimer;
+
+@property(nonatomic, assign) time_t acceptTimestamp;
+@property(nonatomic) NSTimer *acceptTimer;
+
+@property(nonatomic, assign) time_t lastPingTimestamp;
+@property(nonatomic) NSTimer *pingTimer;
+
+@property(atomic, copy) NSString *voipHostIP;
+@property(atomic) BOOL refreshing;
 @end
 
 @implementation VOIPViewController
@@ -65,165 +74,40 @@
 }
 
 
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    
-}
-
-- (void)viewDidLoad
-{
+- (void)viewDidLoad {
     [super viewDidLoad];
 
-    self.conversationDuration = 0;
-    
-    // Do any additional setup after loading the view, typically from a nib.
-    [self.view setBackgroundColor:[UIColor whiteColor]];
-    
-    UIImageView *imgView = [[UIImageView alloc]
-                            initWithFrame:CGRectMake(0,0, KheaderViewWH,
-                                                     KheaderViewWH)];
 
-    imgView.image = [UIImage imageNamed:@"PersonalChat"];
-
-    CALayer *imageLayer = [imgView layer];  //获取ImageView的层
-    [imageLayer setMasksToBounds:YES];
-    [imageLayer setCornerRadius:imgView.frame.size.width / 2];
     
-    self.headView = [[ReflectionView alloc] initWithFrame:CGRectMake((self.view.frame.size.width-KheaderViewWH)/2,80, KheaderViewWH,KheaderViewWH)];
-    self.headView.alpha = 0.9f;
-    self.headView.reflectionScale = 0.3f;
-    self.headView.reflectionGap = 1.0f;
-    [self.headView addSubview:imgView];
-    
-    [self.view addSubview:self.headView];
-    
-    
-    self.durationLabel = [[UILabel alloc] init];
-    [self.durationLabel setFont:[UIFont systemFontOfSize:23.0f]];
-    [self.durationLabel setTextAlignment:NSTextAlignmentCenter];
-    [self.durationLabel sizeToFit];
-    [self.durationLabel setTextColor: RGBCOLOR(11, 178, 39)];
-    [self.durationLabel setHidden:YES];
-    [self.view addSubview:self.durationLabel];
-    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
-    [self.durationLabel setBackgroundColor:[UIColor clearColor]];
-    
-    self.acceptButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.acceptButton.frame = CGRectMake(30.0f, self.view.frame.size.height - kBtnHeight - kBtnHeight, kBtnWidth, kBtnHeight);
-    [self.acceptButton setCenter:CGPointMake(self.view.frame.size.width/4 + self.view.frame.size.width/2, kBtnYposition)];
-    [self.acceptButton setBackgroundImage: [UIImage imageNamed:@"Call_Ans"] forState:UIControlStateNormal];
-    
-    [self.acceptButton setBackgroundImage:[UIImage imageNamed:@"Call_Ans_p"] forState:UIControlStateHighlighted];
-    [self.acceptButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [self.acceptButton addTarget:self
-                   action:@selector(acceptCall:)
-         forControlEvents:UIControlEventTouchUpInside];
-
-    [self.view addSubview:self.acceptButton];
-    
-    self.refuseButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.refuseButton.frame = CGRectMake(0,0, kBtnWidth, kBtnHeight);
-    [self.refuseButton setCenter:CGPointMake(self.view.frame.size.width/4, kBtnYposition)];
-    [self.refuseButton setBackgroundImage:[UIImage imageNamed:@"Call_hangup"] forState:UIControlStateNormal];
-    [self.refuseButton setBackgroundImage:[UIImage imageNamed:@"Call_hangup_p"] forState:UIControlStateHighlighted];
-    [self.refuseButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [self.refuseButton addTarget:self
-                          action:@selector(refuseCall:)
-                forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:self.refuseButton];
-    
-    self.hangUpButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, kBtnSqureWidth, kBtnSqureHeight)];
-    [self.hangUpButton setBackgroundImage:[UIImage imageNamed:@"refuse_nor"] forState:UIControlStateNormal];
-    [self.hangUpButton setBackgroundImage:[UIImage imageNamed:@"refuse_pre"] forState:UIControlStateHighlighted];
-    [self.hangUpButton setTitle:@"挂断" forState:UIControlStateNormal];
-    [self.hangUpButton.titleLabel setFont:[UIFont systemFontOfSize:20.0f]];
-    [self.hangUpButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-    [self.hangUpButton addTarget:self
-                   action:@selector(hangUp:)
-         forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:self.hangUpButton];
-    [self.hangUpButton setCenter:CGPointMake(self.view.frame.size.width / 2, kBtnYposition)];
-    
-
-    self.voip = [[VOIPSession alloc] init];
-    self.voip.currentUID = self.currentUID;
-    self.voip.peerUID = self.peerUID;
-    self.voip.channelID = self.channelID;
-    self.voip.delegate = self;
-    
-    [[VOIPService instance] addRTMessageObserver:self.voip];
     [[VOIPService instance] addRTMessageObserver:self];
     
-    int64_t appid = 7;
+    int64_t appid = APPID;
     int64_t uid = self.currentUID;
     NSString *username = [NSString stringWithFormat:@"%lld_%lld", appid, uid];
     self.turnUserName = username;
     self.turnPassword = self.token;
+    
+    if (self.isCaller) {
+        [self playDialOut];
+    } else {
+        [self playDialIn];
+    }
 }
 
 -(void)dismiss {
+    if (self.player) {
+        [self.player stop];
+        self.player = nil;
+    }
+    
+    [self close];
+    
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
     [self dismissViewControllerAnimated:YES completion:^{
-        [[VOIPService instance] removeRTMessageObserver:self.voip];
         [[VOIPService instance] removeRTMessageObserver:self];
         [[VOIPService instance] stop];
     }];
 }
-
--(void)refuseCall:(UIButton*)button {
-    [self.voip refuse];
-    [self.player stop];
-    self.player = nil;
-    
-    self.refuseButton.enabled = NO;
-    self.acceptButton.enabled = NO;
-    
-    [self dismiss];
-}
-
--(void)acceptCall:(UIButton*)button {
-    //关闭外方
-    AVAudioSession *session = [AVAudioSession sharedInstance];
-    
-    [session setCategory:AVAudioSessionCategoryPlayAndRecord
-                   error:nil];
-    
-    [session overrideOutputAudioPort:AVAudioSessionPortOverrideNone
-                               error:nil];
-    
-    [self.player stop];
-    self.player = nil;
-    
-    [self.voip accept];
-    
-    self.refuseButton.enabled = NO;
-    self.acceptButton.enabled = NO;
-}
-
--(void)hangUp:(UIButton*)button {
-    [self.voip hangUp];
-    if (self.isConnected) {
-        self.conversationDuration = 0;
-        if (self.refreshTimer && [self.refreshTimer isValid]) {
-            [self.refreshTimer invalidate];
-            self.refreshTimer = nil;
-            
-        }
-        [self stopStream];
-        
-        [self dismiss];
-    } else {
-        [self.player stop];
-        self.player = nil;
-
-        
-        [self dismiss];
-    }
-}
-
-
 
 
 - (BOOL)isHeadsetPluggedIn
@@ -246,8 +130,6 @@
 
 -(void)stopStream {
     [super stopStream];
-    
-    [self.voip close];
 }
 
 
@@ -304,7 +186,6 @@
 }
 
 -(void)playDialOut {
-    
     NSString *path = [[[NSBundle mainBundle] resourcePath] stringByAppendingPathComponent:@"CallConnected.mp3"];
     BOOL r = [[NSFileManager defaultManager] fileExistsAtPath:path];
     NSLog(@"exist:%d", r);
@@ -319,54 +200,6 @@
     [self.player play];
 }
 
-/**
- *  创建拨号
- *
- *  @param voip  VOIP
- */
--(void) dial {
-    [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
-    self.acceptButton.hidden = YES;
-    self.refuseButton.hidden = YES;
-    [self playDialOut];
-}
-
--(void)waitAccept {
-    [[UIDevice currentDevice] setProximityMonitoringEnabled:YES];
-    self.hangUpButton.hidden = YES;
-    [self playDialOut];
-}
-
--(NSString*) getTimeStrFromSeconds:(UInt64)seconds{
-    if (seconds >= 3600) {
-        return [NSString stringWithFormat:@"%02lld:%02lld:%02lld",seconds/3600,(seconds%3600)/60,seconds%60];
-    }else{
-        return [NSString stringWithFormat:@"%02lld:%02lld",(seconds%3600)/60,seconds%60];
-    }
-}
-
-/**
- *  显示通话中
- */
--(void) setOnTalkingUIShow{
-
-    [self.durationLabel setHidden:NO];
-    [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
-    [self.durationLabel sizeToFit];
-    [self.durationLabel setTextAlignment:NSTextAlignmentCenter];
-    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
-}
-
-/**
- *  刷新时间显示
- */
--(void) refreshDuration{
-    self.conversationDuration += 1;
-    [self.durationLabel setText:[self getTimeStrFromSeconds:self.conversationDuration]];
-    [self.durationLabel sizeToFit];
-    [self.durationLabel setTextAlignment:NSTextAlignmentCenter];
-    [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
-}
 
 - (void)sendSignalingMessage:(ARDSignalingMessage*)msg {
     NSDictionary *d = [msg JSONDictionary];
@@ -386,14 +219,16 @@
     if (rt.sender != self.peerUID) {
         return;
     }
-    NSDictionary *dict = [NSDictionary dictionaryWithJSONString:rt.content];
-    if (!dict[@"p2p"]) {
-        return;
-    }
     
-    NSLog(@"recv signal message:%@", rt.content);
-    ARDSignalingMessage *message = [ARDSignalingMessage messageFromDictionary:dict[@"p2p"]];
-    [self processMessage:message];
+    NSDictionary *dict = [NSDictionary dictionaryWithJSONString:rt.content];
+    if ([dict objectForKey:@"p2p"]) {
+        NSLog(@"recv signal message:%@", rt.content);
+        ARDSignalingMessage *message = [ARDSignalingMessage messageFromDictionary:dict[@"p2p"]];
+        [self processMessage:message];
+    } else if ([dict objectForKey:@"voip"]) {
+        NSLog(@"recv voip message:%@", rt.content);
+        [self processVOIPMessage:dict[@"voip"] sender:rt.sender];
+    }
 }
 
 #pragma mark - VOIPStateDelegate
@@ -406,10 +241,6 @@
 
 -(void)onHangUp {
     if (self.isConnected) {
-        if (self.refreshTimer && [self.refreshTimer isValid]) {
-            [self.refreshTimer invalidate];
-            self.refreshTimer = nil;
-        }
         [self stopStream];
         [self dismiss];
     } else {
@@ -434,7 +265,7 @@
     [self.player stop];
     self.player = nil;
     
-    [self.voip hangUp];
+    [self hangUp];
     [self dismiss];
 }
 
@@ -443,30 +274,270 @@
 }
 
 -(void)onConnected {
+    NSLog(@"call voip connected");
     self.isConnected = YES;
     
-    [self setOnTalkingUIShow];
     [self.player stop];
     self.player = nil;
-    
-    self.refreshTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(refreshDuration) userInfo:nil repeats:YES];
-    [self.refreshTimer fire];
-    
-    NSLog(@"call voip connected");
+
     [self startStream];
-    
-    self.hangUpButton.hidden = NO;
-    self.acceptButton.hidden = YES;
-    self.refuseButton.hidden = YES;
 }
 
 -(void)onDisconnect {
-    if (self.refreshTimer && [self.refreshTimer isValid]) {
-        [self.refreshTimer invalidate];
-        self.refreshTimer = nil;
-    }
     [self stopStream];
     [self dismiss];
+}
+
+
+- (void)close {
+    if (self.dialTimer && self.dialTimer.isValid) {
+        [self.dialTimer invalidate];
+        self.dialTimer = nil;
+    }
+    if (self.acceptTimer && self.acceptTimer.isValid) {
+        [self.acceptTimer invalidate];
+        self.acceptTimer = nil;
+    }
+    
+    if (self.pingTimer && self.pingTimer.isValid) {
+        [self.pingTimer invalidate];
+        self.pingTimer = nil;
+    }
+}
+
+- (void)sendDial {
+    NSLog(@"dial...");
+    if (self.mode == SESSION_VOICE) {
+        [self sendControlCommand:VOIP_COMMAND_DIAL];
+    } else if (self.mode == SESSION_VIDEO) {
+        [self sendControlCommand:VOIP_COMMAND_DIAL_VIDEO];
+    } else {
+        NSAssert(NO, @"invalid session mode");
+    }
+    
+    time_t now = time(NULL);
+    if (now - self.dialBeginTimestamp >= 60) {
+        NSLog(@"dial timeout");
+        
+        //ondialtimeout
+        [self onDialTimeout];
+    }
+}
+
+-(void)sendCommand:(VOIPCommand*)command {
+    RTMessage *rt = [[RTMessage alloc] init];
+    rt.sender = self.currentUID;
+    rt.receiver = self.peerUID;
+    
+    NSDictionary *dict = @{@"voip":command.jsonDictionary};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:nil];
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    rt.content = s;
+    
+    [[VOIPService instance] sendRTMessage:rt];
+}
+
+-(void)sendControlCommand:(enum EVOIPCommand)cmd {
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+    command.cmd = cmd;
+    command.channelID = self.channelID;
+    [self sendCommand:command];
+}
+
+-(void)sendRefused {
+    [self sendControlCommand:VOIP_COMMAND_REFUSED];
+}
+
+-(void)sendTalking:(int64_t)receiver {
+    RTMessage *rt = [[RTMessage alloc] init];
+    rt.sender = self.currentUID;
+    rt.receiver = self.peerUID;
+    
+    VOIPCommand *command = [[VOIPCommand alloc] init];
+    command.cmd = VOIP_COMMAND_TALKING;
+    command.channelID = self.channelID;
+    
+    NSDictionary *dict = @{@"voip":command.jsonDictionary};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:nil];
+    NSString *s = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    rt.content = s;
+    [[VOIPService instance] sendRTMessage:rt];
+}
+
+-(void)sendReset {
+    [self sendControlCommand:VOIP_COMMAND_RESET];
+}
+
+-(void)sendConnected {
+    [self sendControlCommand:VOIP_COMMAND_CONNECTED];
+}
+
+-(void)sendDialAccept {
+    [self sendControlCommand:VOIP_COMMAND_ACCEPT];
+    
+    time_t now = time(NULL);
+    if (now - self.acceptTimestamp >= 10) {
+        NSLog(@"accept timeout");
+        [self.acceptTimer invalidate];
+        
+        //onaccepttimeout
+        [self onAcceptTimeout];
+    }
+}
+
+-(void)sendDialRefuse {
+    [self sendControlCommand:VOIP_COMMAND_REFUSE];
+}
+
+-(void)sendHangUp {
+    NSLog(@"send hang up");
+    [self sendControlCommand:VOIP_COMMAND_HANG_UP];
+}
+
+
+-(void)processVOIPMessage:(NSDictionary*)obj sender:(int64_t)sender {
+    if (sender != self.peerUID) {
+        [self sendTalking:sender];
+        return;
+    }
+    
+    VOIPCommand *command = [[VOIPCommand alloc] initWithContent:obj];
+    NSLog(@"voip state:%d command:%d", self.state, command.cmd);
+    if (self.state == VOIP_DIALING) {
+        if (command.cmd == VOIP_COMMAND_ACCEPT) {
+            [self sendConnected];
+            self.state = VOIP_CONNECTED;
+            [self.dialTimer invalidate];
+            self.dialTimer = nil;
+            
+            //onconnected
+            [self onConnected];
+            [self ping];
+        } else if (command.cmd == VOIP_COMMAND_REFUSE) {
+            self.state = VOIP_REFUSED;
+            
+            [self sendRefused];
+            
+            [self.dialTimer invalidate];
+            self.dialTimer = nil;
+            
+            //onrefuse
+            [self onRefuse];
+            
+        } else if (command.cmd == VOIP_COMMAND_TALKING) {
+            self.state = VOIP_SHUTDOWN;
+            
+            [self.dialTimer invalidate];
+            self.dialTimer = nil;
+            
+            [self onTalking];
+        }
+    } else if (self.state == VOIP_ACCEPTING) {
+        if (command.cmd == VOIP_COMMAND_HANG_UP) {
+            self.state = VOIP_HANGED_UP;
+            //onhangup
+            [self onHangUp];
+        }
+    } else if (self.state == VOIP_ACCEPTED) {
+        if (command.cmd == VOIP_COMMAND_CONNECTED) {
+            NSLog(@"called voip connected");
+            [self.acceptTimer invalidate];
+            self.state = VOIP_CONNECTED;
+            
+            //onconnected
+            [self onConnected];
+            [self ping];
+        }
+    } else if (self.state == VOIP_CONNECTED) {
+        if (command.cmd == VOIP_COMMAND_HANG_UP) {
+            self.state = VOIP_HANGED_UP;
+            
+            //onhangup
+            [self onHangUp];
+        } else if (command.cmd == VOIP_COMMAND_ACCEPT) {
+            [self sendConnected];
+        } else if (command.cmd == VOIP_COMMAND_PING) {
+            self.lastPingTimestamp = time(NULL);
+        }
+    }
+}
+
+
+-(void)dialVoice {
+    self.state = VOIP_DIALING;
+    self.mode = SESSION_VOICE;
+    
+    self.dialBeginTimestamp = time(NULL);
+    [self sendDial];
+    self.dialTimer = [NSTimer scheduledTimerWithTimeInterval: 1
+                                                      target:self
+                                                    selector:@selector(sendDial)
+                                                    userInfo:nil
+                                                     repeats:YES];
+}
+
+-(void)dialVideo {
+    self.state = VOIP_DIALING;
+    self.mode = SESSION_VIDEO;
+    
+    self.dialBeginTimestamp = time(NULL);
+    [self sendDial];
+    self.dialTimer = [NSTimer scheduledTimerWithTimeInterval: 1
+                                                      target:self
+                                                    selector:@selector(sendDial)
+                                                    userInfo:nil
+                                                     repeats:YES];
+}
+
+-(void)accept {
+    self.state = VOIP_ACCEPTED;
+    self.acceptTimestamp = time(NULL);
+    self.acceptTimer = [NSTimer scheduledTimerWithTimeInterval: 1
+                                                        target:self
+                                                      selector:@selector(sendDialAccept)
+                                                      userInfo:nil
+                                                       repeats:YES];
+    [self sendDialAccept];
+}
+
+-(void)refuse {
+    self.state = VOIP_REFUSED;
+    [self sendDialRefuse];
+}
+
+-(void)hangUp {
+    if (self.state == VOIP_DIALING ) {
+        [self.dialTimer invalidate];
+        self.dialTimer = nil;
+        
+        [self sendHangUp];
+        self.state = VOIP_HANGED_UP;
+    } else if (self.state == VOIP_CONNECTED) {
+        [self sendHangUp];
+        self.state = VOIP_HANGED_UP;
+    }else {
+        NSLog(@"invalid voip state:%d", self.state);
+    }
+}
+
+-(void)sendPing {
+    [self sendControlCommand:VOIP_COMMAND_PING];
+    
+    time_t now = time(NULL);
+    
+    if (now - self.lastPingTimestamp > 10) {
+        [self onDisconnect];
+    }
+}
+
+-(void)ping {
+    self.lastPingTimestamp = time(NULL);
+    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1
+                                                      target:self
+                                                    selector:@selector(sendPing)
+                                                    userInfo:nil
+                                                     repeats:YES];
+    [self sendPing];
 }
 
 @end
