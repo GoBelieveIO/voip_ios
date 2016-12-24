@@ -18,7 +18,6 @@ enum VOIPState {
     VOIP_CONNECTED,//通话连接成功
     VOIP_ACCEPTING,//询问用户是否接听来电
     VOIP_ACCEPTED,//用户接听来电
-    VOIP_REFUSING,//来电被拒
     VOIP_REFUSED,//(来/去)电已被拒
     VOIP_HANGED_UP,//通话被挂断
     VOIP_SHUTDOWN,//对方正在通话中，连接被终止
@@ -33,7 +32,8 @@ enum VOIPState {
 -(void)onDialTimeout;
 -(void)onAcceptTimeout;
 -(void)onConnected;
--(void)onRefuseFinished;
+-(void)onDisconnect;
+
 @end
 
 @interface VOIPSession : NSObject<VOIPObserver>
@@ -45,9 +45,9 @@ enum VOIPState {
 
 @property(nonatomic, assign) int64_t currentUID;
 @property(nonatomic, assign) int64_t peerUID;
+@property(nonatomic, assign) int64_t channelID;
 
-
-
+-(void)close;
 
 -(void)dial;
 -(void)dialVideo;

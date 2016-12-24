@@ -9,10 +9,6 @@
 #import "VOIPCommand.h"
 #import <imsdk/util.h>
 
-@implementation NatPortMap
-
-@end
-
 @implementation VOIPCommand
 -(VOIPCommand*)initWithContent:(NSData*)content {
     self = [super init];
@@ -20,61 +16,19 @@
         const char *p = [content bytes];
         self.cmd = readInt32(p);
         p += 4;
-        if (self.cmd == VOIP_COMMAND_DIAL || self.cmd == VOIP_COMMAND_DIAL_VIDEO) {
-            self.dialCount = readInt32(p);
-        } else if (self.cmd == VOIP_COMMAND_ACCEPT) {
-            if (content.length >= 10) {
-                self.natMap = [[NatPortMap alloc] init];
-                self.natMap.ip = readInt32(p);
-                p += 4;
-                self.natMap.port = readInt16(p);
-                p += 2;
-            }
-        } else if (self.cmd == VOIP_COMMAND_CONNECTED) {
-            if (content.length >= 10) {
-                self.natMap = [[NatPortMap alloc] init];
-                self.natMap.ip = readInt32(p);
-                p += 4;
-                self.natMap.port = readInt16(p);
-                p += 2;
-            }
-            if (content.length >= 14) {
-                self.relayIP = readInt32(p);
-                p += 4;
-            }
+        if (content.length >= 12) {
+            self.channelID = readInt64(p);
         }
-    }
+     }
     return self;
 }
 
 -(NSData*)content {
     char buf[64*1024] = {0};
     char *p = buf;
-    
     writeInt32(self.cmd, p);
     p += 4;
-    if (self.cmd == VOIP_COMMAND_DIAL || self.cmd == VOIP_COMMAND_DIAL_VIDEO) {
-        writeInt32(self.dialCount, p);
-        p += 4;
-        return [NSData dataWithBytes:buf length:8];
-    } else if (self.cmd == VOIP_COMMAND_ACCEPT) {
-        NSLog(@"nat map ip:%x", self.natMap.ip);
-        writeInt32(self.natMap.ip, p);
-        p += 4;
-        writeInt16(self.natMap.port, p);
-        p += 2;
-        return [NSData dataWithBytes:buf length:10];
-    } else if (self.cmd == VOIP_COMMAND_CONNECTED) {
-        NSLog(@"nat map ip:%x", self.natMap.ip);
-        writeInt32(self.natMap.ip, p);
-        p += 4;
-        writeInt16(self.natMap.port, p);
-        p += 2;
-        writeInt32(self.relayIP, p);
-        p += 4;
-        return [NSData dataWithBytes:buf length:14];
-    } else {
-        return [NSData dataWithBytes:buf length:4];
-    }
+    writeInt64(self.channelID, p);
+    return [NSData dataWithBytes:buf length:12];
 }
 @end

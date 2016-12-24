@@ -16,11 +16,14 @@
 @class RTCPeerConnectionFactory;
 @class RTCPeerConnection;
 
-@interface VOIPViewController : WebRTCViewController<AVAudioPlayerDelegate>
+@interface VOIPViewController : WebRTCViewController<AVAudioPlayerDelegate, RTMessageObserver>
 
 @property(nonatomic) VOIPSession *voip;
 
-
+@property(nonatomic) int64_t currentUID;
+@property(nonatomic) int64_t peerUID;
+@property(nonatomic, copy) NSString *peerName;
+@property(nonatomic, copy) NSString *token;
 
 
 -(int)setLoudspeakerStatus:(BOOL)enable;

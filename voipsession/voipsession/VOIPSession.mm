@@ -12,12 +12,6 @@
 #import "VOIPSession.h"
 #import "VOIPService.h"
 
-//#define VOIP_HOST @"voipnode.gobelieve.io"
-//#define VOIP_PORT 20002
-//#define STUN_SERVER  @"stun.counterpath.net"
-
-//static NSString *g_voipHost = VOIP_HOST;
-
 enum SessionMode {
     SESSION_VOICE,
     SESSION_VIDEO,
@@ -25,15 +19,14 @@ enum SessionMode {
 @interface VOIPSession()
 
 @property(nonatomic, assign) SessionMode mode;
-@property(nonatomic, assign) int dialCount;
 @property(nonatomic, assign) time_t dialBeginTimestamp;
 @property(nonatomic) NSTimer *dialTimer;
 
 @property(nonatomic, assign) time_t acceptTimestamp;
 @property(nonatomic) NSTimer *acceptTimer;
 
-@property(nonatomic, assign) time_t refuseTimestamp;
-@property(nonatomic) NSTimer *refuseTimer;
+@property(nonatomic, assign) time_t lastPingTimestamp;
+@property(nonatomic) NSTimer *pingTimer;
 
 @property(atomic, copy) NSString *voipHostIP;
 @property(atomic) BOOL refreshing;
@@ -52,77 +45,31 @@ enum SessionMode {
     return self;
 }
 
--(NSString*)IP2String:(struct in_addr)addr {
-    char buf[64] = {0};
-    const char *p = inet_ntop(AF_INET, &addr, buf, 64);
-    if (p) {
-        return [NSString stringWithUTF8String:p];
+- (void)close {
+    if (self.dialTimer && self.dialTimer.isValid) {
+        [self.dialTimer invalidate];
+        self.dialTimer = nil;
     }
-    return nil;
+    if (self.acceptTimer && self.acceptTimer.isValid) {
+        [self.acceptTimer invalidate];
+        self.acceptTimer = nil;
+    }
     
+    if (self.pingTimer && self.pingTimer.isValid) {
+        [self.pingTimer invalidate];
+        self.pingTimer = nil;
+    }
 }
-
--(NSString*)resolveIP:(NSString*)host {
-    struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    int s;
-    
-    char buf[32];
-    snprintf(buf, 32, "%d", 0);
-    
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = 0;
-    
-    s = getaddrinfo([host UTF8String], buf, &hints, &result);
-    if (s != 0) {
-        NSLog(@"get addr info error:%s", gai_strerror(s));
-        return nil;
-    }
-    NSString *ip = nil;
-    rp = result;
-    if (rp != NULL) {
-        struct sockaddr_in *addr = (struct sockaddr_in*)rp->ai_addr;
-        ip = [self IP2String:addr->sin_addr];
-    }
-    freeaddrinfo(result);
-    return ip;
-}
-
-
-
-
 
 - (void)sendDial {
     NSLog(@"dial...");
-    VOIPControl *ctl = [[VOIPControl alloc] init];
-    ctl.sender = self.currentUID;
-    ctl.receiver = self.peerUID;
-    
-    VOIPCommand *command = [[VOIPCommand alloc] init];
-
     if (self.mode == SESSION_VOICE) {
-        command.cmd = VOIP_COMMAND_DIAL;
+        [self sendControlCommand:VOIP_COMMAND_DIAL];
     } else if (self.mode == SESSION_VIDEO) {
-        command.cmd = VOIP_COMMAND_DIAL_VIDEO;
+        [self sendControlCommand:VOIP_COMMAND_DIAL_VIDEO];
     } else {
         NSAssert(NO, @"invalid session mode");
     }
-    
-    command.dialCount = self.dialCount + 1;
-    
-    ctl.content = command.content;
-    
-    
-    BOOL r = [[VOIPService instance] sendVOIPControl:ctl];
-    if (r) {
-        self.dialCount = self.dialCount + 1;
-    } else {
-        NSLog(@"dial fail");
-    }
-    
     
     time_t now = time(NULL);
     if (now - self.dialBeginTimestamp >= 60) {
@@ -144,6 +91,7 @@ enum SessionMode {
 -(void)sendControlCommand:(enum EVOIPCommand)cmd {
     VOIPCommand *command = [[VOIPCommand alloc] init];
     command.cmd = cmd;
+    command.channelID = self.channelID;
     [self sendCommand:command];
 }
 
@@ -157,6 +105,7 @@ enum SessionMode {
     ctl.receiver = receiver;
     VOIPCommand *command = [[VOIPCommand alloc] init];
     command.cmd = VOIP_COMMAND_TALKING;
+    command.channelID = self.channelID;
     ctl.content = command.content;
     [[VOIPService instance] sendVOIPControl:ctl];
 }
@@ -166,18 +115,11 @@ enum SessionMode {
 }
 
 -(void)sendConnected {
-    VOIPCommand *command = [[VOIPCommand alloc] init];
-    command.cmd = VOIP_COMMAND_CONNECTED;
-
-
-    
-    [self sendCommand:command];
+    [self sendControlCommand:VOIP_COMMAND_CONNECTED];
 }
 
 -(void)sendDialAccept {
-    VOIPCommand *command = [[VOIPCommand alloc] init];
-    command.cmd = VOIP_COMMAND_ACCEPT;
-    [self sendCommand:command];
+    [self sendControlCommand:VOIP_COMMAND_ACCEPT];
     
     time_t now = time(NULL);
     if (now - self.acceptTimestamp >= 10) {
@@ -191,17 +133,6 @@ enum SessionMode {
 
 -(void)sendDialRefuse {
     [self sendControlCommand:VOIP_COMMAND_REFUSE];
-    
-    time_t now = time(NULL);
-    if (now - self.refuseTimestamp > 10) {
-        NSLog(@"refuse timeout");
-        [self.refuseTimer invalidate];
-        
-        VOIPSession *voip = self;
-        voip.state = VOIP_REFUSED;
-
-        [self.delegate onRefuseFinished];
-    }
 }
 
 -(void)sendHangUp {
@@ -232,6 +163,7 @@ enum SessionMode {
 
             //onconnected
             [self.delegate onConnected];
+            [self ping];
         } else if (command.cmd == VOIP_COMMAND_REFUSE) {
             voip.state = VOIP_REFUSED;
             
@@ -265,7 +197,7 @@ enum SessionMode {
             
             //onconnected
             [self.delegate onConnected];
-
+            [self ping];
         }
     } else if (voip.state == VOIP_CONNECTED) {
         if (command.cmd == VOIP_COMMAND_HANG_UP) {
@@ -275,13 +207,8 @@ enum SessionMode {
             [self.delegate onHangUp];
         } else if (command.cmd == VOIP_COMMAND_ACCEPT) {
             [self sendConnected];
-        }
-    } else if (voip.state == VOIP_REFUSING) {
-        if (command.cmd == VOIP_COMMAND_REFUSED) {
-            NSLog(@"refuse finished");
-            voip.state = VOIP_REFUSED;
-            //onRefuseFinished
-            [self.delegate onRefuseFinished];
+        } else if (command.cmd == VOIP_COMMAND_PING) {
+            self.lastPingTimestamp = time(NULL);
         }
     }
 }
@@ -324,22 +251,11 @@ enum SessionMode {
                                                       userInfo:nil
                                                        repeats:YES];
     [self sendDialAccept];
-    
-
-
 }
--(void)refuse {
-    self.state = VOIP_REFUSING;
-    
-    self.refuseTimestamp = time(NULL);
-    self.refuseTimer = [NSTimer scheduledTimerWithTimeInterval: 1
-                                                        target:self
-                                                      selector:@selector(sendDialRefuse)
-                                                      userInfo:nil
-                                                       repeats:YES];
-    
-    [self sendDialRefuse];
 
+-(void)refuse {
+    self.state = VOIP_REFUSED;
+    [self sendDialRefuse];
 }
 
 -(void)hangUp {
@@ -358,5 +274,24 @@ enum SessionMode {
     }
 }
 
+-(void)sendPing {
+    [self sendControlCommand:VOIP_COMMAND_PING];
+    
+    time_t now = time(NULL);
+    
+    if (now - self.lastPingTimestamp > 10) {
+        [self.delegate onDisconnect];
+    }
+}
+
+-(void)ping {
+    self.lastPingTimestamp = time(NULL);
+    self.pingTimer = [NSTimer scheduledTimerWithTimeInterval:1
+                                                        target:self
+                                                      selector:@selector(sendPing)
+                                                      userInfo:nil
+                                                       repeats:YES];
+    [self sendPing];
+}
 
 @end

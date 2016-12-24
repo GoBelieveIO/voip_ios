@@ -139,6 +139,7 @@
 		6D8DC81C1DD370C400803380 /* ARDSignalingMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDSignalingMessage.m; sourceTree = "<group>"; };
 		6D8DC81E1DD3711A00803380 /* ARDUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDUtilities.h; sourceTree = "<group>"; };
 		6D8DC81F1DD3711A00803380 /* ARDUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDUtilities.m; sourceTree = "<group>"; };
+		6DBEBCC11E0A510E0052BFF9 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		6DD491E61DD87D0700A7ABE3 /* WebRTCViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebRTCViewController.h; sourceTree = "<group>"; };
 		6DD491E71DD87D0700A7ABE3 /* WebRTCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebRTCViewController.m; sourceTree = "<group>"; };
 		6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
@@ -319,6 +320,7 @@
 		6D5C19561AC931B30047A9A3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6DBEBCC11E0A510E0052BFF9 /* JavaScriptCore.framework */,
 				6D8DC8131DD3607000803380 /* WebKit.framework */,
 				6D8DC8071DD3520100803380 /* WebRTC.framework */,
 				6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */,

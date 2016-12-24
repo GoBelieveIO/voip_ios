@@ -34,16 +34,9 @@ static NSString const *kRTCICECandidatesTypeKey = @"candidates";
 
 + (NSData *)JSONDataForIceCandidates:(NSArray<RTCIceCandidate *> *)candidates
                             withType:(NSString *)typeValue {
-  NSMutableArray *jsonCandidates =
-      [NSMutableArray arrayWithCapacity:candidates.count];
-  for (RTCIceCandidate *candidate in candidates) {
-    NSDictionary *jsonCandidate = [candidate JSONDictionary];
-    [jsonCandidates addObject:jsonCandidate];
-  }
-  NSDictionary *json = @{
-    kRTCICECandidateTypeKey : typeValue,
-    kRTCICECandidatesTypeKey : jsonCandidates
-  };
+    
+    
+  NSDictionary *json = [self JSONDictionaryForIceCandidates:candidates withType:typeValue];
   NSError *error = nil;
   NSData *data =
       [NSJSONSerialization dataWithJSONObject:json
@@ -54,6 +47,22 @@ static NSString const *kRTCICECandidatesTypeKey = @"candidates";
     return nil;
   }
   return data;
+}
+
++ (NSDictionary *)JSONDictionaryForIceCandidates:(NSArray<RTCIceCandidate *> *)candidates
+                                        withType:(NSString *)typeValue {
+    NSMutableArray *jsonCandidates =
+    [NSMutableArray arrayWithCapacity:candidates.count];
+    for (RTCIceCandidate *candidate in candidates) {
+        NSDictionary *jsonCandidate = [candidate JSONDictionary];
+        [jsonCandidates addObject:jsonCandidate];
+    }
+    NSDictionary *json = @{
+                           kRTCICECandidateTypeKey : typeValue,
+                           kRTCICECandidatesTypeKey : jsonCandidates
+                           };
+    
+    return json;
 }
 
 + (NSArray<RTCIceCandidate *> *)candidatesFromJSONDictionary:

@@ -26,7 +26,8 @@ typedef enum {
 @property(nonatomic, readonly) ARDSignalingMessageType type;
 
 + (ARDSignalingMessage *)messageFromJSONString:(NSString *)jsonString;
-- (NSData *)JSONData;
++ (ARDSignalingMessage *)messageFromDictionary:(NSDictionary *)dict;
+- (NSDictionary*)JSONDictionary;
 
 @end
 

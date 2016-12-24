@@ -14,6 +14,7 @@
 #import "ReflectionView.h"
 #import "UIView+Toast.h"
 
+#import "ARDUtilities.h"
 
 #define kBtnWidth  72
 #define kBtnHeight 72
@@ -155,6 +156,12 @@
     self.voip.delegate = self;
     [[VOIPService instance] pushVOIPObserver:self.voip];
     [[VOIPService instance] addRTMessageObserver:self];
+    
+    int64_t appid = 7;
+    int64_t uid = self.currentUID;
+    NSString *username = [NSString stringWithFormat:@"%lld_%lld", appid, uid];
+    self.turnUserName = username;
+    self.turnPassword = self.token;
 }
 
 -(void)dismiss {
@@ -173,6 +180,8 @@
     
     self.refuseButton.enabled = NO;
     self.acceptButton.enabled = NO;
+    
+    [self dismiss];
 }
 
 -(void)acceptCall:(UIButton*)button {
@@ -238,6 +247,8 @@
 
 -(void)stopStream {
     [super stopStream];
+    
+    [self.voip close];
 }
 
 
@@ -358,6 +369,34 @@
     [self.durationLabel setCenter:CGPointMake((self.view.frame.size.width)/2, self.headView.frame.origin.y + self.headView.frame.size.height + 50)];
 }
 
+- (void)sendSignalingMessage:(ARDSignalingMessage*)msg {
+    NSDictionary *d = [msg JSONDictionary];
+    NSDictionary *p2p = @{@"p2p":d};
+    NSData *data = [NSJSONSerialization dataWithJSONObject:p2p options:0 error:nil];
+    NSString *str = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSLog(@"send signal message:%@", str);
+    RTMessage *rt = [[RTMessage alloc] init];
+    rt.sender = self.currentUID;
+    rt.receiver = self.peerUID;
+    rt.content = str;
+    [[VOIPService instance] sendRTMessage:rt];
+}
+
+
+-(void)onRTMessage:(RTMessage*)rt {
+    if (rt.sender != self.peerUID) {
+        return;
+    }
+    NSDictionary *dict = [NSDictionary dictionaryWithJSONString:rt.content];
+    if (!dict[@"p2p"]) {
+        return;
+    }
+    
+    NSLog(@"recv signal message:%@", rt.content);
+    ARDSignalingMessage *message = [ARDSignalingMessage messageFromDictionary:dict[@"p2p"]];
+    [self processMessage:message];
+}
+
 #pragma mark - VOIPStateDelegate
 -(void)onRefuse {
     [self.player stop];
@@ -422,7 +461,12 @@
     self.refuseButton.hidden = YES;
 }
 
--(void)onRefuseFinished {
+-(void)onDisconnect {
+    if (self.refreshTimer && [self.refreshTimer isValid]) {
+        [self.refreshTimer invalidate];
+        self.refreshTimer = nil;
+    }
+    [self stopStream];
     [self dismiss];
 }
 

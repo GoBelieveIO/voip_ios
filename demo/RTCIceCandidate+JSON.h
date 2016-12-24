@@ -17,6 +17,10 @@
     (NSDictionary *)dictionary;
 + (NSData *)JSONDataForIceCandidates:(NSArray<RTCIceCandidate *> *)candidates
                             withType:(NSString *)typeValue;
-- (NSData *)JSONData;
 
++ (NSDictionary *)JSONDictionaryForIceCandidates:(NSArray<RTCIceCandidate *> *)candidates
+                                        withType:(NSString *)typeValue;
+
+- (NSData *)JSONData;
+- (NSDictionary *)JSONDictionary;
 @end
