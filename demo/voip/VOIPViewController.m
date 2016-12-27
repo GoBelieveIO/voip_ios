@@ -60,7 +60,14 @@ enum SessionMode {
 
 @end
 
+static int64_t g_controllerCount = 0;
+
 @implementation VOIPViewController
+
++(int64_t)controllerCount {
+    return g_controllerCount;
+}
+
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -74,11 +81,13 @@ enum SessionMode {
 
 -(void)dealloc {
     NSLog(@"voip view controller dealloc");
+    g_controllerCount--;
 }
 
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    g_controllerCount++;
 
     [[VOIPService instance] addRTMessageObserver:self];
     

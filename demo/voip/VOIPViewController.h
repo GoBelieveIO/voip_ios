@@ -14,6 +14,8 @@
 
 #define APPID 7
 @interface VOIPViewController : WebRTCViewController<AVAudioPlayerDelegate, RTMessageObserver>
++(int64_t)controllerCount;
+
 @property(nonatomic) BOOL isConnected;
 
 @property(nonatomic) int64_t currentUID;
