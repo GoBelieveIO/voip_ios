@@ -15,8 +15,7 @@
 
 //todo 状态变迁图
 enum VOIPState {
-    VOIP_LISTENING,
-    VOIP_DIALING,//呼叫对方
+    VOIP_DIALING = 1,//呼叫对方
     VOIP_CONNECTED,//通话连接成功
     VOIP_ACCEPTING,//询问用户是否接听来电
     VOIP_ACCEPTED,//用户接听来电
@@ -99,8 +98,10 @@ static int64_t g_controllerCount = 0;
     
     if (self.isCaller) {
         [self playDialOut];
+        self.state = VOIP_DIALING;
     } else {
         [self playDialIn];
+        self.state = VOIP_ACCEPTING;
     }
 }
 
@@ -113,11 +114,8 @@ static int64_t g_controllerCount = 0;
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
     [self dismissViewControllerAnimated:YES completion:^{
         [[VOIPService instance] removeRTMessageObserver:self];
-        [[VOIPService instance] stop];
     }];
 }
-
-
 
 
 - (void)startStream {

@@ -34,4 +34,5 @@
 -(void)refuse;
 -(void)hangUp;
 -(void)onConnected;
+-(void)onRefuse;
 @end

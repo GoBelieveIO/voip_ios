@@ -6,9 +6,9 @@
 //  Copyright (c) 2015年 beetle. All rights reserved.
 //
 
-#import "VOIPViewController.h"
+#import "CallViewController.h"
 
-@interface VOIPVoiceViewController : VOIPViewController
+@interface VOIPVoiceViewController : CallViewController
 @property(nonatomic, copy) NSString *peerName;
 @property(nonatomic, copy) NSString *peerAvatar;
 @end
