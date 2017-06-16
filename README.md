@@ -1,2 +1,3 @@
-#下载libwebrtc静态库 解压后放到工程voipengine目录下
-http://developer.gobelieve.io/static/file/libwebrtc_all.a.zip
+#VOIP
+
+输入双方的uid， 一方呼叫， 一方接听
