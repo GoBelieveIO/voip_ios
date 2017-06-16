@@ -650,7 +650,7 @@
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/voip_demo-ghegouphrmfjtsbdqtgolwbghldy/Build/Products/Debug-iphoneos",
 				);
-				ONLY_ACTIVE_ARCH = NO;
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.beetle.voip.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = voip_demo;
@@ -679,6 +679,7 @@
 					"$(inherited)",
 					"$(USER_LIBRARY_DIR)/Developer/Xcode/DerivedData/voip_demo-ghegouphrmfjtsbdqtgolwbghldy/Build/Products/Debug-iphoneos",
 				);
+				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.beetle.voip.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = voip_demo;
