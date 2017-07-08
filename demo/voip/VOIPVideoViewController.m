@@ -204,7 +204,38 @@
 }
 
 - (void)videoView:(RTCEAGLVideoView *)videoView didChangeVideoSize:(CGSize)size {
+    CGFloat width = size.width, height = size.height;
+    CGRect newValue;
+    if (width <= 0 || height <= 0) {
+        newValue.origin.x = 0;
+        newValue.origin.y = 0;
+        newValue.size.width = 0;
+        newValue.size.height = 0;
+    } else { // cover
+        newValue = self.view.bounds;
+        // Is there a real need to scale subview?
+        if (newValue.size.width != width || newValue.size.height != height) {
+            CGFloat scaleFactor
+            = MAX(newValue.size.width / width, newValue.size.height / height);
+            // Scale both width and height in order to make it obvious that the aspect
+            // ratio is preserved.
+            width *= scaleFactor;
+            height *= scaleFactor;
+            newValue.origin.x += (newValue.size.width - width) / 2.0;
+            newValue.origin.y += (newValue.size.height - height) / 2.0;
+            newValue.size.width = width;
+            newValue.size.height = height;
+        }
+    }
     
+    CGRect oldValue = self.remoteVideoView.frame;
+    
+    if (newValue.origin.x != oldValue.origin.x
+        || newValue.origin.y != oldValue.origin.y
+        || newValue.size.width != oldValue.size.width
+        || newValue.size.height != oldValue.size.height) {
+        self.remoteVideoView.frame = newValue;
+    }
 }
 
 
