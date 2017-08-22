@@ -20,6 +20,7 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 @interface WebRTCViewController ()<RTCPeerConnectionDelegate>
 @property(nonatomic) BOOL shouldUseLevelControl;
 @property(nonatomic) BOOL isLoopback;
+@property(nonatomic) BOOL videoEnabled;
 @end
 
 @implementation WebRTCViewController
@@ -65,6 +66,11 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
     }
 }
 
+- (void)toogleVideo {
+    self.videoEnabled = !self.videoEnabled;
+    self.remoteVideoTrack.isEnabled = self.videoEnabled;
+    self.localVideoTrack.isEnabled =  self.videoEnabled;
+}
 
 - (void)startStream {
     RTCMediaConstraints *constraints = [self defaultPeerConnectionConstraints];
@@ -98,6 +104,8 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
                                                         error:error];
                                }];
     }
+    
+    self.videoEnabled = !self.isAudioOnly;
 }
 
 
