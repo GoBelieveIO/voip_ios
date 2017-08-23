@@ -224,19 +224,15 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
             NSLog(@"Failed to create session description. Error: %@", error);
             return;
         }
-        // Prefer H264 if available.
-        RTCSessionDescription *sdpPreferringH264 =
-        [ARDSDPUtils descriptionForDescription:sdp
-                           preferredVideoCodec:@"H264"];
-        [self.peerConnection setLocalDescription:sdpPreferringH264
+        [self.peerConnection setLocalDescription:sdp
                                completionHandler:^(NSError *error) {
                                    
                                    
                                }];
         
-        NSLog(@"sdp description:%@", sdpPreferringH264);
+        NSLog(@"sdp description:%@", sdp);
         
-        ARDSessionDescriptionMessage *message = [[ARDSessionDescriptionMessage alloc] initWithDescription:sdpPreferringH264];
+        ARDSessionDescriptionMessage *message = [[ARDSessionDescriptionMessage alloc] initWithDescription:sdp];
         [self sendSignalingMessage:message];
     });
 }
@@ -254,12 +250,8 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
     } else if (message.type == kARDSignalingMessageTypeOffer) {
         ARDSessionDescriptionMessage *descMsg = (ARDSessionDescriptionMessage*)message;
         RTCSessionDescription *description = descMsg.sessionDescription;
-        // Prefer H264 if available.
-        RTCSessionDescription *sdpPreferringH264 =
-        [ARDSDPUtils descriptionForDescription:description
-                           preferredVideoCodec:@"H264"];
         __weak WebRTCViewController *weakSelf = self;
-        [self.peerConnection setRemoteDescription:sdpPreferringH264
+        [self.peerConnection setRemoteDescription:description
                                 completionHandler:^(NSError *error) {
                                     if (error) {
                                         NSLog(@"error:%@", error);
@@ -281,11 +273,7 @@ didCreateSessionDescription:(RTCSessionDescription *)sdp
     } else if (message.type == kARDSignalingMessageTypeAnswer) {
         ARDSessionDescriptionMessage *descMsg = (ARDSessionDescriptionMessage*)message;
         RTCSessionDescription *description = descMsg.sessionDescription;
-        // Prefer H264 if available.
-        RTCSessionDescription *sdpPreferringH264 =
-        [ARDSDPUtils descriptionForDescription:description
-                           preferredVideoCodec:@"H264"];
-        [self.peerConnection setRemoteDescription:sdpPreferringH264
+        [self.peerConnection setRemoteDescription:description
                                 completionHandler:^(NSError *error) {
                                     if (error) {
                                         NSLog(@"error:%@", error);
