@@ -31,7 +31,9 @@
 - (void)sendSignalingMessage:(ARDSignalingMessage*)msg;
 - (void)processMessage:(ARDSignalingMessage*)message;
 
-- (void)toogleVideo;
+
 - (void)startStream;
 - (void)stopStream;
+- (void)switchCamera:(id)sender;
+- (void)toogleVideo;
 @end

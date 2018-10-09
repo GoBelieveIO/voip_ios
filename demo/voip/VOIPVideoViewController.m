@@ -280,14 +280,6 @@
 }
 
 
--(void)switchCamera:(id)sender {
-    NSLog(@"switch camera");
-    RTCVideoSource* source = self.localVideoTrack.source;
-    if ([source isKindOfClass:[RTCAVFoundationVideoSource class]]) {
-        RTCAVFoundationVideoSource* avSource = (RTCAVFoundationVideoSource*)source;
-        avSource.useBackCamera = !avSource.useBackCamera;
-    }
-}
 
 -(NSString*) getTimeStrFromSeconds:(UInt64)seconds{
     if (seconds >= 3600) {

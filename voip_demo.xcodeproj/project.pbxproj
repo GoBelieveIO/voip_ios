@@ -40,6 +40,7 @@
 		6DBEBD091E0ED8140052BFF9 /* VOIPViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCFD1E0ED8140052BFF9 /* VOIPViewController.m */; };
 		6DBEBD0A1E0ED8140052BFF9 /* VOIPVoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBCFF1E0ED8140052BFF9 /* VOIPVoiceViewController.m */; };
 		6DBEBD0B1E0ED8140052BFF9 /* WebRTCViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DBEBD011E0ED8140052BFF9 /* WebRTCViewController.m */; };
+		6DEBEEC6216C4EA100BFC829 /* ARDCaptureController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DEBEEC2216C4EA100BFC829 /* ARDCaptureController.m */; };
 		6DF6F78F1B92CBF600774961 /* VideoToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */; };
 		6DFA638D1E13724F00F954F6 /* CallViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 6DFA638C1E13724F00F954F6 /* CallViewController.m */; };
 /* End PBXBuildFile section */
@@ -143,6 +144,8 @@
 		6DBEBCFF1E0ED8140052BFF9 /* VOIPVoiceViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VOIPVoiceViewController.m; sourceTree = "<group>"; };
 		6DBEBD001E0ED8140052BFF9 /* WebRTCViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WebRTCViewController.h; sourceTree = "<group>"; };
 		6DBEBD011E0ED8140052BFF9 /* WebRTCViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WebRTCViewController.m; sourceTree = "<group>"; };
+		6DEBEEC2216C4EA100BFC829 /* ARDCaptureController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ARDCaptureController.m; sourceTree = "<group>"; };
+		6DEBEEC5216C4EA100BFC829 /* ARDCaptureController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ARDCaptureController.h; sourceTree = "<group>"; };
 		6DF6F78E1B92CBF600774961 /* VideoToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VideoToolbox.framework; path = System/Library/Frameworks/VideoToolbox.framework; sourceTree = SDKROOT; };
 		6DFA638B1E13724F00F954F6 /* CallViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallViewController.h; sourceTree = "<group>"; };
 		6DFA638C1E13724F00F954F6 /* CallViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CallViewController.m; sourceTree = "<group>"; };
@@ -323,6 +326,8 @@
 		6DBEBCEC1E0ED8140052BFF9 /* voip */ = {
 			isa = PBXGroup;
 			children = (
+				6DEBEEC5216C4EA100BFC829 /* ARDCaptureController.h */,
+				6DEBEEC2216C4EA100BFC829 /* ARDCaptureController.m */,
 				6DBEBCED1E0ED8140052BFF9 /* ARDSDPUtils.h */,
 				6DBEBCEE1E0ED8140052BFF9 /* ARDSDPUtils.m */,
 				6DBEBCEF1E0ED8140052BFF9 /* ARDSignalingMessage.h */,
@@ -496,6 +501,7 @@
 				6D5C193D1AC92A330047A9A3 /* MBProgressHUD.m in Sources */,
 				6DBEBD061E0ED8140052BFF9 /* RTCSessionDescription+JSON.m in Sources */,
 				6DBEBD021E0ED8140052BFF9 /* ARDSDPUtils.m in Sources */,
+				6DEBEEC6216C4EA100BFC829 /* ARDCaptureController.m in Sources */,
 				6DBEBD091E0ED8140052BFF9 /* VOIPViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

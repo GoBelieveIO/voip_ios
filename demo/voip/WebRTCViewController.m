@@ -10,7 +10,7 @@
 #import <WebRTC/WebRTC.h>
 #import "ARDSDPUtils.h"
 #import "ARDSignalingMessage.h"
-
+#import "ARDCaptureController.h"
 
 static NSString * const kARDMediaStreamId = @"ARDAMS";
 static NSString * const kARDAudioTrackId = @"ARDAMSa0";
@@ -19,37 +19,30 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 
 @interface WebRTCViewController ()<RTCPeerConnectionDelegate>
 @property(nonatomic) BOOL shouldUseLevelControl;
-@property(nonatomic) BOOL isLoopback;
-@property(nonatomic) BOOL videoEnabled;
+@property(nonatomic) ARDCaptureController *captureController;
 @end
 
 @implementation WebRTCViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    self.factory = [[RTCPeerConnectionFactory alloc] init];
+-(BOOL)videoEnabled {
+    return !self.isAudioOnly;
 }
 
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
+-(void)setVideoEnabled:(BOOL)videoEnabled {
+    self.isAudioOnly = !videoEnabled;
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    
+    RTCDefaultVideoDecoderFactory *decoderFactory = [[RTCDefaultVideoDecoderFactory alloc] init];
+    RTCDefaultVideoEncoderFactory *encoderFactory = [[RTCDefaultVideoEncoderFactory alloc] init];
+    self.factory = [[RTCPeerConnectionFactory alloc] initWithEncoderFactory:encoderFactory
+                                                             decoderFactory:decoderFactory];
 }
 
 
 #pragma mark - Private
-- (void)setLocalVideoTrack:(RTCVideoTrack *)localVideoTrack {
-    if (_localVideoTrack == localVideoTrack) {
-        return;
-    }
-    _localVideoTrack = nil;
-    _localVideoTrack = localVideoTrack;
-    RTCAVFoundationVideoSource *source = nil;
-    if ([localVideoTrack.source
-         isKindOfClass:[RTCAVFoundationVideoSource class]]) {
-        source = (RTCAVFoundationVideoSource*)localVideoTrack.source;
-    }
-    self.localVideoView.captureSession = source.captureSession;
-}
-
 - (void)setRemoteVideoTrack:(RTCVideoTrack *)remoteVideoTrack {
     if (_remoteVideoTrack == remoteVideoTrack) {
         return;
@@ -72,6 +65,11 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
     self.localVideoTrack.isEnabled =  self.videoEnabled;
 }
 
+-(void)switchCamera:(id)sender {
+    NSLog(@"switch camera");
+    [self.captureController switchCamera];
+}
+
 - (void)startStream {
     RTCMediaConstraints *constraints = [self defaultPeerConnectionConstraints];
     RTCConfiguration *config = [[RTCConfiguration alloc] init];
@@ -88,10 +86,7 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
                                                             constraints:constraints
                                                                delegate:self];
     
-    // Create AV senders.
-    [self createAudioSender];
-    [self createVideoSender];
-    
+    [self createMediaSenders];
     if (self.isCaller) {
         // Send offer.
         __weak WebRTCViewController *weakSelf = self;
@@ -104,8 +99,6 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
                                                         error:error];
                                }];
     }
-    
-    self.videoEnabled = !self.isAudioOnly;
 }
 
 
@@ -136,7 +129,8 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 }
 
 - (RTCMediaConstraints *)defaultPeerConnectionConstraints {
-    NSString *value = self.isLoopback ? @"false" : @"true";
+    BOOL isLoopback = NO;
+    NSString *value = isLoopback ? @"false" : @"true";
     NSDictionary *optionalConstraints = @{ @"DtlsSrtpKeyAgreement" : value , @"video":@"true", @"audio":@"true"};
     RTCMediaConstraints* constraints =
     [[RTCMediaConstraints alloc]
@@ -145,31 +139,17 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
     return constraints;
 }
 
-- (RTCRtpSender *)createAudioSender {
+- (void)createMediaSenders {
     RTCMediaConstraints *constraints = [self defaultMediaAudioConstraints];
     RTCAudioSource *source = [self.factory audioSourceWithConstraints:constraints];
     RTCAudioTrack *track = [self.factory audioTrackWithSource:source
-                                                      trackId:kARDAudioTrackId];
-    RTCRtpSender *sender =
-    [self.peerConnection senderWithKind:kRTCMediaStreamTrackKindAudio
-                               streamId:kARDMediaStreamId];
-    sender.track = track;
-    return sender;
-}
-
-
-- (RTCRtpSender *)createVideoSender {
-    RTCRtpSender *sender =
-    [self.peerConnection senderWithKind:kRTCMediaStreamTrackKindVideo
-                               streamId:kARDMediaStreamId];
-    RTCVideoTrack *track = [self createLocalVideoTrack];
-    if (track) {
-        sender.track = track;
-        self.localVideoTrack = track;
+                                                  trackId:kARDAudioTrackId];
+    [self.peerConnection addTrack:track streamIds:@[ kARDMediaStreamId ]];
+    self.localVideoTrack = [self createLocalVideoTrack];
+    if (self.localVideoTrack) {
+        [self.peerConnection addTrack:self.localVideoTrack streamIds:@[ kARDMediaStreamId ]];
     }
-    return sender;
 }
-
 
 - (RTCVideoTrack *)createLocalVideoTrack {
     RTCVideoTrack* localVideoTrack = nil;
@@ -179,42 +159,30 @@ static NSString * const kARDVideoTrackId = @"ARDAMSv0";
 #if !TARGET_IPHONE_SIMULATOR
     
     if (!self.isAudioOnly) {
-        RTCMediaConstraints *cameraConstraints =
-        [self cameraConstraints];
-        RTCAVFoundationVideoSource *source =
-        [self.factory avFoundationVideoSourceWithConstraints:cameraConstraints];
-        localVideoTrack =
-        [self.factory videoTrackWithSource:source
-                                   trackId:kARDVideoTrackId];
+        RTCVideoSource *source = [self.factory videoSource];
+        RTCCameraVideoCapturer *capturer = [[RTCCameraVideoCapturer alloc] initWithDelegate:source];
+        self.localVideoView.captureSession = capturer.captureSession;
+        self.captureController = [[ARDCaptureController alloc] initWithCapturer:capturer with:640 height:480 fps:30];
+        [self.captureController startCapture];
+
+        localVideoTrack = [self.factory videoTrackWithSource:source
+                                                     trackId:kARDVideoTrackId];
     }
     
 #endif
     return localVideoTrack;
 }
 
-- (RTCMediaConstraints *)cameraConstraints {
-    NSDictionary *mediaConstraintsDictionary = @{
-                                                 kRTCMediaConstraintsMinWidth : @"640",
-                                                 kRTCMediaConstraintsMinHeight : @"480"
-                                                 };
-    
-    RTCMediaConstraints *cameraConstraints = [[RTCMediaConstraints alloc]
-                                              initWithMandatoryConstraints:nil
-                                              optionalConstraints: mediaConstraintsDictionary];
-    
-    return cameraConstraints;
-}
-
 
 - (RTCMediaConstraints *)defaultMediaAudioConstraints {
-    NSString *valueLevelControl = _shouldUseLevelControl ?
-    kRTCMediaConstraintsValueTrue : kRTCMediaConstraintsValueFalse;
-    NSDictionary *mandatoryConstraints = @{ kRTCMediaConstraintsLevelControl : valueLevelControl };
+    NSDictionary *mandatoryConstraints = @{};
     RTCMediaConstraints *constraints =
     [[RTCMediaConstraints alloc] initWithMandatoryConstraints:mandatoryConstraints
                                           optionalConstraints:nil];
     return constraints;
 }
+
+
 
 - (void)peerConnection:(RTCPeerConnection *)peerConnection
 didCreateSessionDescription:(RTCSessionDescription *)sdp
